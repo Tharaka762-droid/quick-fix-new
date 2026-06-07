@@ -38,7 +38,6 @@
         .job-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
         .btn-accept { background: var(--accent); color: #111; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         
-        /* Layouts */
         .workspace-box { display: flex; gap: 20px; max-width: 1000px; margin-top: 15px; }
         #riderMap { width: 50%; height: 350px; border-radius: 8px; border: 1px solid var(--border-color); }
         .chat-panel { width: 50%; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; height: 350px; overflow: hidden; }
@@ -50,9 +49,12 @@
         .chat-input-area input { flex-grow: 1; border: none; padding: 12px; background: transparent; color: var(--text-main); outline: none; }
         .chat-input-area button { background: var(--accent); border: none; padding: 0 15px; font-weight: bold; color: #111; cursor: pointer; }
 
-        /* OTP Verification Input Elements */
         .otp-verify-area { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-top: 15px; max-width: 400px; }
         .otp-verify-area input { padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; color: white; width: 120px; text-align: center; font-size: 16px; outline: none; font-weight: bold; }
+
+        /* 👤 PROFILE CARD STYLES */
+        .profile-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 35px; border-radius: 16px; max-width: 450px; text-align: center; margin-top: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .profile-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -63,6 +65,7 @@
             <ul class="menu-list">
                 <li class="menu-item active" onclick="switchView('pool-view', this)">🛠️ ලද හැකි Jobs (Job Pool)</li>
                 <li class="menu-item" onclick="switchView('my-jobs-view', this)">✅ මම බාරගත් Jobs</li>
+                <li class="menu-item" onclick="switchView('profile-view', this)">👤 මගේ ප්‍රොෆයිල් එක</li>
             </ul>
         </div>
         <button class="logout-btn" onclick="logoutUser()">Log Out</button>
@@ -103,6 +106,16 @@
                     </div>
                 </div>
             </div>
+
+            <div id="profile-view" class="view-section">
+                <h2>මගේ ගිණුමේ විස්තර</h2>
+                <div class="profile-card">
+                    <img id="userProfAvatar" class="profile-avatar" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
+                    <h3 id="userProfName" style="margin: 10px 0 5px 0; font-size: 24px;">ලෝඩ් වෙමින්...</h3>
+                    <p id="userProfEmail" style="color: var(--text-muted); margin: 0 0 15px 0;">...</p>
+                    <div style="font-size: 14px; font-weight: bold; color: var(--accent); background: var(--input-bg); padding: 8px 15px; border-radius: 6px; display: inline-block;">🛠️ Account Role: Rider / Rider</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -131,6 +144,11 @@
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.href = "auth.html"; }
             else {
+                // Populate Profile
+                document.getElementById('userProfName').innerText = user.displayName || "QuickFix Rider";
+                document.getElementById('userProfEmail').innerText = user.email;
+                if(user.photoURL) document.getElementById('userProfAvatar').src = user.photoURL;
+
                 db.collection("jobs").where("status", "==", "available").onSnapshot(snapshot => {
                     const container = document.getElementById('availableJobsContainer');
                     if(snapshot.empty) { container.innerHTML = "<p style='color:var(--text-muted)'>මේ වෙලාවේ වෙනත් Jobs කිසිවක් නැත...</p>"; return; }
@@ -154,7 +172,7 @@
                     snapshot.forEach(doc => {
                         const job = doc.data();
                         activeJobId = doc.id;
-                        activeJobRealOTP = job.otpCode; // Capture the job security token
+                        activeJobRealOTP = job.otpCode;
                         container.innerHTML += `<div class="job-card" style="border-left:4px solid #00c851"><h3>${job.title}</h3><p>පාරිභෝගිකයා: ${job.customerName}</p></div>`;
                         
                         document.getElementById('navigationArea').style.display = "block";
@@ -204,12 +222,11 @@
         function completeJobWithOTP() {
             const typedOTP = document.getElementById('inputOtpCheck').value;
             if(parseInt(typedOTP) !== parseInt(activeJobRealOTP)) {
-                alert("❌ වැරදි OTP කේතයක්! කරුණාකර කස්ටමර්ගෙන් නිවැරදි කේතය ඉල්ලන්න.");
+                alert("❌ වැරදි OTP කේතයක්!");
                 return;
             }
-
             db.collection("jobs").doc(activeJobId).update({ status: "completed" }).then(() => {
-                alert("✅ නියමයි! Security OTP එක සාර්ථකව මැච් වුණා. වැඩේ අවසන් කරා මචං!");
+                alert("✅ වැඩේ අවසන් කරා මචං!");
                 document.getElementById('inputOtpCheck').value = "";
                 document.getElementById('navigationArea').style.display = "none";
                 switchView('pool-view', document.querySelectorAll('.menu-item')[0]);
