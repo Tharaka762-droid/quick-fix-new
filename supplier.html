@@ -35,6 +35,7 @@
         h2 { color: var(--accent); margin-top: 0; font-size: 28px; }
         .job-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 22px; border-radius: 12px; margin-bottom: 15px; max-width: 800px; }
         .job-card h3 { margin: 0 0 10px 0; color: var(--accent); }
+        .job-img { width: 100%; max-width: 300px; height: 180px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border-color); }
         .job-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
         .btn-accept { background: var(--accent); color: #111; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
         
@@ -52,7 +53,6 @@
         .otp-verify-area { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-top: 15px; max-width: 400px; }
         .otp-verify-area input { padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; color: white; width: 120px; text-align: center; font-size: 16px; outline: none; font-weight: bold; }
 
-        /* 👤 PROFILE CARD STYLES */
         .profile-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 35px; border-radius: 16px; max-width: 450px; text-align: center; margin-top: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .profile-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; margin-bottom: 15px; }
     </style>
@@ -121,7 +121,7 @@
 
     <script>
         const part1 = "AIzaSyD29G6zoTAbg1YybqIWdKzCq"; const part2 = "_v--pAOOfI";
-        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.firebasestorage.app", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
+        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.appspot.com", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(), db = firebase.firestore();
 
@@ -144,7 +144,6 @@
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.href = "auth.html"; }
             else {
-                // Populate Profile
                 document.getElementById('userProfName').innerText = user.displayName || "QuickFix Rider";
                 document.getElementById('userProfEmail').innerText = user.email;
                 if(user.photoURL) document.getElementById('userProfAvatar').src = user.photoURL;
@@ -155,11 +154,13 @@
                     container.innerHTML = "";
                     snapshot.forEach(doc => {
                         const job = doc.data();
+                        let jobImgTag = job.imageUrl ? `<img src="${job.imageUrl}" class="job-img" alt="Job Image">` : '';
                         container.innerHTML += `
                             <div class="job-card">
                                 <h3>${job.title}</h3>
                                 <p>${job.description}</p>
-                                <div class="job-footer"><div style="font-weight:bold;color:var(--accent)">රු. ${job.budget}</div>
+                                ${jobImgTag}
+                                <div class="job-footer"><div style="font-weight:bold;color:var(--accent); margin-top:5px;">රු. ${job.budget}</div>
                                 <button class="btn-accept" onclick="acceptJob('${doc.id}')">Job එක බාරගන්න 🤝</button></div>
                             </div>`;
                     });
