@@ -11,10 +11,15 @@
 
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #121212; margin: 0; padding: 0; color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-        .auth-container { max-width: 450px; width: 100%; padding: 35px; background: #1e1e1e; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #333; box-sizing: border-box; text-align: center; }
+        .auth-container { max-width: 450px; width: 100%; padding: 35px; background: #1e1e1e; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #333; box-sizing: border-box; text-align: center; position: relative; }
         .logo { color: #ffcc00; margin: 0 0 5px 0; font-size: 36px; font-weight: 800; }
         .subtitle { color: #777; margin: 0 0 25px 0; font-size: 14px; }
         
+        /* 🌐 LANGUAGE SWITCHER SYSTEM */
+        .lang-container { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 20px; width: 100%; }
+        .lang-btn { background: #2b2b2b; color: #aaa; border: 1px solid #444; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .lang-btn.active { background: #ffcc00; color: #111; border-color: #ffcc00; }
+
         /* 🎛️ TAB BUTTONS */
         .form-toggle { display: flex; justify-content: space-between; margin-bottom: 25px; background: #252525; padding: 5px; border-radius: 10px; border: 1px solid #333; }
         .tab-btn { width: 50%; padding: 12px; font-weight: bold; cursor: pointer; border: none; background: transparent; border-radius: 8px; font-size: 14px; color: #aaa; transition: 0.2s; }
@@ -43,6 +48,12 @@
 <body>
 
     <div class="auth-container">
+        <div class="lang-container">
+            <button id="lang-si" class="lang-btn active" onclick="changeLanguage('si')">සිංහල</button>
+            <button id="lang-en" class="lang-btn" onclick="changeLanguage('en')">English</button>
+            <button id="lang-ta" class="lang-btn" onclick="changeLanguage('ta')">தமிழ்</button>
+        </div>
+
         <h1 class="logo">QuickFix</h1>
         <p class="subtitle" id="mainSubtitle">ඔබේ ගිණුමට ඇතුල් වන්න හෝ අලුතින් සාදන්න</p>
 
@@ -54,30 +65,30 @@
         <form id="mainAuthForm">
             <div id="signupFields" class="hidden">
                 <div class="input-group">
-                    <label>ඔබේ සම්පූර්ණ නම</label>
+                    <label id="lblFullName">ඔබේ සම්පූර්ණ නම</label>
                     <input type="text" id="authName" placeholder="Kamal Perera">
                 </div>
                 <div class="input-group">
-                    <label>දුරකථන අංකය (Phone Number)</label>
+                    <label id="lblPhone">දුරකථන අංකය</label>
                     <input type="tel" id="authPhone" placeholder="07XXXXXXXX">
                 </div>
             </div>
 
             <div class="input-group">
-                <label id="identifierLabel">ඊමේල් ලිපිනය (Email)</label>
-                <input type="text" id="authIdentifier" placeholder="example@gmail.com" required>
+                <label id="identifierLabel">ඊමේල් හෝ දුරකථන අංකය</label>
+                <input type="text" id="authIdentifier" placeholder="example@gmail.com / 07XXXXXXXX" required>
             </div>
             
             <div class="input-group">
-                <label>මුරපදය (Password)</label>
+                <label id="lblPassword">මුරපදය</label>
                 <input type="password" id="authPassword" placeholder="••••••••" required>
             </div>
 
             <div id="roleArea" class="role-area">
-                <label style="color: #ffcc00; font-weight: bold;">ඔබේ භූමිකාව තෝරන්න (Select Role):</label>
+                <label style="color: #ffcc00; font-weight: bold;" id="lblSelectRole">ඔබේ භූමිකාව තෝරන්න (Select Role):</label>
                 <div class="role-selector">
-                    <div id="roleCust" class="role-box active" onclick="selectRole('customer')">🙋‍♂️ කස්ටමර්</div>
-                    <div id="roleSupp" class="role-box" onclick="selectRole('supplier')">🛠️ රයිඩර්</div>
+                    <div id="roleCust" class="role-box active" onclick="selectRole('customer')">🙋‍♂️ <span id="lblRoleCust">කස්ටමර්</span></div>
+                    <div id="roleSupp" class="role-box" onclick="selectRole('supplier')">🛠️ <span id="lblRoleSupp">රයිඩර්</span></div>
                 </div>
             </div>
 
@@ -85,8 +96,8 @@
         </form>
 
         <div id="socialDiv">
-            <div class="divider">නැතහොත් වෙනත් ක්‍රමයකින්</div>
-            <button class="social-btn" onclick="loginWithGoogle()">🌐 Continue with Google</button>
+            <div class="divider" id="lblDivider">නැතහොත් වෙනත් ක්‍රමයකින්</div>
+            <button class="social-btn" id="lblGoogleBtn" onclick="loginWithGoogle()">🌐 Continue with Google</button>
         </div>
     </div>
 
@@ -96,7 +107,43 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(), db = firebase.firestore();
 
-        let currentTab = 'login', chosenRole = 'customer', googleUserObj = null;
+        let currentTab = 'login', chosenRole = 'customer', googleUserObj = null, currentLang = 'si';
+
+        // 🌐 DICTIONARY FOR SYSTEM TRANSLATIONS
+        const translations = {
+            si: { subtitle: "ඔබේ ආරක්ෂිත ගිණුමට ලොග් වන්න", step2: "ගිණුම සක්‍රීය කිරීමට අවසාන පියවර", fullName: "...සම්පූර්ණ නම", phone: "දුරකථන අංකය", pass: "මුරපදය", selectRole: "ඔබේ භූමිකාව තෝරන්න:", customer: "කස්ටමර්", supplier: "රයිඩර්", loginBtn: "ඇතුල් වන්න", signupBtn: "ගිණුම සාදන්න", finishBtn: "ලියාපදිංචිය අවසන් කරන්න", emailOrPhone: "ඊමේල් හෝ දුරකථන අංකය", emailOnly: "ඊමේල් ලිපිනය (Email)", divider: "නැතහොත් වෙනත් ක්‍රමයකින්", google: "🌐 Continue with Google", roleTitle: "ඔබ ඇප් එකට සම්බන්ධ වන්නේ කවුරුන් ලෙසද?" },
+            en: { subtitle: "Login to your secure account", step2: "Final step to activate account", fullName: "Full Name", phone: "Phone Number", pass: "Password", selectRole: "Select Your Role:", customer: "Customer", supplier: "Rider", loginBtn: "Login", signupBtn: "Sign Up", finishBtn: "Complete Registration", emailOrPhone: "Email or Phone Number", emailOnly: "Email Address", divider: "Or via other methods", google: "🌐 Continue with Google", roleTitle: "How would you like to join us?" },
+            ta: { subtitle: "உங்கள் பாதுகாப்பான கணக்கில் உள்நுழையவும்", step2: "கணக்கை செயல்படுத்த இறுதி படி", fullName: "முழு பெயர்", phone: "தொலைபேசி எண்", pass: "கடவுச்சொல்", selectRole: "உங்கள் பாத்திரத்தை தேர்வு செய்யவும்:", customer: "வாடிக்கையாளர்", supplier: "ரைடர்", loginBtn: "உள்நுழைக", signupBtn: "பதிவு செய்க", finishBtn: "பதிவை முடிக்கவும்", emailOrPhone: "மின்னஞ்சல் அல்லது தொலைபேசி", emailOnly: "மின்னஞ்சல் முகவரி", divider: "அல்லது வேறு வழிகள் மூலம்", google: "🌐 கூகிள் மூலம் தொடரவும்", roleTitle: "நீங்கள் எப்படி எங்களுடன் இணைய விரும்புகிறீர்கள்?" }
+        };
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`lang-${lang}`).classList.add('active');
+            
+            // Apply text mappings dynamically
+            document.getElementById('lblFullName').innerText = translations[lang].fullName;
+            document.getElementById('lblPhone').innerText = translations[lang].phone;
+            document.getElementById('lblPassword').innerText = translations[lang].pass;
+            document.getElementById('lblSelectRole').innerText = translations[lang].selectRole;
+            document.getElementById('lblRoleCust').innerText = translations[lang].customer;
+            document.getElementById('lblRoleSupp').innerText = translations[lang].supplier;
+            document.getElementById('lblDivider').innerText = translations[lang].divider;
+            document.getElementById('lblGoogleBtn').innerText = translations[lang].google;
+            
+            if(currentTab === 'login') {
+                document.getElementById('mainSubtitle').innerText = translations[lang].subtitle;
+                document.getElementById('submitBtn').innerText = translations[lang].loginBtn;
+                document.getElementById('identifierLabel').innerText = translations[lang].emailOrPhone;
+            } else if(currentTab === 'signup') {
+                document.getElementById('mainSubtitle').innerText = translations[lang].subtitle;
+                document.getElementById('submitBtn').innerText = translations[lang].signupBtn;
+                document.getElementById('identifierLabel').innerText = translations[lang].emailOnly;
+            } else {
+                document.getElementById('mainSubtitle').innerText = translations[lang].step2;
+                document.getElementById('submitBtn').innerText = translations[lang].finishBtn;
+            }
+        }
 
         function switchTab(tab) {
             currentTab = tab;
@@ -107,22 +154,15 @@
                 document.getElementById('loginTab').classList.add('active');
                 document.getElementById('signupTab').classList.remove('active');
                 document.getElementById('signupFields').classList.add('hidden');
-                document.getElementById('identifierLabel').innerText = "ඊමේල් හෝ දුරකථන අංකය (Email or Phone)";
-                document.getElementById('authIdentifier').placeholder = "example@gmail.com / 07XXXXXXXX";
-                document.getElementById('submitBtn').innerText = "ඇතුල් වන්න";
                 document.getElementById('socialDiv').style.display = 'block';
             } else {
                 document.getElementById('signupTab').classList.add('active');
                 document.getElementById('loginTab').classList.remove('active');
                 document.getElementById('signupFields').classList.remove('hidden');
-                document.getElementById('identifierLabel').innerText = "ඊමේල් ලිපිනය (Email)";
-                document.getElementById('authIdentifier').placeholder = "example@gmail.com";
                 document.getElementById('roleArea').style.display = 'block';
-                document.getElementById('submitBtn').innerText = "ගිණුම සාදන්න";
             }
+            changeLanguage(currentLang);
         }
-        // Initialize setup for login layout defaults
-        switchTab('login');
 
         function selectRole(role) {
             chosenRole = role;
@@ -132,7 +172,6 @@
             else document.getElementById('roleSupp').classList.add('active');
         }
 
-        // 🌐 GOOGLE AUTH LOGIN FLUIDITY
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).then((result) => {
@@ -141,21 +180,19 @@
                     if (doc.exists) {
                         redirectUser(doc.data().role);
                     } else {
-                        document.getElementById('loginArea')?.classList.add('hidden');
                         document.getElementById('tabBar').classList.add('hidden');
                         document.getElementById('socialDiv').style.display = 'none';
                         document.getElementById('signupFields').classList.add('hidden');
                         document.getElementById('authIdentifier').parentElement.classList.add('hidden');
                         document.getElementById('authPassword').parentElement.classList.add('hidden');
                         document.getElementById('roleArea').style.display = 'block';
-                        document.getElementById('submitBtn').innerText = "ලියාපදිංචිය අවසන් කරන්න";
                         currentTab = 'google-new-role';
+                        changeLanguage(currentLang);
                     }
                 });
             }).catch((error) => { alert("Google Login Failed: " + error.message); });
         }
 
-        // 📝 FORM SUBMISSION Logic (Handles Email/Phone Logins and Signups)
         document.getElementById('mainAuthForm').addEventListener('submit', function(e) {
             e.preventDefault();
             let identifier = document.getElementById('authIdentifier').value.trim();
@@ -165,8 +202,8 @@
                 const name = document.getElementById('authName').value;
                 const phone = document.getElementById('authPhone').value.trim();
 
-                if(!identifier.includes("@")) { alert("කරුණාකර නිවැරදි ඊමේල් ලිපිනයක් ඇතුළත් කරන්න!"); return; }
-                if(!phone) { alert("කරුණාකර දුරකථන අංකයක් ඇතුළත් කරන්න!"); return; }
+                if(!identifier.includes("@")) { alert("Enter valid email!"); return; }
+                if(!phone) { alert("Enter phone number!"); return; }
 
                 auth.createUserWithEmailAndPassword(identifier, password).then((cred) => {
                     return db.collection("users").doc(cred.user.uid).set({
@@ -175,12 +212,11 @@
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 }).then(() => {
-                    alert("🎉 ගිණුම සාර්ථකව සැදුණා! දැන් Login ටැබ් එකෙන් ලොග් වන්න මචං.");
+                    alert("✅ Success! Please Login now.");
                     switchTab('login');
                 }).catch(err => alert("Error: " + err.message));
 
             } else if (currentTab === 'google-new-role') {
-                // Submit logic for new Google users picking role
                 db.collection("users").doc(googleUserObj.uid).set({
                     fullName: googleUserObj.displayName, email: googleUserObj.email, phoneNumber: "Google Verified", role: chosenRole,
                     avatar: googleUserObj.photoURL || "https://www.w3schools.com/howto/img_avatar.png",
@@ -188,22 +224,18 @@
                 }).then(() => { redirectUser(chosenRole); });
 
             } else {
-                // 🔐 LOGIN PROCESS (Email or Phone Number support)
                 if (identifier.includes("@")) {
-                    // Direct Email sign in
                     auth.signInWithEmailAndPassword(identifier, password).then((cred) => {
                         checkDatabaseRoleAndGo(cred.user.uid);
-                    }).catch(err => alert("❌ Login සක්‍රීය නැත: " + err.message));
+                    }).catch(err => alert("❌ Login Failed: " + err.message));
                 } else {
-                    // Phone Number Sign In mapping logic
                     db.collection("users").where("phoneNumber", "==", identifier).get().then(snapshot => {
-                        if(snapshot.empty) { alert("❌ මෙම දුරකථන අංකය ලියාපදිංචි කර නැත!"); return; }
+                        if(snapshot.empty) { alert("❌ Phone number not registered!"); return; }
                         let userEmail = "";
                         snapshot.forEach(doc => { userEmail = doc.data().email; });
-                        
                         auth.signInWithEmailAndPassword(userEmail, password).then((cred) => {
                             checkDatabaseRoleAndGo(cred.user.uid);
-                        }).catch(err => alert("❌ මුරපදය වැරදියි!"));
+                        }).catch(err => alert("❌ Password Incorrect!"));
                     });
                 }
             }
