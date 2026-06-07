@@ -102,7 +102,7 @@
     </div>
 
     <script>
-        // 🎯 නිවැරදි කරන ලද Config එක (තිත් ඉරි දෙකක් සහිතයි)
+        // GLOBAL CONFIG WITH ACCURATE API KEY (-- INCLUDED)
         const firebaseConfig = {
           apiKey: "AIzaSyD29G6zoTABg1YybqIWdKzCq_v--pA0ofI",
           authDomain: "quickfix-new.firebaseapp.com",
@@ -112,7 +112,9 @@
           appId: "1:316535009311:web:975f6b2b89604447c0e52a"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const auth = firebase.auth();
         const db = firebase.firestore();
 
