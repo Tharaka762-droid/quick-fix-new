@@ -58,6 +58,10 @@
         .rating-box { display: none; background: var(--panel-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; max-width: 400px; margin-top: 15px; text-align: center; }
         .stars { font-size: 30px; cursor: pointer; color: gray; margin-bottom: 15px; }
         .stars span:hover, .stars span.active { color: var(--accent); }
+
+        /* 👤 PROFILE CARD STYLES */
+        .profile-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 35px; border-radius: 16px; max-width: 450px; text-align: center; margin-top: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .profile-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -68,6 +72,7 @@
             <ul class="menu-list">
                 <li class="menu-item active" onclick="switchView('feed-view', this)">📋 මගේ Jobs ලිස්ට් එක</li>
                 <li class="menu-item" onclick="switchView('post-view', this)">🛠️ අලුත් Job එකක් දාන්න</li>
+                <li class="menu-item" onclick="switchView('profile-view', this)">👤 මගේ ප්‍රොෆයිල් එක</li>
             </ul>
         </div>
         <button class="logout-btn" onclick="logoutUser()">Log Out</button>
@@ -97,7 +102,7 @@
                     <div class="stars" id="starContainer">
                         <span onclick="setRating(1)">★</span><span onclick="setRating(2)">★</span><span onclick="setRating(3)">★</span><span onclick="setRating(4)">★</span><span onclick="setRating(5)">★</span>
                     </div>
-                    <button class="btn-post" onclick="submitReview()">රේටින්ග් එක සේව් කරන්න</button>
+                    <button class="btn-post" onclick="submitReview()">රේටින්ග් එක සේဝ် කරන්න</button>
                 </div>
             </div>
 
@@ -124,6 +129,16 @@
                         </div>
                         <button type="submit" class="btn-post">Job එක පෝස්ට් කරන්න 🚀</button>
                     </form>
+                </div>
+            </div>
+
+            <div id="profile-view" class="view-section">
+                <h2>මගේ ගිණුමේ විස්තර</h2>
+                <div class="profile-card">
+                    <img id="userProfAvatar" class="profile-avatar" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
+                    <h3 id="userProfName" style="margin: 10px 0 5px 0; font-size: 24px;">ලෝඩ් වෙමින්...</h3>
+                    <p id="userProfEmail" style="color: var(--text-muted); margin: 0 0 15px 0;">...</p>
+                    <div style="font-size: 14px; font-weight: bold; color: var(--accent); background: var(--input-bg); padding: 8px 15px; border-radius: 6px; display: inline-block;">🙋‍♂️ Account Role: Customer</div>
                 </div>
             </div>
         </div>
@@ -166,6 +181,11 @@
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.href = "auth.html"; }
             else {
+                // Populate Profile
+                document.getElementById('userProfName').innerText = user.displayName || "QuickFix User";
+                document.getElementById('userProfEmail').innerText = user.email;
+                if(user.photoURL) document.getElementById('userProfAvatar').src = user.photoURL;
+
                 db.collection("jobs").where("customerId", "==", user.uid).orderBy("timestamp", "desc").onSnapshot(snapshot => {
                     const container = document.getElementById('jobsContainer');
                     if(snapshot.empty) { container.innerHTML = `<p style='color:var(--text-muted)'>තාම කිසිම Job එකක් පෝස්ට් කරලා නැහැ...</p>`; return; }
@@ -246,7 +266,7 @@
 
         document.getElementById('jobPostForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const randomOTP = Math.floor(1000 + Math.random() * 9000); // Generate 4 digit secure OTP code
+            const randomOTP = Math.floor(1000 + Math.random() * 9000);
             db.collection("jobs").add({
                 title: document.getElementById('jobTitle').value,
                 description: document.getElementById('jobDesc').value,
