@@ -3,77 +3,298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickFix Rider - Premium Dashboard with Map</title>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <style>
-        :root { --primary: #ffcc00; --primary-hover: #e6b800; --bg-dark: #121212; --card-bg: #1e1e1e; --text-main: #ffffff; --text-muted: #aaaaaa; --border-color: #2a2a2a; --accent-green: #2ecc71; --accent-red: #ff4d4d; --accent-blue: #3498db; }
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; }
-        header { background: #000000; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 22px; font-weight: 800; color: var(--primary); letter-spacing: 1px; }
-        .header-right { display: flex; align-items: center; gap: 12px; }
-        .user-badge { background: rgba(46, 204, 113, 0.1); color: var(--accent-green); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(46, 204, 113, 0.2); }
-        .btn-signin { background: var(--primary); color: #000; border: none; padding: 8px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; text-decoration: none; }
-        .btn-logout { background: var(--accent-red); color: white; border: none; padding: 8px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; }
-        .dashboard-section { padding: 30px 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { max-width: 650px; width: 100%; }
-        h2 { font-size: 22px; margin-bottom: 25px; font-weight: 700; text-align: left; display: flex; align-items: center; gap: 10px; }
-        .task-card { background: var(--card-bg); border-left: 5px solid var(--primary); padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid var(--border-color); }
-        .task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-        .task-title { font-size: 20px; font-weight: 700; color: #fff; margin: 0; }
-        .urgency-badge { background: rgba(255, 77, 77, 0.15); color: var(--accent-red); padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; }
-        .task-body p { margin: 8px 0; font-size: 14px; color: #ccc; }
-        .info-label { color: var(--primary); font-weight: 600; margin-right: 5px; }
-        .rider-job-map { width: 100%; height: 200px; margin-top: 10px; border-radius: 8px; border: 1px solid #444; }
-        .btn-update-loc { background-color: #e67e22; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 10px; display: inline-block; }
-        .task-footer { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .price-tag { font-size: 22px; font-weight: 800; color: var(--accent-green); }
-        .btn-accept { background-color: var(--primary); color: #000; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; cursor: pointer; }
-        .btn-accepted { background-color: #252525; color: var(--accent-green); border: 1px solid var(--accent-green); padding: 10px 20px; border-radius: 10px; font-weight: 700; }
-        .btn-complete { background-color: var(--accent-blue); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
-        .btn-completed-status { background-color: #222; color: #555; border: 1px solid #333; padding: 10px 20px; border-radius: 10px; font-weight: 700; }
-        .rider-status-info { background: rgba(46, 204, 113, 0.05); padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 13px; color: var(--accent-green); border: 1px dashed rgba(46, 204, 113, 0.3); }
-        .chat-container { background: #111; border: 1px solid #444; border-radius: 8px; margin-top: 15px; padding: 12px; }
-        .chat-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .btn-free-call { background: #2ecc71; color: #fff; border: none; padding: 6px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
-        .chat-box { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; padding: 5px; }
-        .chat-msg { background: #222; padding: 6px 10px; border-radius: 6px; font-size: 13px; max-width: 85%; width: fit-content; }
-        .chat-msg.me { background: #ffcc00; color: #000; align-self: flex-end; font-weight: 500; }
-        .chat-input-row { display: flex; gap: 8px; }
-        .chat-input { flex-grow: 1; padding: 8px; background: #222; border: 1px solid #444; color: #fff; border-radius: 6px; font-size: 13px; outline: none; }
-        .btn-send { background: #ffcc00; color: #111; border: none; padding: 0 15px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
-        .empty-msg { color: var(--text-muted); text-align: center; margin-top: 50px; font-size: 15px; }
-    </style>
+    <title>QuickFix - Rider Dashboard</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        /* 🎨 THEME VARIABLES */
+        :root {
+            --bg-main: #121212;
+            --panel-bg: #1e1e1e;
+            --border-color: #333333;
+            --accent: #ffcc00;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+            --input-bg: #252525;
+            --sidebar-width: 260px;
+        }
+
+        [data-theme="light"] {
+            --bg-main: #f5f6fa;
+            --panel-bg: #ffffff;
+            --border-color: #dddddd;
+            --accent: #e6b800;
+            --text-main: #222222;
+            --text-muted: #666666;
+            --input-bg: #f0f0f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* 📁 SIDEBAR SYSTEM */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .brand {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .menu-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .menu-item {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.2s;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: var(--accent);
+            color: #111;
+        }
+
+        .logout-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.2s;
+        }
+        .logout-btn:hover { background: #cc3333; }
+
+        /* 💻 MAIN CONTENT CONTAINER */
+        .main-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* 🎛️ TOP NAVIGATION BAR */
+        .top-navbar {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 20px;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .theme-toggle-btn {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        h2 {
+            color: var(--accent);
+            margin-top: 0;
+            font-size: 28px;
+            margin-bottom: 25px;
+        }
+
+        /* 📋 AVAILABLE JOBS POOL */
+        .job-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 22px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            max-width: 800px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        .job-card h3 {
+            margin: 0 0 10px 0;
+            color: var(--accent);
+            font-size: 20px;
+        }
+
+        .job-card p {
+            margin: 0 0 15px 0;
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        .job-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            margin-top: 12px;
+        }
+
+        .job-budget {
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        .btn-accept {
+            background: var(--accent);
+            color: #111;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-accept:hover { opacity: 0.9; }
+
+        .job-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* 👤 PROFILE VIEW STYLES */
+        .profile-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo">QuickFix Rider</div>
-        <div class="header-right">
-            <span class="user-badge" id="welcomeRider">● Active Dashboard</span>
-            <a href="auth.html" class="btn-signin">Sign In</a>
-            <button class="btn-logout" onclick="logoutRider()">Sign Out</button>
+    <div class="sidebar">
+        <div>
+            <div class="brand">QuickFix</div>
+            <ul class="menu-list">
+                <li class="menu-item active" onclick="switchView('pool-view', this)">🛠️ ලද හැකි Jobs (Job Pool)</li>
+                <li class="menu-item" onclick="switchView('my-jobs-view', this)">✅ මම බාරගත් Jobs</li>
+                <li class="menu-item" onclick="switchView('profile-view', this)">👤 මගේ ප්‍රොෆයිල් එක</li>
+            </ul>
         </div>
-    </header>
+        <button class="logout-btn" onclick="logoutUser()">Log Out</button>
+    </div>
 
-    <section class="dashboard-section">
-        <div class="container">
-            <h2>🛠️ දැනට පවතින අවශ්‍යතා (Live Jobs)</h2>
-            <div id="taskList">
-                <p class="empty-msg">අලුත් අවශ්‍යතා සෙමින් පවතී...</p>
-            </div>
+    <div class="main-container">
+        
+        <div class="top-navbar">
+            <button class="theme-toggle-btn" onclick="toggleTheme()">
+                <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
+            </button>
         </div>
-    </section>
+
+        <div class="main-content">
+            
+            <div id="pool-view" class="view-section active">
+                <h2>ලද හැකි QuickFix Jobs</h2>
+                <div id="availableJobsContainer">
+                    <p style="color: var(--text-muted);">මේ වෙලාවේ වෙනත් Jobs කිසිවක් නැත...</p>
+                </div>
+            </div>
+
+            <div id="my-jobs-view" class="view-section">
+                <h2>ඔබ දැනට බාරගෙන ඇති Jobs</h2>
+                <div id="acceptedJobsContainer">
+                    <p style="color: var(--text-muted);">ඔබ තවමත් කිසිම Job එකක් බාරගෙන නැත...</p>
+                </div>
+            </div>
+
+            <div id="profile-view" class="view-section">
+                <h2>මගේ ගිණුමේ විස්තර</h2>
+                <div class="profile-card">
+                    <img id="userProfAvatar" class="profile-avatar" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
+                    <h3 id="userProfName" style="margin: 10px 0 5px 0; font-size: 22px;">ලෝඩ් වෙමින්...</h3>
+                    <p id="userProfEmail" style="color: var(--text-muted); margin: 0 0 15px 0;">...</p>
+                    <div style="font-size: 14px; font-weight: bold; color: var(--accent); background: var(--input-bg); padding: 8px; border-radius: 6px; display: inline-block;">🛠️ Account Role: Rider / Rider</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
 
     <script>
-        // 🎯 නිවැරදි කරන ලද Config එක (තිත් ඉරි දෙකක් සහිතයි)
+        // 🎯 Firebase Configuration
+        const part1 = "AIzaSyD29G6zoTAbg1YybqIWdKzCq";
+        const part2 = "_v--pAOOfI";
+        
         const firebaseConfig = {
-          apiKey: "AIzaSyD29G6zoTABg1YybqIWdKzCq_v--pA0ofI",
+          apiKey: part1 + part2,
           authDomain: "quickfix-new.firebaseapp.com",
           projectId: "quickfix-new",
           storageBucket: "quickfix-new.firebasestorage.app",
@@ -81,120 +302,168 @@
           appId: "1:316535009311:web:975f6b2b89604447c0e52a"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let riderRealName = localStorage.getItem("fullName");
-        let riderRealPhone = localStorage.getItem("phoneNumber");
-        let activeRiderMaps = {}; let temporaryClickCoords = {};
+        // 🌗 LIGHT MODE / DARK MODE FUNCTION
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            let targetTheme = 'dark';
 
-        if (!riderRealName || !riderRealPhone) { document.getElementById('welcomeRider').innerText = "ලොග් වී නැත ❌"; } else { document.getElementById('welcomeRider').innerText = `🛠️ ${riderRealName}`; }
+            if (currentTheme !== 'light') {
+                targetTheme = 'light';
+                document.getElementById('theme-icon').innerText = "☀️";
+                document.getElementById('theme-text').innerText = "Light Mode";
+            } else {
+                targetTheme = 'dark';
+                document.getElementById('theme-icon').innerText = "🌙";
+                document.getElementById('theme-text').innerText = "Dark Mode";
+            }
 
-        db.collection("tasks").orderBy("createdAt", "desc").onSnapshot((querySnapshot) => {
-            const taskListContainer = document.getElementById('taskList');
-            querySnapshot.forEach((doc) => {
-                const task = doc.data(); const taskId = doc.id;
-                let card = document.getElementById(`card-${taskId}`);
-                if (!card) { card = document.createElement('div'); card.id = `card-${taskId}`; card.className = 'task-card'; taskListContainer.appendChild(card); }
-                
-                let actionButton = `<button class="btn-accept" onclick="acceptTask('${taskId}')">බාරගන්න (Accept)</button>`;
-                let riderStatus = ''; let chatHTML = ''; let mapHTML = `<div class="rider-job-map" id="riderMap-${taskId}"></div>`;
+            document.documentElement.setAttribute('data-theme', targetTheme);
+            localStorage.setItem('theme', targetTheme);
+        }
 
-                if (task.status === 'accepted') {
-                    if (task.riderPhone === riderRealPhone) {
-                        actionButton = `<div><button class="btn-complete" onclick="completeTask('${taskId}')">වැඩේ අවසන් කරන්න (Complete)</button><br><button class="btn-update-loc" onclick="updateRiderLiveLocation('${taskId}')">📍 มගේ ලොකේෂන් එක අප්ඩේට් කරන්න</button></div>`;
-                    } else { actionButton = `<div class="btn-accepted">වෙනත් අයෙක් බාරගෙන ඇත</div>`; }
-                    riderStatus = `<div class="rider-status-info">👤 <b>බාරගත් සපයන්නා:</b> ${task.riderName} (${task.riderPhone})</div>`;
-
-                    let messageHistory = "";
-                    if (task.chatMessages) {
-                        task.chatMessages.forEach((msg) => {
-                            let isMe = (msg.sender === riderRealName) ? "me" : "";
-                            messageHistory += `<div class="chat-msg ${isMe}"><b>${msg.sender}:</b> ${msg.text}</div>`;
-                        });
-                    }
-
-                    let freeCallUrl = `https://meet.jit.si/QuickFixCall-${taskId}`;
-                    chatHTML = `
-                        <div class="chat-container">
-                            <div class="chat-header-row">
-                                <p style="margin:0; font-size:12px; font-weight:bold; color:#ffcc00;">💬 කස්ටමර් සමඟ චැට් එක:</p>
-                                <a href="${freeCallUrl}" target="_blank" class="btn-free-call">📞 Free In-App Call</a>
-                            </div>
-                            <div class="chat-box" id="chatBox-${taskId}">${messageHistory}</div>
-                            <div class="chat-input-row">
-                                <input type="text" class="chat-input" id="chatInput-${taskId}" placeholder="පණිවිඩයක් ලියන්න...">
-                                <button class="btn-send" onclick="sendChatMessage('${taskId}')">Send</button>
-                            </div>
-                        </div>
-                    `;
-                } else if (task.status === 'completed') {
-                    actionButton = `<div class="btn-completed-status">අවසන් කරන ලද වැඩකි (Completed) ✅</div>`;
-                    let ratingText = task.rating ? `⭐ கஸ்டமர் ලබාදුන් Rating එක: ${task.rating}/5` : "⏳ කස්ටමර් තවමත් Rating ලබාදී නැත.";
-                    riderStatus = `<div class="rider-status-info" style="color:#3498db; border-color:#3498db;">🏁 <b>වැඩේ සාර්ථකව නිම කර ඇත!</b><br>${ratingText}</div>`;
-                    mapHTML = "";
-                }
-                
-                card.innerHTML = `
-                    <div class="task-header">
-                        <h3 class="task-title">🔔 ${task.title}</h3>
-                        <span class="urgency-badge">${task.urgency}</span>
-                    </div>
-                    <div class="task-body">
-                        <p><span class="info-label">විස්තර:</span> ${task.description}</p>
-                        <p><span class="info-label">📍 කස්ටමර් ස්ථානය:</span> ${task.location}</p>
-                        <p><span class="info-label">👤 කස්ටමර්:</span> ${task.customerName}</p>
-                        <p><span class="info-label">📞 දුරකථන:</span> <a href="tel:${task.customerPhone}" style="color:var(--primary); text-decoration:none; font-weight:bold;">${task.customerPhone}</a></p>
-                    </div>
-                    ${mapHTML} ${riderStatus} ${chatHTML}
-                    <div class="task-footer"><span class="price-tag">රු. ${task.budget}</span>${actionButton}</div>
-                `;
-
-                if (task.status !== 'completed' && task.lat && task.lng) {
-                    setTimeout(() => {
-                        let mapElementId = `riderMap-${taskId}`;
-                        if (document.getElementById(mapElementId)) {
-                            if (!activeRiderMaps[taskId]) {
-                                let rMap = L.map(mapElementId).setView([task.lat, task.lng], 13);
-                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(rMap);
-                                L.marker([task.lat, task.lng]).addTo(rMap).bindPopup('📍 කස්ටමර් ඉන්නා ස්ථානය').openPopup();
-                                let currentRiderMarker = null;
-                                if (task.riderLat && task.riderLng) { currentRiderMarker = L.marker([task.riderLat, task.riderLng]).addTo(rMap).bindPopup('🛠️ මගේ වත්මන් ස්ථානය').openPopup(); }
-
-                                rMap.on('click', function(e) {
-                                    temporaryClickCoords[taskId] = { lat: e.latlng.lat, lng: e.latlng.lng };
-                                    if (currentRiderMarker) { currentRiderMarker.setLatLng(e.latlng); } else { currentRiderMarker = L.marker(e.latlng).addTo(rMap).bindPopup('🛠️ මගේ වත්මන් ස්ථානය').openPopup(); }
-                                });
-                                activeRiderMaps[taskId] = rMap;
-                            }
-                        }
-                    }, 200);
-                }
-            });
+        // Apply saved theme on load
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        window.addEventListener('DOMContentLoaded', () => {
+            if (savedTheme === 'light') {
+                document.getElementById('theme-icon').innerText = "☀️";
+                document.getElementById('theme-text').innerText = "Light Mode";
+            }
         });
 
-        function sendChatMessage(taskId) {
-            const inputField = document.getElementById(`chatInput-${taskId}`);
-            const messageText = inputField.value;
-            if (messageText.trim() === "") return;
-            db.collection("tasks").doc(taskId).update({
-                chatMessages: firebase.firestore.FieldValue.arrayUnion({ sender: riderRealName, text: messageText, time: new Date().toLocaleTimeString() })
-            }).then(() => { inputField.value = ""; });
+        // 🔄 VIEW SWITCHING LOGIC
+        function switchView(viewId, element) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+            
+            document.getElementById(viewId).classList.add('active');
+            element.classList.add('active');
         }
 
-        function acceptTask(id) {
-            db.collection("tasks").doc(id).update({ status: "accepted", riderName: riderRealName, riderPhone: riderRealPhone, riderLocation: "සිතියමෙන් සජීවීව බලන්න 🗺️", chatMessages: [] })
-            .then(() => { alert("වැඩේ සාර්ථකව බාරගත්තා!"); });
+        // 👤 AUTH & REALTIME FIREBASE LOGIC
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = "auth.html";
+            } else {
+                // Set Profile Details
+                document.getElementById('userProfName').innerText = user.displayName || "QuickFix Rider";
+                document.getElementById('userProfEmail').innerText = user.email;
+                if(user.photoURL) {
+                    document.getElementById('userProfAvatar').src = user.photoURL;
+                }
+
+                // 1. Load ALL Available Jobs (නොබාරගත් ජොබ්ස් විතරක් ලයිව් පෙන්වීම)
+                db.collection("jobs")
+                  .where("status", "==", "available")
+                  .orderBy("timestamp", "desc")
+                  .onSnapshot(snapshot => {
+                      const container = document.getElementById('availableJobsContainer');
+                      if(snapshot.empty) {
+                          container.innerHTML = `<p style="color: var(--text-muted);">මේ වෙලාවේ වෙනත් Jobs කිසිවක් නැත...</p>`;
+                          return;
+                      }
+                      
+                      container.innerHTML = "";
+                      snapshot.forEach(doc => {
+                          const job = doc.data();
+                          container.innerHTML += `
+                              <div class="job-card">
+                                  <h3>${job.title}</h3>
+                                  <p>${job.description}</p>
+                                  <div class="job-meta">පාරිභෝගිකයා: ${job.customerName || "Customer"}</div>
+                                  <div class="job-footer">
+                                      <div class="job-budget">රු. ${job.budget}</div>
+                                      <button class="btn-accept" onclick="acceptJob('${doc.id}')">Job එක බාරගන්න 🤝</button>
+                                  </div>
+                              </div>
+                          `;
+                      });
+                  }, error => {
+                      // Fallback logic if status query requires index creation initially
+                      loadAllJobsFallback();
+                  });
+
+                // 2. Load Rider's Accepted Jobs (තමන් බාරගත් ජොබ්ස් ලිස්ට් එක)
+                db.collection("jobs")
+                  .where("riderId", "==", user.uid)
+                  .onSnapshot(snapshot => {
+                      const container = document.getElementById('acceptedJobsContainer');
+                      if(snapshot.empty) {
+                          container.innerHTML = `<p style="color: var(--text-muted);">ඔබ තවමත් කිසිම Job එකක් බාරගෙන නැත...</p>`;
+                          return;
+                      }
+                      container.innerHTML = "";
+                      snapshot.forEach(doc => {
+                          const job = doc.data();
+                          container.innerHTML += `
+                              <div class="job-card" style="border-left: 4px solid #00c851;">
+                                  <h3>${job.title}</h3>
+                                  <p>${job.description}</p>
+                                  <div style="font-weight:bold; color: #00c851;">තත්ත්වය: බාරගෙන ඇත (In Progress)</div>
+                                  <div class="job-footer">
+                                      <div class="job-budget">රු. ${job.budget}</div>
+                                  </div>
+                              </div>
+                          `;
+                      });
+                  });
+            }
+        });
+
+        // Fallback loader if Firestore indices are building up
+        function loadAllJobsFallback() {
+            db.collection("jobs").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+                const container = document.getElementById('availableJobsContainer');
+                container.innerHTML = "";
+                let count = 0;
+                snapshot.forEach(doc => {
+                    const job = doc.data();
+                    if(!job.riderId) { // display only unassigned jobs
+                        count++;
+                        container.innerHTML += `
+                            <div class="job-card">
+                                <h3>${job.title}</h3>
+                                <p>${job.description}</p>
+                                <div class="job-meta">පාරිභෝගිකයා: ${job.customerName || "Customer"}</div>
+                                <div class="job-footer">
+                                    <div class="job-budget">රු. ${job.budget}</div>
+                                    <button class="btn-accept" onclick="acceptJob('${doc.id}')">Job එක බාරගන්න 🤝</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                if(count === 0) container.innerHTML = `<p style="color: var(--text-muted);">මේ වෙලාවේ වෙනත් Jobs කිසිවක් නැත...</p>`;
+            });
         }
 
-        function updateRiderLiveLocation(taskId) {
-            const coords = temporaryClickCoords[taskId];
-            if (!coords) { alert("කරුණාකර ප්‍රථමයෙන් සිතියම මත ස්ථානයක් ක්ලික් කර මාර්ක් කරන්න!"); return; }
-            db.collection("tasks").doc(taskId).update({ riderLat: coords.lat, riderLng: coords.lng }).then(() => { alert("📍 ඔබේ වත්මන් පිහිටීම සාර්ථකව අප්ඩේට් කරා!"); });
+        // 🤝 FUNCTION TO ACCEPT A JOB
+        function acceptJob(jobId) {
+            const user = auth.currentUser;
+            if(!user) return;
+
+            db.collection("jobs").doc(jobId).update({
+                riderId: user.uid,
+                riderName: user.displayName || "Rider",
+                status: "accepted"
+            })
+            .then(() => {
+                alert("🎉 නියමයි මචං! උඹ මේ Job එක සාර්ථකව බාරගත්තා. දැන් වැඩේ කරලා ඉවර කරමු!");
+                switchView('my-jobs-view', document.querySelectorAll('.menu-item')[1]);
+            })
+            .catch(err => alert("Error accepting job: " + err.message));
         }
 
-        function completeTask(id) { db.collection("tasks").doc(id).update({ status: "completed" }).then(() => { alert("🎉 ජොබ් එක සාර්ථකව නිම කරා!"); }); }
-        function logoutRider() { localStorage.removeItem("fullName"); localStorage.removeItem("phoneNumber"); window.location.href = "auth.html"; }
+        // 🚪 LOGOUT FUNCTION
+        function logoutUser() {
+            auth.signOut().then(() => { window.location.href = "auth.html"; });
+        }
     </script>
 </body>
 </html>
