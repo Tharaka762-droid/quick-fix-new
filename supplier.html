@@ -9,232 +9,43 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
-        /* 🎨 THEME VARIABLES */
         :root {
-            --bg-main: #121212;
-            --panel-bg: #1e1e1e;
-            --border-color: #333333;
-            --accent: #ffcc00;
-            --text-main: #ffffff;
-            --text-muted: #aaaaaa;
-            --input-bg: #252525;
-            --sidebar-width: 260px;
+            --bg-main: #121212; --panel-bg: #1e1e1e; --border-color: #333333; --accent: #ffcc00; --text-main: #ffffff; --text-muted: #aaaaaa; --input-bg: #252525; --sidebar-width: 260px;
         }
-
         [data-theme="light"] {
-            --bg-main: #f5f6fa;
-            --panel-bg: #ffffff;
-            --border-color: #dddddd;
-            --accent: #e6b800;
-            --text-main: #222222;
-            --text-muted: #666666;
-            --input-bg: #f0f0f0;
+            --bg-main: #f5f6fa; --panel-bg: #ffffff; --border-color: #dddddd; --accent: #e6b800; --text-main: #222222; --text-muted: #666666; --input-bg: #f0f0f0;
         }
-
         body {
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-            transition: background 0.3s, color 0.3s;
+            font-family: 'Segoe UI', sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; transition: background 0.3s, color 0.3s;
         }
-
-        /* 📁 SIDEBAR SYSTEM */
-        .sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--panel-bg);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px;
-            box-sizing: border-box;
-            transition: background 0.3s, border 0.3s;
-        }
-
-        .brand {
-            font-size: 26px;
-            font-weight: 800;
-            color: var(--accent);
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .menu-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            flex-grow: 1;
-        }
-
-        .menu-item {
-            padding: 14px 18px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: 0.2s;
-        }
-
-        .menu-item:hover, .menu-item.active {
-            background-color: var(--accent);
-            color: #111;
-        }
-
-        .logout-btn {
-            background: #ff4444;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            transition: 0.2s;
-        }
-        .logout-btn:hover { background: #cc3333; }
-
-        /* 💻 MAIN CONTENT CONTAINER */
-        .main-container {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        /* 🎛️ TOP NAVIGATION BAR */
-        .top-navbar {
-            background-color: var(--panel-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 15px 40px;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 20px;
-            transition: background 0.3s, border 0.3s;
-        }
-
-        .theme-toggle-btn {
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 8px 14px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.2s;
-        }
-
-        .main-content {
-            flex-grow: 1;
-            padding: 40px;
-            overflow-y: auto;
-            box-sizing: border-box;
-        }
-
-        .view-section {
-            display: none;
-        }
-
-        .view-section.active {
-            display: block;
-        }
-
-        h2 {
-            color: var(--accent);
-            margin-top: 0;
-            font-size: 28px;
-            margin-bottom: 25px;
-        }
-
-        /* 📋 AVAILABLE JOBS POOL */
-        .job-card {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            padding: 22px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            max-width: 800px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-            position: relative;
-        }
-
-        .job-card h3 {
-            margin: 0 0 10px 0;
-            color: var(--accent);
-            font-size: 20px;
-        }
-
-        .job-card p {
-            margin: 0 0 15px 0;
-            color: var(--text-main);
-            line-height: 1.5;
-        }
-
-        .job-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid var(--border-color);
-            padding-top: 12px;
-            margin-top: 12px;
-        }
-
-        .job-budget {
-            font-weight: bold;
-            color: var(--accent);
-            font-size: 18px;
-        }
-
-        .btn-accept {
-            background: var(--accent);
-            color: #111;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .btn-accept:hover { opacity: 0.9; }
-
-        .job-meta {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        /* 👤 PROFILE VIEW STYLES */
-        .profile-card {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            padding: 30px;
-            border-radius: 16px;
-            max-width: 450px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 3px solid var(--accent);
-            object-fit: cover;
-            margin-bottom: 15px;
-        }
+        .sidebar { width: var(--sidebar-width); background-color: var(--panel-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; padding: 20px; box-sizing: border-box; }
+        .brand { font-size: 26px; font-weight: 800; color: var(--accent); text-align: center; margin-bottom: 30px; }
+        .menu-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+        .menu-item { padding: 14px 18px; border-radius: 10px; margin-bottom: 8px; cursor: pointer; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 12px; transition: 0.2s; }
+        .menu-item:hover, .menu-item.active { background-color: var(--accent); color: #111; }
+        .logout-btn { background: #ff4444; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
+        .main-container { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; }
+        .top-navbar { background-color: var(--panel-bg); border-bottom: 1px solid var(--border-color); padding: 15px 40px; display: flex; justify-content: flex-end; align-items: center; }
+        .theme-toggle-btn { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 14px; border-radius: 20px; cursor: pointer; font-weight: 600; }
+        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; box-sizing: border-box; }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        h2 { color: var(--accent); margin-top: 0; font-size: 28px; }
+        .job-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 22px; border-radius: 12px; margin-bottom: 15px; max-width: 800px; }
+        .job-card h3 { margin: 0 0 10px 0; color: var(--accent); }
+        .job-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+        .btn-accept { background: var(--accent); color: #111; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        
+        /* 🗺️ NAVIGATION SYSTEM DISPLAY */
+        .nav-box { display: flex; gap: 20px; max-width: 900px; background: var(--panel-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 15px; }
+        #riderMap { width: 60%; height: 350px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .nav-details { width: 40%; }
+        .profile-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 30px; border-radius: 16px; max-width: 450px; text-align: center; }
+        .profile-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -252,26 +63,31 @@
     </div>
 
     <div class="main-container">
-        
         <div class="top-navbar">
-            <button class="theme-toggle-btn" onclick="toggleTheme()">
-                <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
-            </button>
+            <button class="theme-toggle-btn" onclick="toggleTheme()"><span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span></button>
         </div>
 
         <div class="main-content">
-            
             <div id="pool-view" class="view-section active">
                 <h2>ලද හැකි QuickFix Jobs</h2>
-                <div id="availableJobsContainer">
-                    <p style="color: var(--text-muted);">මේ වෙලාවේ වෙනත් Jobs කිසිවක් නැත...</p>
-                </div>
+                <div id="availableJobsContainer"></div>
             </div>
 
             <div id="my-jobs-view" class="view-section">
                 <h2>ඔබ දැනට බාරගෙන ඇති Jobs</h2>
-                <div id="acceptedJobsContainer">
-                    <p style="color: var(--text-muted);">ඔබ තවමත් කිසිම Job එකක් බාරගෙන නැත...</p>
+                <div id="acceptedJobsContainer"></div>
+                
+                <div id="navigationArea" style="display: none;">
+                    <h3 style="color: var(--accent); margin-top: 30px;">📌 පාරිභෝගිකයාගේ ලොකේෂන් සිතියම (Live Navigation)</h3>
+                    <div class="nav-box">
+                        <div id="riderMap"></div>
+                        <div class="nav-details">
+                            <h4>වැඩ විස්තර</h4>
+                            <p id="navTitle" style="font-weight: bold; color: var(--accent);"></p>
+                            <p id="navDesc"></p>
+                            <button class="logout-btn" style="background:#00c851;" onclick="completeJob()">වැඩේ සාර්ථකව අවසන් කරා ✅</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -279,191 +95,119 @@
                 <h2>මගේ ගිණුමේ විස්තර</h2>
                 <div class="profile-card">
                     <img id="userProfAvatar" class="profile-avatar" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
-                    <h3 id="userProfName" style="margin: 10px 0 5px 0; font-size: 22px;">ලෝඩ් වෙමින්...</h3>
-                    <p id="userProfEmail" style="color: var(--text-muted); margin: 0 0 15px 0;">...</p>
-                    <div style="font-size: 14px; font-weight: bold; color: var(--accent); background: var(--input-bg); padding: 8px; border-radius: 6px; display: inline-block;">🛠️ Account Role: Rider / Rider</div>
+                    <h3 id="userProfName">ලෝඩ් වෙමින්...</h3>
+                    <p id="userProfEmail">...</p>
                 </div>
             </div>
-
         </div>
     </div>
 
     <script>
-        // 🎯 Firebase Configuration
-        const part1 = "AIzaSyD29G6zoTAbg1YybqIWdKzCq";
-        const part2 = "_v--pAOOfI";
-        
-        const firebaseConfig = {
-          apiKey: part1 + part2,
-          authDomain: "quickfix-new.firebaseapp.com",
-          projectId: "quickfix-new",
-          storageBucket: "quickfix-new.firebasestorage.app",
-          messagingSenderId: "316535009311",
-          appId: "1:316535009311:web:975f6b2b89604447c0e52a"
-        };
+        const part1 = "AIzaSyD29G6zoTAbg1YybqIWdKzCq"; const part2 = "_v--pAOOfI";
+        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.firebasestorage.app", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth(), db = firebase.firestore();
 
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        let rMap, rMarker;
+        let activeJobId = null;
 
-        // 🌗 LIGHT MODE / DARK MODE FUNCTION
         function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            let targetTheme = 'dark';
-
-            if (currentTheme !== 'light') {
-                targetTheme = 'light';
-                document.getElementById('theme-icon').innerText = "☀️";
-                document.getElementById('theme-text').innerText = "Light Mode";
-            } else {
-                targetTheme = 'dark';
-                document.getElementById('theme-icon').innerText = "🌙";
-                document.getElementById('theme-text').innerText = "Dark Mode";
-            }
-
-            document.documentElement.setAttribute('data-theme', targetTheme);
-            localStorage.setItem('theme', targetTheme);
+            const current = document.documentElement.getAttribute('data-theme');
+            let target = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', target);
+            document.getElementById('theme-icon').innerText = target === 'light' ? "☀️" : "🌙";
         }
 
-        // Apply saved theme on load
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        window.addEventListener('DOMContentLoaded', () => {
-            if (savedTheme === 'light') {
-                document.getElementById('theme-icon').innerText = "☀️";
-                document.getElementById('theme-text').innerText = "Light Mode";
-            }
-        });
-
-        // 🔄 VIEW SWITCHING LOGIC
         function switchView(viewId, element) {
             document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
             document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-            
             document.getElementById(viewId).classList.add('active');
             element.classList.add('active');
         }
 
-        // 👤 AUTH & REALTIME FIREBASE LOGIC
         auth.onAuthStateChanged(user => {
-            if (!user) {
-                window.location.href = "auth.html";
-            } else {
-                // Set Profile Details
+            if (!user) { window.location.href = "auth.html"; }
+            else {
                 document.getElementById('userProfName').innerText = user.displayName || "QuickFix Rider";
                 document.getElementById('userProfEmail').innerText = user.email;
-                if(user.photoURL) {
-                    document.getElementById('userProfAvatar').src = user.photoURL;
-                }
+                if(user.photoURL) document.getElementById('userProfAvatar').src = user.photoURL;
 
-                // 1. Load ALL Available Jobs (නොබාරගත් ජොබ්ස් විතරක් ලයිව් පෙන්වීම)
-                db.collection("jobs")
-                  .where("status", "==", "available")
-                  .orderBy("timestamp", "desc")
-                  .onSnapshot(snapshot => {
-                      const container = document.getElementById('availableJobsContainer');
-                      if(snapshot.empty) {
-                          container.innerHTML = `<p style="color: var(--text-muted);">මේ වෙලාවේ වෙනත් Jobs කිසිවක් නැත...</p>`;
-                          return;
-                      }
-                      
-                      container.innerHTML = "";
-                      snapshot.forEach(doc => {
-                          const job = doc.data();
-                          container.innerHTML += `
-                              <div class="job-card">
-                                  <h3>${job.title}</h3>
-                                  <p>${job.description}</p>
-                                  <div class="job-meta">පාරිභෝගිකයා: ${job.customerName || "Customer"}</div>
-                                  <div class="job-footer">
-                                      <div class="job-budget">රු. ${job.budget}</div>
-                                      <button class="btn-accept" onclick="acceptJob('${doc.id}')">Job එක බාරගන්න 🤝</button>
-                                  </div>
-                              </div>
-                          `;
-                      });
-                  }, error => {
-                      // Fallback logic if status query requires index creation initially
-                      loadAllJobsFallback();
-                  });
-
-                // 2. Load Rider's Accepted Jobs (තමන් බාරගත් ජොබ්ස් ලිස්ට් එක)
-                db.collection("jobs")
-                  .where("riderId", "==", user.uid)
-                  .onSnapshot(snapshot => {
-                      const container = document.getElementById('acceptedJobsContainer');
-                      if(snapshot.empty) {
-                          container.innerHTML = `<p style="color: var(--text-muted);">ඔබ තවමත් කිසිම Job එකක් බාරගෙන නැත...</p>`;
-                          return;
-                      }
-                      container.innerHTML = "";
-                      snapshot.forEach(doc => {
-                          const job = doc.data();
-                          container.innerHTML += `
-                              <div class="job-card" style="border-left: 4px solid #00c851;">
-                                  <h3>${job.title}</h3>
-                                  <p>${job.description}</p>
-                                  <div style="font-weight:bold; color: #00c851;">තත්ත්වය: බාරගෙන ඇත (In Progress)</div>
-                                  <div class="job-footer">
-                                      <div class="job-budget">රු. ${job.budget}</div>
-                                  </div>
-                              </div>
-                          `;
-                      });
-                  });
-            }
-        });
-
-        // Fallback loader if Firestore indices are building up
-        function loadAllJobsFallback() {
-            db.collection("jobs").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-                const container = document.getElementById('availableJobsContainer');
-                container.innerHTML = "";
-                let count = 0;
-                snapshot.forEach(doc => {
-                    const job = doc.data();
-                    if(!job.riderId) { // display only unassigned jobs
-                        count++;
+                // Load Available jobs
+                db.collection("jobs").where("status", "==", "available").onSnapshot(snapshot => {
+                    const container = document.getElementById('availableJobsContainer');
+                    if(snapshot.empty) { container.innerHTML = "<p style='color:var(--text-muted)'>මේ වෙලාවේ වෙනත් Jobs කිසිවක් නැත...</p>"; return; }
+                    container.innerHTML = "";
+                    snapshot.forEach(doc => {
+                        const job = doc.data();
                         container.innerHTML += `
                             <div class="job-card">
                                 <h3>${job.title}</h3>
                                 <p>${job.description}</p>
-                                <div class="job-meta">පාරිභෝගිකයා: ${job.customerName || "Customer"}</div>
                                 <div class="job-footer">
-                                    <div class="job-budget">රු. ${job.budget}</div>
+                                    <div style="font-weight:bold;color:var(--accent)">රු. ${job.budget}</div>
                                     <button class="btn-accept" onclick="acceptJob('${doc.id}')">Job එක බාරගන්න 🤝</button>
                                 </div>
-                            </div>
-                        `;
-                    }
+                            </div>`;
+                    });
                 });
-                if(count === 0) container.innerHTML = `<p style="color: var(--text-muted);">මේ වෙලාවේ වෙනත් Jobs කිසිවක් නැත...</p>`;
+
+                // Load My accepted jobs
+                db.collection("jobs").where("riderId", "==", user.uid).where("status", "==", "accepted").onSnapshot(snapshot => {
+                    const container = document.getElementById('acceptedJobsContainer');
+                    if(snapshot.empty) { container.innerHTML = "<p style='color:var(--text-muted)'>ඔබ දැනට කිසිම වැඩක් බාරගෙන නැත...</p>"; document.getElementById('navigationArea').style.display = "none"; return; }
+                    container.innerHTML = "";
+                    snapshot.forEach(doc => {
+                        const job = doc.data();
+                        activeJobId = doc.id;
+                        container.innerHTML += `
+                            <div class="job-card" style="border-left:4px solid #00c851">
+                                <h3>${job.title}</h3>
+                                <p>${job.description}</p>
+                                <div style="font-weight:bold;color:#00c851">පාරිභෝගිකයා: ${job.customerName}</div>
+                            </div>`;
+                        
+                        // Show map navigation details
+                        document.getElementById('navigationArea').style.display = "block";
+                        document.getElementById('navTitle').innerText = job.title;
+                        document.getElementById('navDesc').innerText = job.description;
+                        
+                        setTimeout(() => { showNavigationMap(job.lat, job.lng); }, 300);
+                    });
+                });
+            }
+        });
+
+        function acceptJob(jobId) {
+            const user = auth.currentUser;
+            db.collection("jobs").doc(jobId).update({
+                riderId: user.uid, riderName: user.displayName, status: "accepted"
+            }).then(() => {
+                alert("🎉 Job එක සාර්ථකව බාරගත්තා මචං! ලොකේෂන් එක පහළින් බලාගන්න.");
+                switchView('my-jobs-view', document.querySelectorAll('.menu-item')[1]);
             });
         }
 
-        // 🤝 FUNCTION TO ACCEPT A JOB
-        function acceptJob(jobId) {
-            const user = auth.currentUser;
-            if(!user) return;
-
-            db.collection("jobs").doc(jobId).update({
-                riderId: user.uid,
-                riderName: user.displayName || "Rider",
-                status: "accepted"
-            })
-            .then(() => {
-                alert("🎉 නියමයි මචං! උඹ මේ Job එක සාර්ථකව බාරගත්තා. දැන් වැඩේ කරලා ඉවර කරමු!");
-                switchView('my-jobs-view', document.querySelectorAll('.menu-item')[1]);
-            })
-            .catch(err => alert("Error accepting job: " + err.message));
+        function showNavigationMap(lat, lng) {
+            if (!rMap) {
+                rMap = L.map('riderMap').setView([lat, lng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(rMap);
+                rMarker = L.marker([lat, lng]).addTo(rMap).bindPopup("කස්ටමර් මෙතන ඉන්නේ!📍").openPopup();
+            } else {
+                rMap.setView([lat, lng], 15);
+                rMarker.setLatLng([lat, lng]);
+            }
         }
 
-        // 🚪 LOGOUT FUNCTION
-        function logoutUser() {
-            auth.signOut().then(() => { window.location.href = "auth.html"; });
+        function completeJob() {
+            if(!activeJobId) return;
+            db.collection("jobs").doc(activeJobId).update({ status: "completed" }).then(() => {
+                alert("✅ නියමයි මචං! වැඩේ සාර්ථකව අවසන් කරා. දැන් ඊළඟ Job එකට ලෑස්ති වෙමු!");
+                document.getElementById('navigationArea').style.display = "none";
+                switchView('pool-view', document.querySelectorAll('.menu-item')[0]);
+            });
         }
+
+        function logoutUser() { auth.signOut().then(() => { window.location.href = "auth.html"; }); }
     </script>
 </body>
 </html>
