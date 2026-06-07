@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickFix - Customer</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f9fc; margin: 0; padding: 0; }
+        header { background: #1a1a1a; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: bold; }
+        .logo { color: #ffcc00; }
+        .booking-section { padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 30px; }
+        .form-container, .my-tasks-container { max-width: 550px; width: 100%; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #eee; box-sizing: border-box; }
+        .input-group { text-align: left; margin-bottom: 20px; }
+        .input-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; font-size: 14px; }
+        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 14px; background: #fafafa; }
+        .btn-submit { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; color: #111; background-color: #ffcc00; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; background: #f1f2f6; padding: 12px; border-radius: 8px; cursor: pointer; }
+        .alt-contact-box { background: #fffdf0; border: 1px dashed #ffcc00; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        .my-task-card { background: #fff; border-left: 5px solid #ffcc00; padding: 15px; border-radius: 8px; margin-top: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); border: 1px solid #eee; text-align: left; }
+        .status-pending { color: #f39c12; font-weight: bold; }
+        .status-accepted { color: #2ecc71; font-weight: bold; }
+        .rider-info-box { background: #f0fff4; border: 1px solid #2ecc71; padding: 12px; border-radius: 8px; margin-top: 10px; }
+        .hidden { display: none; }
+    </style>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <header>
+        <div class="logo">QuickFix</div>
+        <div style="color: #ffcc00; font-size: 16px;" id="welcomeUser">👋 සාදරයෙන් පිළිගන්නවා</div>
+    </header>
+
+    <section class="booking-section">
+        <div class="form-container">
+            <h2>ඔබේ හදිසි අවශ්‍යතාවය පළ කරන්න 🚀</h2>
+            <form id="quickfixTaskForm">
+                <div class="input-group">
+                    <label>කරගත යුතු වැඩේ (Task Title)</label>
+                    <input type="text" id="task-title" placeholder="උදා: බයික් එක පන්චර්..." required>
+                </div>
+                <div class="input-group">
+                    <label>විස්තර (Details)</label>
+                    <textarea id="task-desc" rows="3" placeholder="වැඩේ ගැන විස්තරයක් ලියන්න..." required></textarea>
+                </div>
+                <div class="input-group">
+                    <label>📍 ඔබේ ස්ථානය (Location)</label>
+                    <input type="text" id="task-location" placeholder="උදා: වැල්ලවාය හන්දිය අසල" required>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div class="input-group" style="width: 50%;">
+                        <label>Urgency</label>
+                        <select id="urgency" required>
+                            <option value="වහාම අවශ්‍යයි">වහාම අවශ්‍යයි</option>
+                            <option value="අද දවස ඇතුලත">අද දවස ඇතුලත</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="width: 50%;">
+                        <label>ගෙවිය හැකි මුදල (රු.)</label>
+                        <input type="number" id="budget" placeholder="1000" required>
+                    </div>
+                </div>
+
+                <div class="checkbox-group" onclick="toggleAltContact()">
+                    <input type="checkbox" id="useAltContact">
+                    <label for="useAltContact" style="font-weight: bold; cursor: pointer; font-size: 14px;">වෙනත් අයෙකු සඳහා අවශ්‍යතාවය පළ කරන්න</label>
+                </div>
+
+                <div id="altContactFields" class="alt-contact-box hidden">
+                    <h4 style="margin: 0 0 10px 0; color: #e67e22;">⚠️ සම්බන්ධ කරගත යුතු පුද්ගලයාගේ විස්තර:</h4>
+                    <div class="input-group">
+                        <label>නම</label>
+                        <input type="text" id="altName" placeholder="කමල් පෙරේරා">
+                    </div>
+                    <div class="input-group">
+                        <label>දුරකථන අංකය</label>
+                        <input type="tel" id="altPhone" placeholder="07XXXXXXXX">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">Post Task</button>
+            </form>
+        </div>
+
+        <div class="my-tasks-container">
+            <h3>📋 ඔබේ සක්‍රීය අවශ්‍යතා සහ තත්ත්වය (Live Tracking)</h3>
+            <div id="myTasksList">
+                <p style="color: #888; text-align: center;">තවමත් ඔබ කිසිදු අවශ්‍යතාවයක් පළ කර නැත.</p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyD29G6zoTABg1YybqIWdKzCq_v--pA0oFI",
+          authDomain: "quickfix-new.firebaseapp.com",
+          projectId: "quickfix-new",
+          storageBucket: "quickfix-new.firebasestorage.app",
+          messagingSenderId: "316535009311",
+          appId: "1:316535009311:web:975f6b2b89604447c0e52a"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // 🚀 LocalStorage එකෙන් දත්ත නිවැරදිව කියවීම
+        let realName = localStorage.getItem("fullName") || "කස්ටමර්";
+        let realPhone = localStorage.getItem("phoneNumber") || "0755191747";
+        document.getElementById('welcomeUser').innerText = `👋 ${realName} (${realPhone})`;
+
+        function toggleAltContact() {
+            const checkBox = document.getElementById("useAltContact");
+            const altFields = document.getElementById("altContactFields");
+            if (checkBox.checked) {
+                altFields.classList.remove("hidden");
+            } else {
+                altFields.classList.add("hidden");
+            }
+        }
+
+        // POST TASK
+        document.getElementById('quickfixTaskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const isAltUsed = document.getElementById("useAltContact").checked;
+
+            let finalCustomerName = realName;
+            let finalCustomerPhone = realPhone;
+
+            if (isAltUsed) {
+                finalCustomerName = document.getElementById('altName').value;
+                finalCustomerPhone = document.getElementById('altPhone').value;
+            }
+
+            db.collection("tasks").add({
+                title: document.getElementById('task-title').value,
+                description: document.getElementById('task-desc').value,
+                location: document.getElementById('task-location').value,
+                urgency: document.getElementById('urgency').value,
+                budget: document.getElementById('budget').value,
+                customerName: finalCustomerName,
+                customerPhone: finalCustomerPhone,
+                byUserPhone: realPhone, // 👈 Index ප්‍රශ්න නැතුව ලයිව් ට්‍රැක් කරන්න මේක පාවිච්චි කරනවා
+                status: "pending",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                alert("🚀 අවශ්‍යතාවය සාර්ථකව පළ කරා!");
+                document.getElementById('quickfixTaskForm').reset();
+                if(isAltUsed) {
+                    document.getElementById("useAltContact").checked = false;
+                    toggleAltContact();
+                }
+            });
+        });
+
+        // 🚀 ලයිව් ට්‍රැකින්ග් කොටස (Firebase Index ප්‍රශ්න එන්නේ නැති සරලම ක්‍රමය)
+        db.collection("tasks").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+            const list = document.getElementById("myTasksList");
+            list.innerHTML = "";
+            let hasTasks = false;
+
+            snapshot.forEach((doc) => {
+                const task = doc.data();
+                
+                // දැනට ලොග් වෙලා ඉන්න කෙනාගේ ජොබ්ස් විතරක් පෙරලා පෙන්වනවා
+                if (task.byUserPhone === realPhone) {
+                    hasTasks = true;
+                    let riderHTML = "";
+                    let statusText = `<span class="status-pending">සපයන්නෙකු සොයමින්... ⏳</span>`;
+                    
+                    if (task.status === "accepted") {
+                        statusText = `<span class="status-accepted">සපයන්නෙකු බාරගෙන ඇත! ✅</span>`;
+                        riderHTML = `
+                            <div class="rider-info-box">
+                                <p style="margin:0; font-weight:bold; color:#27ae60;">🛠️ පැමිණෙන සපයන්නාගේ විස්තර:</p>
+                                <p style="margin:5px 0 0 0;"><b>නම:</b> ${task.riderName}</p>
+                                <p style="margin:3px 0 0 0;"><b>දුරකථන:</b> <a href="tel:${task.riderPhone}">${task.riderPhone}</a></p>
+                                <p style="margin:3px 0 0 0;"><b>ලොකේෂන්:</b> <a href="${task.riderLocation}" target="_blank" style="color: #3498db; font-weight:bold;">මැප් එකෙන් බලන්න 🗺️</a></p>
+                            </div>
+                        `;
+                    }
+
+                    list.innerHTML += `
+                        <div class="my-task-card">
+                            <h4>🔔 ${task.title} - රු. ${task.budget}</h4>
+                            <p style="margin:5px 0;"><b>විස්තර:</b> ${task.description}</p>
+                            <p style="margin:5px 0;"><b>තත්ත්වය:</b> ${statusText}</p>
+                            ${riderHTML}
+                        </div>
+                    `;
+                }
+            });
+
+            if (!hasTasks) {
+                list.innerHTML = "<p style='color: #888; text-align: center;'>සක්‍රීය අවශ්‍යතා කිසිවක් නැත.</p>";
+            }
+        });
+    </script>
+</body>
+</html>

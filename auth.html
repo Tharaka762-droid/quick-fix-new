@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickFix - Login & Sign Up</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f9fc; margin: 0; padding: 0; }
+        .auth-container { max-width: 450px; margin: 60px auto; padding: 35px; background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; border: 1px solid #eee; box-sizing: border-box; }
+        
+        /* Form Toggle Tabs */
+        .form-toggle { display: flex; justify-content: space-between; margin-bottom: 30px; background: #f1f2f6; padding: 5px; border-radius: 10px; }
+        .tab-btn { width: 50%; padding: 12px; font-weight: bold; cursor: pointer; border: none; background: transparent; border-radius: 8px; font-size: 14px; transition: all 0.3s ease; color: #555; }
+        .tab-btn.active { background: #ffcc00; color: #111; box-shadow: 0 4px 10px rgba(255,204,0,0.2); }
+        
+        /* Input Styling */
+        .input-group { text-align: left; margin-bottom: 20px; }
+        .input-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; font-size: 14px; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 14px; background: #fafafa; }
+        .input-group input:focus { border-color: #ffcc00; background: #fff; outline: none; }
+        
+        /* Role Selector */
+        .role-selector { display: flex; justify-content: space-between; margin-bottom: 25px; gap: 10px; }
+        .role-box { width: 50%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 14px; text-align: center; background: #fff; }
+        .role-box.active { border-color: #ffcc00; background: #fffdf0; box-shadow: 0 4px 12px rgba(255,204,0,0.1); }
+        
+        /* Action Buttons */
+        .btn-submit { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; color: #111; background-color: #ffcc00; }
+        .btn-submit:hover { opacity: 0.9; }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <h1 style="color: #ffcc00; margin: 0 0 5px 0; font-size: 32px; font-weight: 800;">QuickFix</h1>
+        <p style="color: #777; margin: 0 0 30px 0; font-size: 14px;">ඔබේ හදිසි අවශ්‍යතාවලට වේගවත්ම විසඳුම</p>
+
+        <div class="form-toggle">
+            <button id="loginTab" class="tab-btn active" onclick="switchTab('login')">ඇතුල් වන්න (Login)</button>
+            <button id="signupTab" class="tab-btn" onclick="switchTab('signup')">ගිණුමක් සාදන්න</button>
+        </div>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <label>ඊමේල් ලිපිනය (Email)</label>
+                <input type="email" id="loginEmail" placeholder="example@gmail.com" required>
+            </div>
+            <div class="input-group">
+                <label>මුරපදය (Password)</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-submit">ඇතුල් වන්න</button>
+        </form>
+
+        <form id="signupForm" class="hidden">
+            <p style="text-align: left; font-weight: bold; margin: 0 0 10px 0; color: #444; font-size: 14px;">ඔබේ භූමිකාව තෝරන්න:</p>
+            <div class="role-selector">
+                <div id="roleCust" class="role-box active" onclick="selectRole('customer')">🙋‍♂️ කස්ටමර්</div>
+                <div id="roleSupp" class="role-box" onclick="selectRole('supplier')">🛠️ සපයන්නා (Rider)</div>
+            </div>
+
+            <div class="input-group">
+                <label>සම්පූර්ණ නම</label>
+                <input type="text" id="signupName" placeholder="John Doe" required>
+            </div>
+            <div class="input-group">
+                <label>දුරකථන අංකය</label>
+                <input type="tel" id="signupPhone" placeholder="07XXXXXXXX" required>
+            </div>
+            <div class="input-group">
+                <label>ඊමේල් ලිපිනය</label>
+                <input type="email" id="signupEmail" placeholder="example@gmail.com" required>
+            </div>
+            <div class="input-group">
+                <label>නව මුරපදය (අවම അකුරු 6ක්)</label>
+                <input type="password" id="signupPassword" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-submit" style="background-color: #1a1a1a; color:#ffcc00;">රෙජිස්ටර් වෙන්න</button>
+        </form>
+    </div>
+
+    <script>
+        let currentRole = 'customer';
+
+        function switchTab(type) {
+            if (type === 'login') {
+                document.getElementById('loginForm').classList.remove('hidden');
+                document.getElementById('signupForm').classList.add('hidden');
+                document.getElementById('loginTab').classList.add('active');
+                document.getElementById('signupTab').classList.remove('active');
+            } else {
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('signupForm').classList.remove('hidden');
+                document.getElementById('loginTab').classList.remove('active');
+                document.getElementById('signupTab').classList.add('active');
+            }
+        }
+
+        function selectRole(role) {
+            currentRole = role;
+            if (role === 'customer') {
+                document.getElementById('roleCust').classList.add('active');
+                document.getElementById('roleSupp').classList.remove('active');
+            } else {
+                document.getElementById('roleSupp').classList.add('active');
+                document.getElementById('roleCust').classList.remove('active');
+            }
+        }
+
+        // 🚀 SIGN UP LOGIC
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('signupName').value;
+            const phone = document.getElementById('signupPhone').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            // 🔔 ඇප් එක පුරාම පැටලෙන්නේ නැතුව කියවන්න නම සහ ෆෝන් නම්බර් එක වෙන වෙනම මතකයේ තියාගන්නවා
+            localStorage.setItem("fullName", name);
+            localStorage.setItem("phoneNumber", phone);
+
+            // මුළු යූසර් ප්‍රොෆයිල් එකම සේව් කිරීම
+            const userData = { fullName: name, phoneNumber: phone, email: email, password: password, role: currentRole };
+            localStorage.setItem(email, JSON.stringify(userData));
+
+            alert("🚀 ගිණුම සාර්ථකව සෑදුවා! දැන් ඔබට ඇතුල් විය හැක.");
+            document.getElementById('signupForm').reset();
+            switchTab('login');
+        });
+
+        // 🚀 LOGIN LOGIC
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const storedUser = localStorage.getItem(email);
+
+            if (storedUser) {
+                const userData = JSON.parse(storedUser);
+                
+                if (userData.password === password) {
+                    // 🔔 ලොග් වෙන වෙලාවෙත් දැනට ඇක්ටිව් කෙනාගේ නමයි නම්බර් එකයි සිස්ටම් එකට මතක් කරලා දෙනවා
+                    localStorage.setItem("fullName", userData.fullName);
+                    localStorage.setItem("phoneNumber", userData.phoneNumber);
+
+                    if (userData.role === 'customer') {
+                        alert("🙋‍♂️ සාදරයෙන් පිළිගන්නවා කස්ටමර්!");
+                        window.location.href = "customer.html";
+                    } else if (userData.role === 'supplier') {
+                        alert("🛠️ සාදරයෙන් පිළිගන්නවා සපයන්නා!");
+                        window.location.href = "supplier.html";
+                    }
+                } else {
+                    alert("ඇතුල් වීම අසාර්ථකයි: මුරපදය (Password) වැරදියි!");
+                }
+            } else {
+                alert("ඇතුල් වීම අසාර්ථකයි: මෙවැනි ඊමේල් ලිපිනයක් සොයාගත නොහැක!");
+            }
+        });
+    </script>
+</body>
+</html>
