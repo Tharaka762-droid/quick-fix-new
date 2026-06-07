@@ -50,9 +50,11 @@
         .chat-input-area input { flex-grow: 1; border: none; padding: 12px; background: transparent; color: var(--text-main); outline: none; }
         .chat-input-area button { background: var(--accent); border: none; padding: 0 15px; font-weight: bold; color: #111; cursor: pointer; }
 
+        /* 📞 CALL DISPLAY STYLES */
+        .call-btn { background: #00c851; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 14px; cursor: pointer; }
+
         .otp-verify-area { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-top: 15px; max-width: 400px; }
         .otp-verify-area input { padding: 10px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; color: white; width: 120px; text-align: center; font-size: 16px; outline: none; font-weight: bold; }
-
         .profile-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 35px; border-radius: 16px; max-width: 450px; text-align: center; margin-top: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .profile-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; margin-bottom: 15px; }
     </style>
@@ -87,6 +89,8 @@
                 <div id="acceptedJobsContainer"></div>
                 
                 <div id="navigationArea" style="display: none;">
+                    <a id="btnClickToCall" href="#" class="call-btn">📞 පාරිභෝගිකයා අමතන්න (Call Customer)</a>
+                    
                     <div class="workspace-box">
                         <div id="riderMap"></div>
                         <div class="chat-panel">
@@ -113,7 +117,7 @@
                     <img id="userProfAvatar" class="profile-avatar" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
                     <h3 id="userProfName" style="margin: 10px 0 5px 0; font-size: 24px;">ලෝඩ් වෙමින්...</h3>
                     <p id="userProfEmail" style="color: var(--text-muted); margin: 0 0 15px 0;">...</p>
-                    <div style="font-size: 14px; font-weight: bold; color: var(--accent); background: var(--input-bg); padding: 8px 15px; border-radius: 6px; display: inline-block;">🛠️ Account Role: Rider / Rider</div>
+                    <div style="font-size: 14px; font-weight: bold; color: var(--accent); background: var(--input-bg); padding: 8px 15px; border-radius: 6px; display: inline-block;">🛠️ Account Role: Rider</div>
                 </div>
             </div>
         </div>
@@ -160,7 +164,8 @@
                                 <h3>${job.title}</h3>
                                 <p>${job.description}</p>
                                 ${jobImgTag}
-                                <div class="job-footer"><div style="font-weight:bold;color:var(--accent); margin-top:5px;">රු. ${job.budget}</div>
+                                <div style="font-size:13px; color:#aaa; margin:5px 0;">🙋‍♂️ පාරිභෝගිකයා: ${job.customerName}</div>
+                                <div class="job-footer"><div style="font-weight:bold;color:var(--accent);">රු. ${job.budget}</div>
                                 <button class="btn-accept" onclick="acceptJob('${doc.id}')">Job එක බාරගන්න 🤝</button></div>
                             </div>`;
                     });
@@ -174,8 +179,21 @@
                         const job = doc.data();
                         activeJobId = doc.id;
                         activeJobRealOTP = job.otpCode;
-                        container.innerHTML += `<div class="job-card" style="border-left:4px solid #00c851"><h3>${job.title}</h3><p>පාරිභෝගිකයා: ${job.customerName}</p></div>`;
                         
+                        container.innerHTML += `
+                            <div class="job-card" style="border-left:4px solid #00c851">
+                                <h3>${job.title}</h3>
+                                <p>පාරිභෝගිකයා: ${job.customerName} | 📱 දුරකථනය: ${job.customerPhone || 'නැත'}</p>
+                            </div>`;
+                        
+                        // 📞 ACCURATE LINK TO CALL SYSTEM TRIGGERED
+                        if (job.customerPhone && job.customerPhone !== "නැත") {
+                            document.getElementById('btnClickToCall').href = "tel:" + job.customerPhone;
+                            document.getElementById('btnClickToCall').style.display = "inline-flex";
+                        } else {
+                            document.getElementById('btnClickToCall').style.display = "none";
+                        }
+
                         document.getElementById('navigationArea').style.display = "block";
                         setTimeout(() => { showNavigationMap(job.lat, job.lng); }, 300);
                         listenToRiderChat(doc.id);
@@ -187,6 +205,8 @@
         function listenToRiderChat(jobId) {
             const msgContainer = document.getElementById('riderChatMessages');
             if(chatListener) chatListener();
+            
+            // 🔄 FIXED TWO-WAY REALTIME CHAT FOR RIDER SIDE TOO
             chatListener = db.collection("jobs").doc(jobId).collection("messages").orderBy("timestamp", "asc").onSnapshot(snapshot => {
                 msgContainer.innerHTML = "";
                 snapshot.forEach(doc => {
@@ -201,6 +221,8 @@
         document.getElementById('riderChatForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const input = document.getElementById('riderChatMsgInput');
+            if(!input.value.trim() || !activeJobId) return;
+
             db.collection("jobs").doc(activeJobId).collection("messages").add({
                 text: input.value.trim(), senderId: auth.currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => { input.value = ""; });
@@ -213,11 +235,12 @@
         }
 
         function showNavigationMap(lat, lng) {
+            // 🎯 MAP HIGH ACCURACY SYNCED
             if (!rMap) {
-                rMap = L.map('riderMap').setView([lat, lng], 15);
+                rMap = L.map('riderMap').setView([lat, lng], 16);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(rMap);
-                rMarker = L.marker([lat, lng]).addTo(rMap);
-            } else { rMap.setView([lat, lng], 15); rMarker.setLatLng([lat, lng]); }
+                rMarker = L.marker([lat, lng]).addTo(rMap).bindPopup("කස්ටමර් ඉන්නේ මෙතන 📍").openPopup();
+            } else { rMap.setView([lat, lng], 16); rMarker.setLatLng([lat, lng]); }
         }
 
         function completeJobWithOTP() {
