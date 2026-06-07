@@ -3,106 +3,328 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickFix - Multi-Auth Secure</title>
+    <title>QuickFix - Customer Dashboard</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; background-color: #121212; margin: 0; padding: 0; color: #fff; }
-        .auth-container { max-width: 450px; margin: 30px auto; padding: 35px; background: #1e1e1e; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #333; box-sizing: border-box; }
-        .lang-container { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 20px; }
-        .lang-btn { background: #2b2b2b; color: #aaa; border: 1px solid #444; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
-        .lang-btn.active { background: #ffcc00; color: #111; border-color: #ffcc00; }
-        .logo { color: #ffcc00; margin: 0 0 5px 0; font-size: 32px; font-weight: 800; text-align: center; }
-        .subtitle { color: #777; margin: 0 0 25px 0; font-size: 14px; text-align: center; }
-        .form-toggle { display: flex; justify-content: space-between; margin-bottom: 25px; background: #252525; padding: 5px; border-radius: 10px; border: 1px solid #333; }
-        .tab-btn { width: 50%; padding: 12px; font-weight: bold; cursor: pointer; border: none; background: transparent; border-radius: 8px; font-size: 14px; color: #aaa; }
-        .tab-btn.active { background: #ffcc00; color: #111; }
-        .role-selector { display: flex; justify-content: space-between; margin-bottom: 25px; gap: 10px; }
-        .role-box { width: 50%; padding: 14px; border: 1px solid #444; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 14px; text-align: center; background: #2b2b2b; color: #aaa; }
-        .role-box.active { border-color: #ffcc00; background: #221f15; color: #ffcc00; }
-        .social-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
-        .social-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; transition: 0.2s; }
-        .btn-google { background: #df4a32; }
-        .social-btn:hover { opacity: 0.9; }
-        .divider { display: flex; align-items: center; text-align: center; color: #555; margin: 20px 0; font-size: 12px; font-weight: bold; }
-        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #333; }
-        .profile-upload-container { margin-bottom: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .avatar-preview { width: 100px; height: 100px; border-radius: 50%; background: #2b2b2b; border: 2px dashed #ffcc00; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
-        .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .input-group { text-align: left; margin-bottom: 18px; }
-        .input-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #ffcc00; font-size: 13px; }
-        .input-group input { width: 100%; padding: 12px; border: 1px solid #444; border-radius: 8px; box-sizing: border-box; font-size: 14px; background: #2b2b2b; color: #fff; outline: none; }
-        .btn-submit { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; color: #111; background-color: #ffcc00; }
-        .hidden { display: none; }
+        /* 🎨 THEME VARIABLES */
+        :root {
+            --bg-main: #121212;
+            --panel-bg: #1e1e1e;
+            --border-color: #333333;
+            --accent: #ffcc00;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+            --input-bg: #252525;
+            --sidebar-width: 260px;
+        }
+
+        [data-theme="light"] {
+            --bg-main: #f5f6fa;
+            --panel-bg: #ffffff;
+            --border-color: #dddddd;
+            --accent: #e6b800;
+            --text-main: #222222;
+            --text-muted: #666666;
+            --input-bg: #f0f0f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* 📁 SIDEBAR SYSTEM */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .brand {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .menu-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .menu-item {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.2s;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: var(--accent);
+            color: #111;
+        }
+
+        .logout-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.2s;
+        }
+        .logout-btn:hover { background: #cc3333; }
+
+        /* 💻 MAIN CONTENT CONTAINER */
+        .main-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* 🎛️ TOP NAVIGATION BAR */
+        .top-navbar {
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 20px;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .theme-toggle-btn {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        h2 {
+            color: var(--accent);
+            margin-top: 0;
+            font-size: 28px;
+            margin-bottom: 25px;
+        }
+
+        /* 👤 PROFILE VIEW STYLES */
+        .profile-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+
+        /* 💼 JOB POST FORM STYLES */
+        .form-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 600px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            box-sizing: border-box;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .btn-post {
+            background: var(--accent);
+            color: #111;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: 0.2s;
+        }
+        .btn-post:hover { opacity: 0.9; }
+
+        /* 📋 JOB FEED LIST */
+        .job-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 22px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            max-width: 800px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .job-card h3 {
+            margin: 0 0 10px 0;
+            color: var(--accent);
+            font-size: 20px;
+        }
+
+        .job-card p {
+            margin: 0 0 12px 0;
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        .job-meta {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 10px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="auth-container">
-        <div class="lang-container">
-            <button id="lang-si" class="lang-btn active" onclick="changeLanguage('si')">සිංහල</button>
-            <button id="lang-en" class="lang-btn" onclick="changeLanguage('en')">English</button>
-            <button id="lang-ta" class="lang-btn" onclick="changeLanguage('ta')">தமிழ்</button>
+    <div class="sidebar">
+        <div>
+            <div class="brand">QuickFix</div>
+            <ul class="menu-list">
+                <li class="menu-item active" onclick="switchView('feed-view', this)">📋 මගේ Jobs ලිස්ට් එක</li>
+                <li class="menu-item" onclick="switchView('post-view', this)">🛠️ අලුත් Job එකක් දාන්න</li>
+                <li class="menu-item" onclick="switchView('profile-view', this)">👤 මගේ ප්‍රොෆයිල් එක</li>
+            </ul>
+        </div>
+        <button class="logout-btn" onclick="logoutUser()">Log Out</button>
+    </div>
+
+    <div class="main-container">
+        
+        <div class="top-navbar">
+            <button class="theme-toggle-btn" onclick="toggleTheme()">
+                <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
+            </button>
         </div>
 
-        <h1 class="logo">QuickFix</h1>
-        <p class="subtitle" id="txt-subtitle">ඔබේ ගිණුමට ඇතුල් වන්න හෝ සාදන්න</p>
-
-        <div class="social-container">
-            <button class="social-btn btn-google" id="txt-btn-google" onclick="loginWithGoogle()">🌐 Continue with Google</button>
-        </div>
-
-        <div class="divider" id="txt-divider">නැතහොත් වෙනත් ක්‍රමයකින්</div>
-
-        <div class="form-toggle">
-            <button id="loginTab" class="tab-btn active" onclick="switchTab('login')">Login</button>
-            <button id="signupTab" class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
-        </div>
-
-        <div id="roleSelectionArea" class="hidden">
-            <p style="text-align: left; font-weight: bold; margin: 0 0 10px 0; color: #aaa; font-size: 13px;" id="txt-select-role">ඔබේ භූමිකාව තෝරන්න:</p>
-            <div class="role-selector">
-                <div id="roleCust" class="role-box active" onclick="selectRole('customer')">🙋‍♂️ <span id="txt-role-customer">කස්ටමර්</span></div>
-                <div id="roleSupp" class="role-box" onclick="selectRole('supplier')">🛠️ <span id="txt-role-supplier">රයිඩර්</span></div>
-            </div>
-
-            <div class="profile-upload-container">
-                <div class="avatar-preview" onclick="triggerPhotoUpload()">
-                    <div id="uploadPlaceholder" style="font-size: 30px; color: #777;">📷</div>
-                    <img id="avatarImage" class="hidden" src="" alt="Profile Preview">
+        <div class="main-content">
+            
+            <div id="feed-view" class="view-section active">
+                <h2>ඔබ පෝස්ට් කරපු Jobs</h2>
+                <div id="jobsContainer">
+                    <p style="color: var(--text-muted);">තාම කිසිම Job එකක් පෝස්ට් කරලා නැහැ...</p>
                 </div>
-                <label style="font-size: 12px; color: #ffcc00; margin-top: 8px; font-weight: bold; cursor: pointer;" id="txt-upload-label" onclick="triggerPhotoUpload()">ප්‍රොෆයිල් පිංතූරයක් දාන්න</label>
-                <input type="file" id="profilePhotoInput" accept="image/*" class="hidden" onchange="previewAndSavePhoto(this)">
             </div>
 
-            <div class="input-group">
-                <label id="txt-lbl-name">ඔබේ සම්පූර්ණ නම</label>
-                <input type="text" id="authName" placeholder="Kamal Perera">
+            <div id="post-view" class="view-section">
+                <h2>අලුත් QuickFix වැඩක් පෝස්ට් කරන්න</h2>
+                <div class="form-card">
+                    <form id="jobPostForm">
+                        <div class="form-group">
+                            <label>වැඩේ මාතෘකාව (Title)</label>
+                            <input type="text" id="jobTitle" placeholder="උදා: බයික් එකේ එන්ජින් ඔයිල් මාරු කරගන්න" required>
+                        </div>
+                        <div class="form-group">
+                            <label>වැඩේ විස්තරය (Description)</label>
+                            <textarea id="jobDesc" rows="4" placeholder="කරගන්න ඕනේ දේ පැහැදිලිව ලියන්න..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>ඔබ දෙන මුදල (Budget - LKR)</label>
+                            <input type="number" id="jobBudget" placeholder="රු. 1500" required>
+                        </div>
+                        <button type="submit" class="btn-post">Job එක පෝස්ට් කරන්න 🚀</button>
+                    </form>
+                </div>
             </div>
+
+            <div id="profile-view" class="view-section">
+                <h2>මගේ ගිණුමේ විස්තර</h2>
+                <div class="profile-card">
+                    <img id="userProfAvatar" class="profile-avatar" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
+                    <h3 id="userProfName" style="margin: 10px 0 5px 0; font-size: 22px;">ලෝඩ් වෙමින්...</h3>
+                    <p id="userProfEmail" style="color: var(--text-muted); margin: 0 0 15px 0;">...</p>
+                    <div style="font-size: 14px; font-weight: bold; color: var(--accent); background: var(--input-bg); padding: 8px; border-radius: 6px; display: inline-block;">🙋‍♂️ Account Role: Customer</div>
+                </div>
+            </div>
+
         </div>
-
-        <form id="mainAuthForm">
-            <div class="input-group">
-                <label id="txt-lbl-email">ඊමේල් ලිපිනය හෝ දුරකථන අංකය</label>
-                <input type="text" id="authIdentifier" placeholder="example@gmail.com / 07XXXXXXXX" required>
-            </div>
-            <div class="input-group hidden" id="signupPhoneField">
-                <label id="txt-lbl-phone">දුරකථන අංකය</label>
-                <input type="tel" id="authPhone" placeholder="07XXXXXXXX">
-            </div>
-            <div class="input-group">
-                <label id="txt-lbl-pass">මුරපදය</label>
-                <input type="password" id="authPassword" placeholder="••••••••" required>
-            </div>
-            <button type="submit" id="submitBtn" class="btn-submit">ඇතුල් වන්න</button>
-        </form>
     </div>
 
     <script>
-        // 🎯 SPLIT API KEY TO BYPASS BROWSER/GITHUB ESCAPE PARSING ISSUES
+        // 🎯 Firebase Configuration (Split bypass fix included)
         const part1 = "AIzaSyD29G6zoTAbg1YybqIWdKzCq";
         const part2 = "_v--pAOOfI";
         
@@ -121,150 +343,115 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let currentTab = 'login';
-        let currentRole = 'customer';
-        let profilePhotoBase64 = ""; 
-        let currentLang = 'si';
+        // 🌗 LIGHT MODE / DARK MODE FUNCTION
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            let targetTheme = 'dark';
 
-        const translations = {
-            si: { subtitle: "ඔබේ ගිණුමට ඇතුල් වන්න හෝ සාදන්න", selectRole: "ඔබේ භූමිකාව තෝරන්න:", customer: "කස්ටමර්", supplier: "රයිඩර්", uploadLabel: "ප්‍රොෆයිල් පිංතූරයක් දාන්න", lblName: "ඔබේ සම්පූර්ණ නම", lblPhone: "දුරකථන අංකය", lblEmail: "ඊමේල් ලිපිනය හෝ දුරකථන අංකය", lblPass: "මුරපදය", btnLogin: "ඇතුල් වන්න", btnSignup: "ගිණුම සාදන්න", google: "🌐 Continue with Google", divider: "නැතහොත් වෙනත් ක්‍රමයකින්" },
-            en: { subtitle: "Login or Create Your Account", selectRole: "Select Your Role:", customer: "Customer", supplier: "Rider", uploadLabel: "Upload Profile Photo", lblName: "Full Name", lblPhone: "Phone Number", lblEmail: "Email or Phone Number", lblPass: "Password", btnLogin: "Login", btnSignup: "Register Now", google: "🌐 Continue with Google", divider: "Or via other methods" },
-            ta: { subtitle: "உள்நுழையவும் அல்லது கணக்கை உருவாக்கவும்", selectRole: "உங்கள் பாத்திரத்தை தேர்வு செய்யவும்:", customer: "வாடிக்கையாளர்", supplier: "ரைடர்", uploadLabel: "சுயவிவரப் படத்தை பதிவேற்றவும்", lblName: "உங்கள் முழு பெயர்", lblPhone: "தொலைபேசி எண்", lblEmail: "மின்னஞ்சல் அல்லது தொலைபேசி எண்", lblPass: "கடவுச்சொல்", btnLogin: "உள்நுழைக", btnSignup: "பதிவு செய்க", google: "🌐 கூகிள் மூலம் தொடரவும்", divider: "அல்லது வேறு வழிகள் மூலம்" }
-        };
-
-        function changeLanguage(lang) {
-            currentLang = lang;
-            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`lang-${lang}`).classList.add('active');
-            document.getElementById('txt-subtitle').innerText = translations[lang].subtitle;
-            document.getElementById('txt-select-role').innerText = translations[lang].selectRole;
-            document.getElementById('txt-role-customer').innerText = translations[lang].customer;
-            document.getElementById('txt-role-supplier').innerText = translations[lang].supplier;
-            document.getElementById('txt-upload-label').innerText = translations[lang].uploadLabel;
-            document.getElementById('txt-lbl-name').innerText = translations[lang].lblName;
-            document.getElementById('txt-lbl-phone').innerText = translations[lang].lblPhone;
-            document.getElementById('txt-lbl-email').innerText = translations[lang].lblEmail;
-            document.getElementById('txt-lbl-pass').innerText = translations[lang].lblPass;
-            document.getElementById('txt-btn-google').innerText = translations[lang].google;
-            document.getElementById('txt-divider').innerText = translations[lang].divider;
-            document.getElementById('submitBtn').innerText = (currentTab === 'login') ? translations[lang].btnLogin : translations[lang].btnSignup;
-        }
-
-        function switchTab(tab) {
-            currentTab = tab;
-            if (tab === 'login') {
-                document.getElementById('loginTab').classList.add('active');
-                document.getElementById('signupTab').classList.remove('active');
-                document.getElementById('roleSelectionArea').classList.add('hidden');
-                document.getElementById('signupPhoneField').classList.add('hidden');
-                document.getElementById('submitBtn').innerText = translations[currentLang].btnLogin;
+            if (currentTheme !== 'light') {
+                targetTheme = 'light';
+                document.getElementById('theme-icon').innerText = "☀️";
+                document.getElementById('theme-text').innerText = "Light Mode";
             } else {
-                document.getElementById('signupTab').classList.add('active');
-                document.getElementById('loginTab').classList.remove('active');
-                document.getElementById('roleSelectionArea').classList.remove('hidden');
-                document.getElementById('signupPhoneField').classList.remove('hidden');
-                document.getElementById('submitBtn').innerText = translations[currentLang].btnSignup;
+                targetTheme = 'dark';
+                document.getElementById('theme-icon').innerText = "🌙";
+                document.getElementById('theme-text').innerText = "Dark Mode";
             }
+
+            document.documentElement.setAttribute('data-theme', targetTheme);
+            localStorage.setItem('theme', targetTheme);
         }
 
-        function selectRole(role) {
-            currentRole = role;
-            if (role === 'customer') {
-                document.getElementById('roleCust').classList.add('active');
-                document.getElementById('roleSupp').classList.remove('active');
-            } else {
-                document.getElementById('roleSupp').classList.add('active');
-                document.getElementById('roleCust').classList.remove('active');
-            }
-        }
-
-        function triggerPhotoUpload() { document.getElementById('profilePhotoInput').click(); }
-        function previewAndSavePhoto(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    profilePhotoBase64 = e.target.result;
-                    document.getElementById('avatarImage').src = profilePhotoBase64;
-                    document.getElementById('avatarImage').classList.remove('hidden');
-                    document.getElementById('uploadPlaceholder').classList.add('hidden');
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function loginWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
-                .then((result) => {
-                    const user = result.user;
-                    return db.collection("users").doc(user.uid).get().then((doc) => {
-                        if (doc.exists) {
-                            saveAndRedirect(doc.data());
-                        } else {
-                            const newGoogleUser = {
-                                fullName: user.displayName,
-                                phoneNumber: user.phoneNumber || "Google Verified",
-                                email: user.email,
-                                role: "customer",
-                                avatar: user.photoURL || "https://www.w3schools.com/howto/img_avatar.png"
-                            };
-                            return db.collection("users").doc(user.uid).set(newGoogleUser).then(() => {
-                                saveAndRedirect(newGoogleUser);
-                            });
-                        }
-                    });
-                })
-                .catch((error) => { alert("Google Sign-In Failed: " + error.message); });
-        }
-
-        function saveAndRedirect(userData) {
-            localStorage.setItem("fullName", userData.fullName);
-            localStorage.setItem("phoneNumber", userData.phoneNumber);
-            localStorage.setItem("userAvatar", userData.avatar);
-            window.location.href = (userData.role === 'customer') ? "customer.html" : "supplier.html";
-        }
-
-        document.getElementById('mainAuthForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            let identifier = document.getElementById('authIdentifier').value.trim();
-            const password = document.getElementById('authPassword').value;
-
-            if (currentTab === 'signup') {
-                const name = document.getElementById('authName').value;
-                const phone = document.getElementById('authPhone').value.trim();
-
-                if(!identifier.includes("@")) { alert("Enter a valid email address!"); return; }
-
-                auth.createUserWithEmailAndPassword(identifier, password)
-                    .then((userCredential) => {
-                        return db.collection("users").doc(userCredential.user.uid).set({
-                            fullName: name, phoneNumber: phone, email: identifier, role: currentRole,
-                            avatar: profilePhotoBase64 || "https://www.w3schools.com/howto/img_avatar.png"
-                        });
-                    })
-                    .then(() => { alert("✅ Success! Please Login now."); switchTab('login'); })
-                    .catch((error) => { alert("❌ " + error.message); });
-            } else {
-                if (identifier.includes("@")) {
-                    signInWithFirebase(identifier, password);
-                } else {
-                    db.collection("users").where("phoneNumber", "==", identifier).get()
-                        .then((querySnapshot) => {
-                            if (!querySnapshot.empty) {
-                                let foundEmail = "";
-                                querySnapshot.forEach((doc) => { foundEmail = doc.data().email; });
-                                signInWithFirebase(foundEmail, password);
-                            } else { alert("❌ Phone number not registered!"); }
-                        });
-                }
+        // Apply saved theme on load
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        window.addEventListener('DOMContentLoaded', () => {
+            if (savedTheme === 'light') {
+                document.getElementById('theme-icon').innerText = "☀️";
+                document.getElementById('theme-text').innerText = "Light Mode";
             }
         });
 
-        function signInWithFirebase(email, password) {
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => { return db.collection("users").doc(userCredential.user.uid).get(); })
-                .then((doc) => { if (doc.exists) { saveAndRedirect(doc.data()); } })
-                .catch((error) => { alert("❌ Login Failed: " + error.message); });
+        // 🔄 VIEW SWITCHING LOGIC
+        function switchView(viewId, element) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+            
+            document.getElementById(viewId).classList.add('active');
+            element.classList.add('active');
+        }
+
+        // 👤 AUTH & REALTIME FIREBASE LOGIC
+        auth.onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = "auth.html";
+            } else {
+                // Render Profile Data Safely
+                document.getElementById('userProfName').innerText = user.displayName || "QuickFix User";
+                document.getElementById('userProfEmail').innerText = user.email;
+                if(user.photoURL) {
+                    document.getElementById('userProfAvatar').src = user.photoURL;
+                }
+
+                // Load User's Posted Jobs dynamically from Firestore
+                db.collection("jobs")
+                  .where("customerId", "==", user.uid)
+                  .orderBy("timestamp", "desc")
+                  .onSnapshot(snapshot => {
+                      const container = document.getElementById('jobsContainer');
+                      if(snapshot.empty) {
+                          container.innerHTML = `<p style="color: var(--text-muted);">තාම කිසිම Job එකක් පෝස්ට් කරලා නැහැ...</p>`;
+                          return;
+                      }
+                      
+                      container.innerHTML = "";
+                      snapshot.forEach(doc => {
+                          const job = doc.data();
+                          container.innerHTML += `
+                              <div class="job-card">
+                                  <h3>${job.title}</h3>
+                                  <p>${job.description}</p>
+                                  <div style="font-weight: bold; color: var(--accent); font-size: 16px;">Budget: රු. ${job.budget}</div>
+                                  <div class="job-meta">පෝස්ට් කලේ: ${job.timestamp ? new Date(job.timestamp.toDate()).toLocaleString() : "දැන්ම"}</div>
+                              </div>
+                          `;
+                      });
+                  }, error => {
+                      console.log("Error loading jobs:", error.message);
+                  });
+            }
+        });
+
+        // 🚀 HANDLE JOB POSTING FORM TO FIRESTORE
+        document.getElementById('jobPostForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if(!user) return;
+
+            const title = document.getElementById('jobTitle').value;
+            const description = document.getElementById('jobDesc').value;
+            const budget = document.getElementById('jobBudget').value;
+
+            db.collection("jobs").add({
+                title: title,
+                description: description,
+                budget: budget,
+                customerId: user.uid,
+                customerName: user.displayName,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                alert("✅ Job එක සාර්ථකව පෝස්ට් කරා මචං!");
+                document.getElementById('jobPostForm').reset();
+                // Automatically switch back to feed view to see the new post
+                switchView('feed-view', document.querySelectorAll('.menu-item')[0]);
+            })
+            .catch(err => alert("Error posting job: " + err.message));
+        });
+
+        // 🚪 LOGOUT FUNCTION
+        function logoutUser() {
+            auth.signOut().then(() => { window.location.href = "auth.html"; });
         }
     </script>
 </body>
