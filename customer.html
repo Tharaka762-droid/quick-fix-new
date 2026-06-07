@@ -73,7 +73,7 @@
             <div class="brand">QuickFix</div>
             <ul class="menu-list">
                 <li class="menu-item active" onclick="switchView('feed-view', this)">📋 මගේ Jobs ලිස්ට් එක</li>
-                <li class="menu-item" onclick="switchView('post-view', this)">🛠️ අලුත් Job එකක් දාන්න</li>
+                <li class="menu-item" onclick="switchView('post-view', this)">🛠️ อලුත් Job එකක් දාන්න</li>
                 <li class="menu-item" onclick="switchView('profile-view', this)">👤 මගේ ප්‍රොෆයිල් එක</li>
             </ul>
         </div>
@@ -156,17 +156,29 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(), db = firebase.firestore(), storage = firebase.storage();
 
-        let map, marker, activeChatJobId = null, chatListener = null, selectedRating = 0, currentReviewJobId = null;
+        let map, marker, activeChatJobId = null, chatListener = null, selectedRating = 0, currentReviewJobId = null, customerPhoneNumber = "නැත";
 
         function initMap() {
             map = L.map('map').setView([6.9271, 79.8612], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             marker = L.marker([6.9271, 79.8612], {draggable: true}).addTo(map);
+            
             marker.on('dragend', function () {
                 let pos = marker.getLatLng();
                 document.getElementById('latInput').value = pos.lat;
                 document.getElementById('lngInput').value = pos.lng;
             });
+
+            // 🎯 ACCURATE GPS LOCATION TRACKING ACTIVE
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    let lat = pos.coords.latitude, lng = pos.coords.longitude;
+                    map.setView([lat, lng], 16);
+                    marker.setLatLng([lat, lng]);
+                    document.getElementById('latInput').value = lat;
+                    document.getElementById('lngInput').value = lng;
+                }, null, { enableHighAccuracy: true, timeout: 5000 });
+            }
         }
 
         function toggleTheme() {
@@ -190,6 +202,13 @@
                 document.getElementById('userProfName').innerText = user.displayName || "QuickFix User";
                 document.getElementById('userProfEmail').innerText = user.email;
                 if(user.photoURL) document.getElementById('userProfAvatar').src = user.photoURL;
+
+                // Fetch customer phone number from db
+                db.collection("users").doc(user.uid).get().then(doc => {
+                    if(doc.exists && doc.data().phoneNumber) {
+                        customerPhoneNumber = doc.data().phoneNumber;
+                    }
+                });
 
                 db.collection("jobs").where("customerId", "==", user.uid).orderBy("timestamp", "desc").onSnapshot(snapshot => {
                     const container = document.getElementById('jobsContainer');
@@ -228,6 +247,8 @@
             document.getElementById('customerChatBox').style.display = 'flex';
             const msgContainer = document.getElementById('chatMessages');
             if(chatListener) chatListener();
+            
+            // 🔄 FIXED: TWO-WAY REALTIME CHAT SYNCED
             chatListener = db.collection("jobs").doc(jobId).collection("messages").orderBy("timestamp", "asc").onSnapshot(snapshot => {
                 msgContainer.innerHTML = "";
                 snapshot.forEach(doc => {
@@ -242,6 +263,8 @@
         document.getElementById('chatForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const input = document.getElementById('chatMsgInput');
+            if(!input.value.trim() || !activeChatJobId) return;
+
             db.collection("jobs").doc(activeChatJobId).collection("messages").add({
                 text: input.value.trim(), senderId: auth.currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => { input.value = ""; });
@@ -271,7 +294,6 @@
             });
         }
 
-        // 📸 HANDLING IMAGE UPLOAD AND FIRESTORE SUBMISSION
         document.getElementById('jobPostForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSubmitPost');
@@ -287,7 +309,6 @@
             const randomOTP = Math.floor(1000 + Math.random() * 9000);
 
             if (file) {
-                // Upload image to Firebase Storage first
                 const storageRef = storage.ref('job_images/' + Date.now() + '_' + file.name);
                 storageRef.put(file).then(snapshot => {
                     return snapshot.ref.getDownloadURL();
@@ -304,10 +325,11 @@
             db.collection("jobs").add({
                 title: title, description: description, budget: budget, lat: lat, lng: lng,
                 customerId: auth.currentUser.uid, customerName: auth.currentUser.displayName,
+                customerPhone: customerPhoneNumber, // 📱 SAVES PHONE ACCURATELY FOR THE RIDER
                 status: "available", otpCode: otp, rated: false, imageUrl: imageUrl,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                alert("✅ Job එක ෆොටෝ එකත් එක්කම සාර්ථකව පෝස්ට් කරා මචං!");
+                alert("✅ Job එක සාර්ථකව පෝස්ට් කරා මචං!");
                 document.getElementById('jobPostForm').reset();
                 btn.disabled = false; btn.innerText = "Job එක පෝස්ට් කරන්න 🚀";
                 switchView('feed-view', document.querySelectorAll('.menu-item')[0]);
