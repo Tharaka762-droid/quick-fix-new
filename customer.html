@@ -8,6 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -41,6 +42,7 @@
         .btn-post { background: var(--accent); color: #111; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
         .job-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 22px; border-radius: 12px; margin-bottom: 15px; max-width: 800px; }
         .job-card h3 { margin: 0 0 10px 0; color: var(--accent); }
+        .job-img { width: 100%; max-width: 300px; height: 180px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border-color); }
         .btn-action { color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; margin-right: 5px; }
 
         /* 💬 CHAT BOX STYLES */
@@ -102,7 +104,7 @@
                     <div class="stars" id="starContainer">
                         <span onclick="setRating(1)">★</span><span onclick="setRating(2)">★</span><span onclick="setRating(3)">★</span><span onclick="setRating(4)">★</span><span onclick="setRating(5)">★</span>
                     </div>
-                    <button class="btn-post" onclick="submitReview()">රේටින්ග් එක සේဝ် කරන්න</button>
+                    <button class="btn-post" onclick="submitReview()">රේටින්ග් එක සේව් කරන්න</button>
                 </div>
             </div>
 
@@ -119,6 +121,10 @@
                             <textarea id="jobDesc" rows="3" placeholder="කරගන්න ඕනේ දේ ලියන්න..." required></textarea>
                         </div>
                         <div class="form-group">
+                            <label>වැඩේට අදාළ ඡායාරූපයක් (Upload Photo) 📸</label>
+                            <input type="file" id="jobImageFile" accept="image/*">
+                        </div>
+                        <div class="form-group">
                             <label>ඔබ ඉන්න තැන පින් කරන්න (Pin Location)📍</label>
                             <div id="map"></div>
                             <input type="hidden" id="latInput"><input type="hidden" id="lngInput">
@@ -127,7 +133,7 @@
                             <label>ඔබ දෙන මුදල (Budget - LKR)</label>
                             <input type="number" id="jobBudget" placeholder="රු. 1500" required>
                         </div>
-                        <button type="submit" class="btn-post">Job එක පෝස්ට් කරන්න 🚀</button>
+                        <button type="submit" id="btnSubmitPost" class="btn-post">Job එක පෝස්ට් කරන්න 🚀</button>
                     </form>
                 </div>
             </div>
@@ -146,9 +152,9 @@
 
     <script>
         const part1 = "AIzaSyD29G6zoTAbg1YybqIWdKzCq"; const part2 = "_v--pAOOfI";
-        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.firebasestorage.app", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
+        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.appspot.com", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth(), db = firebase.firestore();
+        const auth = firebase.auth(), db = firebase.firestore(), storage = firebase.storage();
 
         let map, marker, activeChatJobId = null, chatListener = null, selectedRating = 0, currentReviewJobId = null;
 
@@ -181,7 +187,6 @@
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.href = "auth.html"; }
             else {
-                // Populate Profile
                 document.getElementById('userProfName').innerText = user.displayName || "QuickFix User";
                 document.getElementById('userProfEmail').innerText = user.email;
                 if(user.photoURL) document.getElementById('userProfAvatar').src = user.photoURL;
@@ -193,6 +198,7 @@
                     snapshot.forEach(doc => {
                         const job = doc.data();
                         let actionArea = "";
+                        let jobImgTag = job.imageUrl ? `<img src="${job.imageUrl}" class="job-img" alt="Job Image">` : '';
                         
                         if(job.status === 'accepted') {
                             actionArea = `
@@ -208,7 +214,8 @@
                             <div class="job-card">
                                 <h3>${job.title} (<span style="color:var(--accent); font-size:15px;">${job.status.toUpperCase()}</span>)</h3>
                                 <p>${job.description}</p>
-                                <div style="font-weight:bold;color:var(--accent)">Budget: රු. ${job.budget}</div>
+                                ${jobImgTag}
+                                <div style="font-weight:bold;color:var(--accent); margin-top:10px;">Budget: රු. ${job.budget}</div>
                                 ${actionArea}
                             </div>`;
                     });
@@ -264,27 +271,48 @@
             });
         }
 
+        // 📸 HANDLING IMAGE UPLOAD AND FIRESTORE SUBMISSION
         document.getElementById('jobPostForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            const btn = document.getElementById('btnSubmitPost');
+            const file = document.getElementById('jobImageFile').files[0];
+            btn.innerText = "පෝස්ට් වෙමින්... ⏳";
+            btn.disabled = true;
+
+            const title = document.getElementById('jobTitle').value;
+            const description = document.getElementById('jobDesc').value;
+            const budget = document.getElementById('jobBudget').value;
+            const lat = parseFloat(document.getElementById('latInput').value) || 6.9271;
+            const lng = parseFloat(document.getElementById('lngInput').value) || 79.8612;
             const randomOTP = Math.floor(1000 + Math.random() * 9000);
+
+            if (file) {
+                // Upload image to Firebase Storage first
+                const storageRef = storage.ref('job_images/' + Date.now() + '_' + file.name);
+                storageRef.put(file).then(snapshot => {
+                    return snapshot.ref.getDownloadURL();
+                }).then(downloadUrl => {
+                    saveJobToFirestore(title, description, budget, lat, lng, randomOTP, downloadUrl);
+                }).catch(err => { alert("Image Upload Failed: " + err.message); btn.disabled = false; btn.innerText = "Job එක පෝස්ට් කරන්න 🚀"; });
+            } else {
+                saveJobToFirestore(title, description, budget, lat, lng, randomOTP, null);
+            }
+        });
+
+        function saveJobToFirestore(title, description, budget, lat, lng, otp, imageUrl) {
+            const btn = document.getElementById('btnSubmitPost');
             db.collection("jobs").add({
-                title: document.getElementById('jobTitle').value,
-                description: document.getElementById('jobDesc').value,
-                budget: document.getElementById('jobBudget').value,
-                lat: parseFloat(document.getElementById('latInput').value) || 6.9271,
-                lng: parseFloat(document.getElementById('lngInput').value) || 79.8612,
-                customerId: auth.currentUser.uid,
-                customerName: auth.currentUser.displayName,
-                status: "available",
-                otpCode: randomOTP,
-                rated: false,
+                title: title, description: description, budget: budget, lat: lat, lng: lng,
+                customerId: auth.currentUser.uid, customerName: auth.currentUser.displayName,
+                status: "available", otpCode: otp, rated: false, imageUrl: imageUrl,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                alert("✅ Job එක සාර්ථකව පෝස්ට් කරා මචං!");
+                alert("✅ Job එක ෆොටෝ එකත් එක්කම සාර්ථකව පෝස්ට් කරා මචං!");
                 document.getElementById('jobPostForm').reset();
+                btn.disabled = false; btn.innerText = "Job එක පෝස්ට් කරන්න 🚀";
                 switchView('feed-view', document.querySelectorAll('.menu-item')[0]);
             });
-        });
+        }
 
         function logoutUser() { auth.signOut().then(() => { window.location.href = "auth.html"; }); }
     </script>
