@@ -3,43 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickFix - Supplier Dashboard</title>
+    <title>QuickFix Rider - Premium Dashboard with Map</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f9fc; margin: 0; padding: 0; }
-        header { background: #1a1a1a; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 20px; font-weight: bold; }
-        .logo { color: #ffcc00; }
-        .booking-section { padding: 40px 20px; display: flex; justify-content: center; }
-        .form-container { max-width: 600px; width: 100%; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .task-card { background: #fff; border-left: 5px solid #ffcc00; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: left; border: 1px solid #eee; }
-        .task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .urgency-badge { background: #ff4d4d; color: white; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
-        .budget-tag { font-size: 18px; font-weight: bold; color: #2ecc71; }
-        .btn-accept { background-color: #1a1a1a; color: #ffcc00; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-accepted { background-color: #2ecc71; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; }
+        :root { --primary: #ffcc00; --primary-hover: #e6b800; --bg-dark: #121212; --card-bg: #1e1e1e; --text-main: #ffffff; --text-muted: #aaaaaa; --border-color: #2a2a2a; --accent-green: #2ecc71; --accent-red: #ff4d4d; --accent-blue: #3498db; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; }
+        header { background: #000000; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 22px; font-weight: 800; color: var(--primary); letter-spacing: 1px; }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+        .user-badge { background: rgba(46, 204, 113, 0.1); color: var(--accent-green); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid rgba(46, 204, 113, 0.2); }
+        .btn-signin { background: var(--primary); color: #000; border: none; padding: 8px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; text-decoration: none; }
+        .btn-logout { background: var(--accent-red); color: white; border: none; padding: 8px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .dashboard-section { padding: 30px 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 650px; width: 100%; }
+        h2 { font-size: 22px; margin-bottom: 25px; font-weight: 700; text-align: left; display: flex; align-items: center; gap: 10px; }
+        .task-card { background: var(--card-bg); border-left: 5px solid var(--primary); padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid var(--border-color); }
+        .task-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .task-title { font-size: 20px; font-weight: 700; color: #fff; margin: 0; }
+        .urgency-badge { background: rgba(255, 77, 77, 0.15); color: var(--accent-red); padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; }
+        .task-body p { margin: 8px 0; font-size: 14px; color: #ccc; }
+        .info-label { color: var(--primary); font-weight: 600; margin-right: 5px; }
+        .rider-job-map { width: 100%; height: 200px; margin-top: 10px; border-radius: 8px; border: 1px solid #444; }
+        .btn-update-loc { background-color: #e67e22; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 10px; display: inline-block; }
+        .task-footer { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .price-tag { font-size: 22px; font-weight: 800; color: var(--accent-green); }
+        .btn-accept { background-color: var(--primary); color: #000; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+        .btn-accepted { background-color: #252525; color: var(--accent-green); border: 1px solid var(--accent-green); padding: 10px 20px; border-radius: 10px; font-weight: 700; }
+        .btn-complete { background-color: var(--accent-blue); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+        .btn-completed-status { background-color: #222; color: #555; border: 1px solid #333; padding: 10px 20px; border-radius: 10px; font-weight: 700; }
+        .rider-status-info { background: rgba(46, 204, 113, 0.05); padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 13px; color: var(--accent-green); border: 1px dashed rgba(46, 204, 113, 0.3); }
+        .chat-container { background: #111; border: 1px solid #444; border-radius: 8px; margin-top: 15px; padding: 12px; }
+        .chat-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .btn-free-call { background: #2ecc71; color: #fff; border: none; padding: 6px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+        .chat-box { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; padding: 5px; }
+        .chat-msg { background: #222; padding: 6px 10px; border-radius: 6px; font-size: 13px; max-width: 85%; width: fit-content; }
+        .chat-msg.me { background: #ffcc00; color: #000; align-self: flex-end; font-weight: 500; }
+        .chat-input-row { display: flex; gap: 8px; }
+        .chat-input { flex-grow: 1; padding: 8px; background: #222; border: 1px solid #444; color: #fff; border-radius: 6px; font-size: 13px; outline: none; }
+        .btn-send { background: #ffcc00; color: #111; border: none; padding: 0 15px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .empty-msg { color: var(--text-muted); text-align: center; margin-top: 50px; font-size: 15px; }
     </style>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
-<body style="background-color: #f7f9fc;">
+<body>
 
     <header>
         <div class="logo">QuickFix Rider</div>
-        <div style="color: #2ecc71; font-size:16px;" id="welcomeRider">● Active Dashboard</div>
+        <div class="header-right">
+            <span class="user-badge" id="welcomeRider">● Active Dashboard</span>
+            <a href="auth.html" class="btn-signin">Sign In</a>
+            <button class="btn-logout" onclick="logoutRider()">Sign Out</button>
+        </div>
     </header>
 
-    <section class="booking-section">
-        <div class="form-container">
-            <h2>දැනට ඇති හදිසි අවශ්‍යතා 🛠️</h2>
+    <section class="dashboard-section">
+        <div class="container">
+            <h2>🛠️ දැනට පවතින අවශ්‍යතා (Live Jobs)</h2>
             <div id="taskList">
-                <p style="color: #888; text-align: center;">නව හදිසි අවශ්‍යතා සෙමින් පවතී...</p>
+                <p class="empty-msg">අලුත් අවශ්‍යතා සෙමින් පවතී...</p>
             </div>
         </div>
     </section>
 
     <script>
+        // 🎯 නිවැරදි කරන ලද Config එක (තිත් ඉරි දෙකක් සහිතයි)
         const firebaseConfig = {
-          apiKey: "AIzaSyD29G6zoTABg1YybqIWdKzCq_v--pA0oFI",
+          apiKey: "AIzaSyD29G6zoTABg1YybqIWdKzCq_v--pA0ofI",
           authDomain: "quickfix-new.firebaseapp.com",
           projectId: "quickfix-new",
           storageBucket: "quickfix-new.firebasestorage.app",
@@ -50,68 +84,117 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // 🚀 LocalStorage එකෙන් රයිඩර්ගේ නම සහ නම්බර් එක නිවැරදිව ලබාගැනීම
-        let riderRealName = localStorage.getItem("fullName") || "Madushan";
-        let riderRealPhone = localStorage.getItem("phoneNumber") || "0755191747";
-        document.getElementById('welcomeRider').innerText = `🛠️ ${riderRealName} (${riderRealPhone})`;
+        let riderRealName = localStorage.getItem("fullName");
+        let riderRealPhone = localStorage.getItem("phoneNumber");
+        let activeRiderMaps = {}; let temporaryClickCoords = {};
 
-        // සජීවීව ජොබ් ලිස්ට් එක පෙන්වීම
+        if (!riderRealName || !riderRealPhone) { document.getElementById('welcomeRider').innerText = "ලොග් වී නැත ❌"; } else { document.getElementById('welcomeRider').innerText = `🛠️ ${riderRealName}`; }
+
         db.collection("tasks").orderBy("createdAt", "desc").onSnapshot((querySnapshot) => {
             const taskListContainer = document.getElementById('taskList');
-            taskListContainer.innerHTML = "";
-
-            if (querySnapshot.empty) {
-                taskListContainer.innerHTML = `<p style="color: #888; text-align: center;">නව හදිසි අවශ්‍යතා සෙමින් පවතී...</p>`;
-                return;
-            }
-
             querySnapshot.forEach((doc) => {
-                const task = doc.data();
-                const taskId = doc.id;
-                const taskCard = document.createElement('div');
-                taskCard.className = 'task-card';
+                const task = doc.data(); const taskId = doc.id;
+                let card = document.getElementById(`card-${taskId}`);
+                if (!card) { card = document.createElement('div'); card.id = `card-${taskId}`; card.className = 'task-card'; taskListContainer.appendChild(card); }
                 
-                let actionButton = `<button class="btn-accept" onclick="acceptTask('${taskId}')">වැඩේ බාරගන්න (Accept)</button>`;
-                let riderStatus = '';
+                let actionButton = `<button class="btn-accept" onclick="acceptTask('${taskId}')">බාරගන්න (Accept)</button>`;
+                let riderStatus = ''; let chatHTML = ''; let mapHTML = `<div class="rider-job-map" id="riderMap-${taskId}"></div>`;
 
                 if (task.status === 'accepted') {
-                    actionButton = `<button class="btn-accepted" disabled>බාරගෙන ඇත ✅</button>`;
-                    riderStatus = `<p style="color: #2ecc71; font-weight: bold;">👤 බාරගත් සපයන්නා: ${task.riderName} (${task.riderPhone})</p>`;
+                    if (task.riderPhone === riderRealPhone) {
+                        actionButton = `<div><button class="btn-complete" onclick="completeTask('${taskId}')">වැඩේ අවසන් කරන්න (Complete)</button><br><button class="btn-update-loc" onclick="updateRiderLiveLocation('${taskId}')">📍 มගේ ලොකේෂන් එක අප්ඩේට් කරන්න</button></div>`;
+                    } else { actionButton = `<div class="btn-accepted">වෙනත් අයෙක් බාරගෙන ඇත</div>`; }
+                    riderStatus = `<div class="rider-status-info">👤 <b>බාරගත් සපයන්නා:</b> ${task.riderName} (${task.riderPhone})</div>`;
+
+                    let messageHistory = "";
+                    if (task.chatMessages) {
+                        task.chatMessages.forEach((msg) => {
+                            let isMe = (msg.sender === riderRealName) ? "me" : "";
+                            messageHistory += `<div class="chat-msg ${isMe}"><b>${msg.sender}:</b> ${msg.text}</div>`;
+                        });
+                    }
+
+                    let freeCallUrl = `https://meet.jit.si/QuickFixCall-${taskId}`;
+                    chatHTML = `
+                        <div class="chat-container">
+                            <div class="chat-header-row">
+                                <p style="margin:0; font-size:12px; font-weight:bold; color:#ffcc00;">💬 කස්ටමර් සමඟ චැට් එක:</p>
+                                <a href="${freeCallUrl}" target="_blank" class="btn-free-call">📞 Free In-App Call</a>
+                            </div>
+                            <div class="chat-box" id="chatBox-${taskId}">${messageHistory}</div>
+                            <div class="chat-input-row">
+                                <input type="text" class="chat-input" id="chatInput-${taskId}" placeholder="පණිවිඩයක් ලියන්න...">
+                                <button class="btn-send" onclick="sendChatMessage('${taskId}')">Send</button>
+                            </div>
+                        </div>
+                    `;
+                } else if (task.status === 'completed') {
+                    actionButton = `<div class="btn-completed-status">අවසන් කරන ලද වැඩකි (Completed) ✅</div>`;
+                    let ratingText = task.rating ? `⭐ கஸ்டமர் ලබාදුන් Rating එක: ${task.rating}/5` : "⏳ කස්ටමර් තවමත් Rating ලබාදී නැත.";
+                    riderStatus = `<div class="rider-status-info" style="color:#3498db; border-color:#3498db;">🏁 <b>වැඩේ සාර්ථකව නිම කර ඇත!</b><br>${ratingText}</div>`;
+                    mapHTML = "";
                 }
                 
-                taskCard.innerHTML = `
+                card.innerHTML = `
                     <div class="task-header">
-                        <h3>🔔 ${task.title}</h3>
+                        <h3 class="task-title">🔔 ${task.title}</h3>
                         <span class="urgency-badge">${task.urgency}</span>
                     </div>
-                    <p><b>විස්තර:</b> ${task.description}</p>
-                    <p><b>📍 ස්ථානය:</b> ${task.location}</p>
-                    <p><b>👤 කස්ටමර්:</b> ${task.customerName} | <b>📞 දුරකථන:</b> ${task.customerPhone}</p>
-                    ${riderStatus}
-                    <div class="task-header" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
-                        <span class="budget-tag">රු. ${task.budget}</span>
-                        ${actionButton}
+                    <div class="task-body">
+                        <p><span class="info-label">විස්තර:</span> ${task.description}</p>
+                        <p><span class="info-label">📍 කස්ටමර් ස්ථානය:</span> ${task.location}</p>
+                        <p><span class="info-label">👤 කස්ටමර්:</span> ${task.customerName}</p>
+                        <p><span class="info-label">📞 දුරකථන:</span> <a href="tel:${task.customerPhone}" style="color:var(--primary); text-decoration:none; font-weight:bold;">${task.customerPhone}</a></p>
                     </div>
+                    ${mapHTML} ${riderStatus} ${chatHTML}
+                    <div class="task-footer"><span class="price-tag">රු. ${task.budget}</span>${actionButton}</div>
                 `;
-                taskListContainer.appendChild(taskCard);
+
+                if (task.status !== 'completed' && task.lat && task.lng) {
+                    setTimeout(() => {
+                        let mapElementId = `riderMap-${taskId}`;
+                        if (document.getElementById(mapElementId)) {
+                            if (!activeRiderMaps[taskId]) {
+                                let rMap = L.map(mapElementId).setView([task.lat, task.lng], 13);
+                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(rMap);
+                                L.marker([task.lat, task.lng]).addTo(rMap).bindPopup('📍 කස්ටමර් ඉන්නා ස්ථානය').openPopup();
+                                let currentRiderMarker = null;
+                                if (task.riderLat && task.riderLng) { currentRiderMarker = L.marker([task.riderLat, task.riderLng]).addTo(rMap).bindPopup('🛠️ මගේ වත්මන් ස්ථානය').openPopup(); }
+
+                                rMap.on('click', function(e) {
+                                    temporaryClickCoords[taskId] = { lat: e.latlng.lat, lng: e.latlng.lng };
+                                    if (currentRiderMarker) { currentRiderMarker.setLatLng(e.latlng); } else { currentRiderMarker = L.marker(e.latlng).addTo(rMap).bindPopup('🛠️ මගේ වත්මන් ස්ථානය').openPopup(); }
+                                });
+                                activeRiderMaps[taskId] = rMap;
+                            }
+                        }
+                    }, 200);
+                }
             });
         });
 
-        function acceptTask(id) {
-            const riderMapLink = prompt("ඔබ දැනට සිටින ස්ථානය හෝ ලයිව් ලොකේෂන් ලින්ක් එක ඇතුලත් කරන්න:");
-            
-            if (riderMapLink != null && riderMapLink != "") {
-                db.collection("tasks").doc(id).update({
-                    status: "accepted",
-                    riderName: riderRealName,       
-                    riderPhone: riderRealPhone,     // 🚀 මෙතනට දැන් සැබෑ නම්බර් එකම වැටෙනවා
-                    riderLocation: riderMapLink
-                })
-                .then(() => {
-                    alert("වැඩේ සාර්ථකව බාරගත්තා!");
-                });
-            }
+        function sendChatMessage(taskId) {
+            const inputField = document.getElementById(`chatInput-${taskId}`);
+            const messageText = inputField.value;
+            if (messageText.trim() === "") return;
+            db.collection("tasks").doc(taskId).update({
+                chatMessages: firebase.firestore.FieldValue.arrayUnion({ sender: riderRealName, text: messageText, time: new Date().toLocaleTimeString() })
+            }).then(() => { inputField.value = ""; });
         }
+
+        function acceptTask(id) {
+            db.collection("tasks").doc(id).update({ status: "accepted", riderName: riderRealName, riderPhone: riderRealPhone, riderLocation: "සිතියමෙන් සජීවීව බලන්න 🗺️", chatMessages: [] })
+            .then(() => { alert("වැඩේ සාර්ථකව බාරගත්තා!"); });
+        }
+
+        function updateRiderLiveLocation(taskId) {
+            const coords = temporaryClickCoords[taskId];
+            if (!coords) { alert("කරුණාකර ප්‍රථමයෙන් සිතියම මත ස්ථානයක් ක්ලික් කර මාර්ක් කරන්න!"); return; }
+            db.collection("tasks").doc(taskId).update({ riderLat: coords.lat, riderLng: coords.lng }).then(() => { alert("📍 ඔබේ වත්මන් පිහිටීම සාර්ථකව අප්ඩේට් කරා!"); });
+        }
+
+        function completeTask(id) { db.collection("tasks").doc(id).update({ status: "completed" }).then(() => { alert("🎉 ජොබ් එක සාර්ථකව නිම කරා!"); }); }
+        function logoutRider() { localStorage.removeItem("fullName"); localStorage.removeItem("phoneNumber"); window.location.href = "auth.html"; }
     </script>
 </body>
 </html>
