@@ -14,42 +14,16 @@
 
     <style>
         :root {
-            --bg-main: #121212;
-            --panel-bg: #1e1e1e;
-            --border-color: #333333;
-            --accent: #ffcc00;
-            --text-main: #ffffff;
-            --text-muted: #aaaaaa;
-            --input-bg: #252525;
-            --sidebar-width: 260px;
+            --bg-main: #121212; --panel-bg: #1e1e1e; --border-color: #333333; --accent: #ffcc00; --text-main: #ffffff; --text-muted: #aaaaaa; --input-bg: #252525; --sidebar-width: 260px;
         }
         [data-theme="light"] {
-            --bg-main: #f5f6fa;
-            --panel-bg: #ffffff;
-            --border-color: #dddddd;
-            --accent: #e6b800;
-            --text-main: #222222;
-            --text-muted: #666666;
-            --input-bg: #f0f0f0;
+            --bg-main: #f5f6fa; --panel-bg: #ffffff; --border-color: #dddddd; --accent: #e6b800; --text-main: #222222; --text-muted: #666666; --input-bg: #f0f0f0;
         }
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden;
-            transition: background 0.3s, color 0.3s;
-        }
-        .sidebar {
-            width: var(--sidebar-width); background-color: var(--panel-bg);
-            border-right: 1px solid var(--border-color); display: flex;
-            flex-direction: column; justify-content: space-between; padding: 20px; box-sizing: border-box;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: var(--sidebar-width); background-color: var(--panel-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; padding: 20px; box-sizing: border-box; }
         .brand { font-size: 26px; font-weight: 800; color: var(--accent); text-align: center; margin-bottom: 30px; }
         .menu-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
-        .menu-item {
-            padding: 14px 18px; border-radius: 10px; margin-bottom: 8px; cursor: pointer;
-            font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 12px; transition: 0.2s;
-        }
+        .menu-item { padding: 14px 18px; border-radius: 10px; margin-bottom: 8px; cursor: pointer; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 12px; }
         .menu-item:hover, .menu-item.active { background-color: var(--accent); color: #111; }
         .logout-btn { background: #ff4444; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
         .main-container { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; }
@@ -62,16 +36,28 @@
         .form-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 30px; border-radius: 16px; max-width: 600px; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
-        .form-group input, .form-group textarea {
-            width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); box-sizing: border-box; outline: none;
-        }
-        /* 🗺️ MAP BOX STYLE */
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); box-sizing: border-box; outline: none; }
         #map { width: 100%; height: 250px; border-radius: 10px; margin-top: 10px; border: 1px solid var(--border-color); z-index: 1; }
-        .btn-post { background: var(--accent); color: #111; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; width: 100%; }
+        .btn-post { background: var(--accent); color: #111; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; }
         .job-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 22px; border-radius: 12px; margin-bottom: 15px; max-width: 800px; }
         .job-card h3 { margin: 0 0 10px 0; color: var(--accent); }
-        .profile-card { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 30px; border-radius: 16px; max-width: 450px; text-align: center; }
-        .profile-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; margin-bottom: 15px; }
+        .btn-action { color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; margin-right: 5px; }
+
+        /* 💬 CHAT BOX STYLES */
+        .chat-container { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; max-width: 500px; margin-top: 20px; display: none; flex-direction: column; height: 300px; overflow: hidden; }
+        .chat-header { background: var(--accent); color: #111; padding: 12px; font-weight: bold; display: flex; justify-content: space-between; }
+        .chat-messages { flex-grow: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .msg { padding: 10px; border-radius: 8px; max-width: 75%; font-size: 14px; }
+        .msg.sent { background: var(--accent); color: #111; align-self: flex-end; }
+        .msg.received { background: var(--input-bg); color: var(--text-main); align-self: flex-start; }
+        .chat-input-area { display: flex; border-top: 1px solid var(--border-color); }
+        .chat-input-area input { flex-grow: 1; border: none; padding: 12px; background: transparent; color: var(--text-main); outline: none; }
+        .chat-input-area button { background: var(--accent); border: none; padding: 0 20px; font-weight: bold; color: #111; cursor: pointer; }
+
+        /* ⭐ RATING MODAL */
+        .rating-box { display: none; background: var(--panel-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; max-width: 400px; margin-top: 15px; text-align: center; }
+        .stars { font-size: 30px; cursor: pointer; color: gray; margin-bottom: 15px; }
+        .stars span:hover, .stars span.active { color: var(--accent); }
     </style>
 </head>
 <body>
@@ -82,7 +68,6 @@
             <ul class="menu-list">
                 <li class="menu-item active" onclick="switchView('feed-view', this)">📋 මගේ Jobs ලිස්ට් එක</li>
                 <li class="menu-item" onclick="switchView('post-view', this)">🛠️ අලුත් Job එකක් දාන්න</li>
-                <li class="menu-item" onclick="switchView('profile-view', this)">👤 මගේ ප්‍රොෆයිල් එක</li>
             </ul>
         </div>
         <button class="logout-btn" onclick="logoutUser()">Log Out</button>
@@ -97,6 +82,23 @@
             <div id="feed-view" class="view-section active">
                 <h2>ඔබ පෝස්ට් කරපු Jobs</h2>
                 <div id="jobsContainer"></div>
+
+                <div id="customerChatBox" class="chat-container">
+                    <div class="chat-header">💬 රයිඩර් සමඟ සජීවී චැට් එක <span style="cursor:pointer;" onclick="document.getElementById('customerChatBox').style.display='none'">✖</span></div>
+                    <div id="chatMessages" class="chat-messages"></div>
+                    <form id="chatForm" class="chat-input-area">
+                        <input type="text" id="chatMsgInput" placeholder="මැසේජ් එකක් ලියන්න..." required autocomplete="off">
+                        <button type="submit">යවන්න</button>
+                    </form>
+                </div>
+
+                <div id="ratingBox" class="rating-box">
+                    <h4>වැඩේ ඉවරයි! රයිඩර්ට තරුවලින් රේටින්ග් එකක් දෙන්න ⭐</h4>
+                    <div class="stars" id="starContainer">
+                        <span onclick="setRating(1)">★</span><span onclick="setRating(2)">★</span><span onclick="setRating(3)">★</span><span onclick="setRating(4)">★</span><span onclick="setRating(5)">★</span>
+                    </div>
+                    <button class="btn-post" onclick="submitReview()">රේටින්ග් එක සේව් කරන්න</button>
+                </div>
             </div>
 
             <div id="post-view" class="view-section">
@@ -124,15 +126,6 @@
                     </form>
                 </div>
             </div>
-
-            <div id="profile-view" class="view-section">
-                <h2>මගේ ගිණුමේ විස්තර</h2>
-                <div class="profile-card">
-                    <img id="userProfAvatar" class="profile-avatar" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
-                    <h3 id="userProfName">ලෝඩ් වෙමින්...</h3>
-                    <p id="userProfEmail">...</p>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -142,32 +135,17 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(), db = firebase.firestore();
 
-        let map, marker;
+        let map, marker, activeChatJobId = null, chatListener = null, selectedRating = 0, currentReviewJobId = null;
 
         function initMap() {
-            // Default Sri Lanka location (Colombo area)
             map = L.map('map').setView([6.9271, 79.8612], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            
             marker = L.marker([6.9271, 79.8612], {draggable: true}).addTo(map);
-            
-            // Update inputs when pin moves
-            marker.on('dragend', function (e) {
-                let position = marker.getLatLng();
-                document.getElementById('latInput').value = position.lat;
-                document.getElementById('lngInput').value = position.lng;
+            marker.on('dragend', function () {
+                let pos = marker.getLatLng();
+                document.getElementById('latInput').value = pos.lat;
+                document.getElementById('lngInput').value = pos.lng;
             });
-
-            // Try to get live phone GPS location
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    let lat = pos.coords.latitude, lng = pos.coords.longitude;
-                    map.setView([lat, lng], 15);
-                    marker.setLatLng([lat, lng]);
-                    document.getElementById('latInput').value = lat;
-                    document.getElementById('lngInput').value = lng;
-                });
-            }
         }
 
         function toggleTheme() {
@@ -175,7 +153,6 @@
             let target = current === 'light' ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', target);
             document.getElementById('theme-icon').innerText = target === 'light' ? "☀️" : "🌙";
-            localStorage.setItem('theme', target);
         }
 
         function switchView(viewId, element) {
@@ -189,43 +166,101 @@
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.href = "auth.html"; }
             else {
-                document.getElementById('userProfName').innerText = user.displayName || "QuickFix User";
-                document.getElementById('userProfEmail').innerText = user.email;
-                if(user.photoURL) document.getElementById('userProfAvatar').src = user.photoURL;
-
                 db.collection("jobs").where("customerId", "==", user.uid).orderBy("timestamp", "desc").onSnapshot(snapshot => {
                     const container = document.getElementById('jobsContainer');
                     if(snapshot.empty) { container.innerHTML = `<p style='color:var(--text-muted)'>තාම කිසිම Job එකක් පෝස්ට් කරලා නැහැ...</p>`; return; }
                     container.innerHTML = "";
                     snapshot.forEach(doc => {
                         const job = doc.data();
+                        let actionArea = "";
+                        
+                        if(job.status === 'accepted') {
+                            actionArea = `
+                                <button class="btn-action" style="background:#00c851;" onclick="openChat('${doc.id}')">චැට් කරන්න 💬</button>
+                                <div style="background:var(--input-bg); padding:10px; border-radius:6px; display:inline-block; font-weight:bold; color:var(--accent); margin-top:10px;">
+                                    🔐 ආරක්ෂිත OTP කේතය: ${job.otpCode}
+                                </div>`;
+                        } else if(job.status === 'completed' && !job.rated) {
+                            actionArea = `<button class="btn-action" style="background:#ffcc00; color:#111;" onclick="openRatingModal('${doc.id}')">රේටින්ග්ස් දෙන්න ⭐</button>`;
+                        }
+
                         container.innerHTML += `
                             <div class="job-card">
-                                <h3>${job.title}</h3>
+                                <h3>${job.title} (<span style="color:var(--accent); font-size:15px;">${job.status.toUpperCase()}</span>)</h3>
                                 <p>${job.description}</p>
                                 <div style="font-weight:bold;color:var(--accent)">Budget: රු. ${job.budget}</div>
-                                <div style="font-size:12px;margin-top:5px;color:gray">ලොකේෂන්: ${job.lat ? "📌 පින් කර ඇත" : "නැත"}</div>
+                                ${actionArea}
                             </div>`;
                     });
                 });
             }
         });
 
+        function openChat(jobId) {
+            activeChatJobId = jobId;
+            document.getElementById('customerChatBox').style.display = 'flex';
+            const msgContainer = document.getElementById('chatMessages');
+            if(chatListener) chatListener();
+            chatListener = db.collection("jobs").doc(jobId).collection("messages").orderBy("timestamp", "asc").onSnapshot(snapshot => {
+                msgContainer.innerHTML = "";
+                snapshot.forEach(doc => {
+                    const msg = doc.data();
+                    let msgClass = msg.senderId === auth.currentUser.uid ? 'sent' : 'received';
+                    msgContainer.innerHTML += `<div class="msg ${msgClass}">${msg.text}</div>`;
+                });
+                msgContainer.scrollTop = msgContainer.scrollHeight;
+            });
+        }
+
+        document.getElementById('chatForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatMsgInput');
+            db.collection("jobs").doc(activeChatJobId).collection("messages").add({
+                text: input.value.trim(), senderId: auth.currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => { input.value = ""; });
+        });
+
+        function openRatingModal(jobId) {
+            currentReviewJobId = jobId;
+            document.getElementById('ratingBox').style.display = "block";
+        }
+
+        function setRating(num) {
+            selectedRating = num;
+            const stars = document.querySelectorAll('.stars span');
+            stars.forEach((star, index) => {
+                if(index < num) star.classList.add('active');
+                else star.classList.remove('active');
+            });
+        }
+
+        function submitReview() {
+            if(selectedRating === 0) { alert("කරුණාකර තරුවක් තෝරන්න!"); return; }
+            db.collection("jobs").doc(currentReviewJobId).update({
+                rating: selectedRating, rated: true
+            }).then(() => {
+                alert("⭐ ස්තූතියි! ඔබේ රේටින්ග් එක සාර්ථකව සේව් වුණා.");
+                document.getElementById('ratingBox').style.display = "none";
+            });
+        }
+
         document.getElementById('jobPostForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const user = auth.currentUser;
+            const randomOTP = Math.floor(1000 + Math.random() * 9000); // Generate 4 digit secure OTP code
             db.collection("jobs").add({
                 title: document.getElementById('jobTitle').value,
                 description: document.getElementById('jobDesc').value,
                 budget: document.getElementById('jobBudget').value,
                 lat: parseFloat(document.getElementById('latInput').value) || 6.9271,
                 lng: parseFloat(document.getElementById('lngInput').value) || 79.8612,
-                customerId: user.uid,
-                customerName: user.displayName,
+                customerId: auth.currentUser.uid,
+                customerName: auth.currentUser.displayName,
                 status: "available",
+                otpCode: randomOTP,
+                rated: false,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
-                alert("✅ Job එක ලොකේෂන් එකත් එක්කම පෝස්ට් කරා මචං!");
+                alert("✅ Job එක සාර්ථකව පෝස්ට් කරා මචං!");
                 document.getElementById('jobPostForm').reset();
                 switchView('feed-view', document.querySelectorAll('.menu-item')[0]);
             });
