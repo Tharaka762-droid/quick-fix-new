@@ -48,7 +48,7 @@
 <body>
 
     <div class="auth-container">
-        <div class="lang-container">
+        <div class="lang-container" id="langBar">
             <button id="lang-si" class="lang-btn active" onclick="changeLanguage('si')">සිංහල</button>
             <button id="lang-en" class="lang-btn" onclick="changeLanguage('en')">English</button>
             <button id="lang-ta" class="lang-btn" onclick="changeLanguage('ta')">தமிழ்</button>
@@ -70,9 +70,9 @@
                 </div>
             </div>
 
-            <div class="input-group" id="phoneContainerSignUpOnly">
+            <div class="input-group" id="phoneContainer" style="display: none;">
                 <label id="lblPhone">දුරකථන අංකය</label>
-                <input type="tel" id="authPhone" placeholder="07XXXXXXXX" required>
+                <input type="tel" id="authPhone" placeholder="07XXXXXXXX">
             </div>
 
             <div class="input-group" id="identifierContainer">
@@ -111,9 +111,9 @@
         let currentTab = 'login', chosenRole = 'customer', googleUserObj = null, currentLang = 'si';
 
         const translations = {
-            si: { subtitle: "ඔබේ ආරක්ෂිත ගිණුමට ලොග් වන්න", step2: "ගිණුම සක්‍රීය කිරීමට අවසාන පියවර (දුරකථන අංකය අනිවාර්යයි)", fullName: "සම්පූර්ණ නම", phone: "දුරකථන අංකය", pass: "මුරපදය", selectRole: "ඔබේ භූමිකාව තෝරන්න:", customer: "කස්ටමර්", supplier: "රයිඩර්", loginBtn: "ඇතුල් වන්න", signupBtn: "ගිණුම සාදන්න", finishBtn: "ලියාපදිංචිය අවසන් කරන්න", emailOrPhone: "ඊමේල් හෝ දුරකථන අංකය", emailOnly: "ඊමේල් ලිපිනය (Email)", divider: "නැතහොත් වෙනත් ක්‍රමයකින්", google: "🌐 Continue with Google" },
-            en: { subtitle: "Login to your secure account", step2: "Final step to activate account (Phone Number Required)", fullName: "Full Name", phone: "Phone Number", pass: "Password", selectRole: "Select Your Role:", customer: "Customer", supplier: "Rider", loginBtn: "Login", signupBtn: "Sign Up", finishBtn: "Complete Registration", emailOrPhone: "Email or Phone Number", emailOnly: "Email Address", divider: "Or via other methods", google: "🌐 Continue with Google" },
-            ta: { subtitle: "உங்கள் பாதுகாப்பான கணக்கில் உள்நுழையவும்", step2: "கணக்கை செயல்படுத்த இறுதி படி (தொலைபேசி எண் கட்டாயம்)", fullName: "முழு பெயர்", phone: "தொலைபேசி எண்", pass: "கடவுச்சொல்", selectRole: "உங்கள் பாத்திரத்தை தேர்வு செய்யவும்:", customer: "வாடிக்கையாளர்", supplier: "ரைடர்", loginBtn: "உள்நுழைக", signupBtn: "பதிவு செய்க", finishBtn: "பதிவை முடிக்கவும்", emailOrPhone: "மின்னஞ்சல் அல்லது தொலைபேசி", emailOnly: "மின்னஞ்சல் முகவரி", divider: "அல்லது வேறு வழிகள் மூலம்", google: "🌐 கூகிள் மூலம் தொடரவும்" }
+            si: { subtitle: "ඔබේ ආරක්ෂිත ගිණුමට ලොග් වන්න", step2: "ගිණුම සක්‍රීය කිරීමට අවසාන පියවර", fullName: "සම්පූර්ණ නම", phone: "දුරකථන අංකය", pass: "මුරපදය", selectRole: "ඔබේ භූමිකාව තෝරන්න:", customer: "කස්ටමර්", supplier: "රයිඩර්", loginBtn: "ඇතුල් වන්න", signupBtn: "ගිණුම සාදන්න", finishBtn: "ලියාපදිංචිය අවසන් කරන්න", emailOrPhone: "ඊමේල් හෝ දුරකථන අංකය", emailOnly: "ඊමේල් ලිපිනය (Email)", divider: "නැතහොත් වෙනත් ක්‍රමයකින්", google: "🌐 Continue with Google" },
+            en: { subtitle: "Login to your secure account", step2: "Final step to activate account", fullName: "Full Name", phone: "Phone Number", pass: "Password", selectRole: "Select Your Role:", customer: "Customer", supplier: "Rider", loginBtn: "Login", signupBtn: "Sign Up", finishBtn: "Complete Registration", emailOrPhone: "Email or Phone Number", emailOnly: "Email Address", divider: "Or via other methods", google: "🌐 Continue with Google" },
+            ta: { subtitle: "உங்கள் பாதுகாப்பான கணக்கில் உள்நுழையவும்", step2: "கணக்கை செயல்படுத்த இறுதி படி", fullName: "முழு பெயர்", phone: "தொலைபேசி எண்", pass: "கடவுச்சொல்", selectRole: "உங்கள் பாத்திரத்தை தேர்வு செய்யவும்:", customer: "வாடிக்கையாளர்", supplier: "ரைடர்", loginBtn: "உள்நுழைக", signupBtn: "பதிவு செய்க", finishBtn: "பதிவை முடிக்கவும்", emailOrPhone: "மின்னஞ்சல் அல்லது தொலைபேசி", emailOnly: "மின்னஞ்சல் முகவரி", divider: "அல்லது வேறு வழிகள் மூலம்", google: "🌐 கூகிள் மூலம் தொடரவும்" }
         };
 
         function changeLanguage(lang) {
@@ -150,26 +150,28 @@
             document.getElementById('roleArea').style.display = 'none';
             document.getElementById('identifierContainer').style.display = 'block';
             document.getElementById('passwordContainer').style.display = 'block';
+            document.getElementById('authIdentifier').setAttribute('required', 'required');
+            document.getElementById('authPassword').setAttribute('required', 'required');
             
             if (tab === 'login') {
                 document.getElementById('loginTab').classList.add('active');
                 document.getElementById('signupTab').classList.remove('active');
                 document.getElementById('signupFields').classList.add('hidden');
-                document.getElementById('phoneContainerSignUpOnly').style.display = 'none'; // Login එකේදී මේක ඕන නෑ
+                document.getElementById('phoneContainer').style.display = 'none';
                 document.getElementById('authPhone').removeAttribute('required');
                 document.getElementById('socialDiv').style.display = 'block';
             } else {
                 document.getElementById('signupTab').classList.add('active');
                 document.getElementById('loginTab').classList.remove('active');
                 document.getElementById('signupFields').classList.remove('hidden');
-                document.getElementById('phoneContainerSignUpOnly').style.display = 'block'; // Signup එකේදී අනිවාර්යයි
+                document.getElementById('phoneContainer').style.display = 'block';
                 document.getElementById('authPhone').setAttribute('required', 'required');
                 document.getElementById('roleArea').style.display = 'block';
             }
             changeLanguage(currentLang);
         }
         
-        switchTab('login'); // Default View Setup
+        switchTab('login');
 
         function selectRole(role) {
             chosenRole = role;
@@ -187,15 +189,18 @@
                     if (doc.exists) {
                         redirectUser(doc.data().role);
                     } else {
-                        // 🚨 🆕 GOOGLE වලින් එන අලුත් යූසර්ට PHONE NUMBER එක ගහන්නම ස්ක්‍රීන් එක හදනවා!
+                        // 🚨 FIX: GOOGLE NEW FLOW එකේදී අනෙක්වා හංගලා ෆෝන් එකයි, රෝල් එකයි විතරක් නියමෙටම මතු කරනවා!
                         document.getElementById('tabBar').classList.add('hidden');
                         document.getElementById('socialDiv').style.display = 'none';
                         document.getElementById('signupFields').classList.add('hidden');
+                        
                         document.getElementById('identifierContainer').style.display = 'none';
                         document.getElementById('passwordContainer').style.display = 'none';
+                        document.getElementById('authIdentifier').removeAttribute('required');
+                        document.getElementById('authPassword').removeAttribute('required');
                         
-                        // ෆෝන් නම්බර් එකයි, රෝල් එකයි විතරක් පෙන්වනවා
-                        document.getElementById('phoneContainerSignUpOnly').style.display = 'block';
+                        // ෆෝන් නම්බර් එකයි, රෝල් සිලෙක්ටර් එකයි ලස්සනට පෙන්වනවා
+                        document.getElementById('phoneContainer').style.display = 'block';
                         document.getElementById('authPhone').setAttribute('required', 'required');
                         document.getElementById('roleArea').style.display = 'block';
                         
@@ -229,14 +234,19 @@
                 }).catch(err => alert("Error: " + err.message));
 
             } else if (currentTab === 'google-new-role') {
-                // 🚨 GOOGLE අලුත් යූසර් ෆෝන් නම්බර් එක ගැහුවද බලනවා
+                // 🚨 FIX: බටන් එක වැඩ නොකරපු ලෙඩේ සහ ෆෝන් නම්බර් එක ඩේටාබේස් සේව් වෙන කෑල්ල මෙතනින් 100%ක්ම ගොඩදැම්මා!
                 if(!phone || phone.length < 9) { alert("කරුණාකර දුරකථන අංකයක් ඇතුළත් කරන්න!"); return; }
 
                 db.collection("users").doc(googleUserObj.uid).set({
-                    fullName: googleUserObj.displayName, email: googleUserObj.email, phoneNumber: phone, role: chosenRole,
+                    fullName: googleUserObj.displayName, 
+                    email: googleUserObj.email, 
+                    phoneNumber: phone, 
+                    role: chosenRole,
                     avatar: googleUserObj.photoURL || "https://www.w3schools.com/howto/img_avatar.png",
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => { redirectUser(chosenRole); });
+                }).then(() => { 
+                    redirectUser(chosenRole); 
+                }).catch(err => alert("Error saving profile: " + err.message));
 
             } else {
                 if (identifier.includes("@")) {
