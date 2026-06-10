@@ -59,12 +59,12 @@
             border: none; outline: none; width: 100%; font-size: 15px; color: #333; margin-left: 10px;
         }
 
-        /* 💻 MAIN APPS SCREEN (Dynamic Views) */
+        /* 💻 MAIN APPS SCREEN */
         .app-body { flex-grow: 1; padding: 20px; overflow-y: auto; padding-bottom: 90px; }
         .view-section { display: none; }
         .view-section.active { display: block; }
 
-        /* 🚖 NEW GRID SYSTEM (2 Columns per Row for better fit) */
+        /* 🚖 GRID SYSTEM */
         .category-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -113,7 +113,7 @@
         .chat-input-area input { flex-grow: 1; border: none; padding: 10px; outline: none; }
         .chat-input-area button { background: var(--accent); border: none; padding: 0 15px; font-weight: bold; }
 
-        /* 📱 BOTTOM NAVIGATION BAR (PickMe Style) */
+        /* 📱 BOTTOM NAVIGATION BAR */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
             background: white; border-top: 1px solid var(--border-color);
@@ -279,13 +279,13 @@
 
     <script>
         const part1 = "AIzaSyD29G6zoTAbg1YybqIWdKzCq"; const part2 = "_v--pAOOfI";
-        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.appspot.com", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
+        // 🚨 FIXED: STORAGE BUCKET URL CORRECTED NATIVE FOR FIREBASE SECURE BYPASS
+        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.firebasestorage.app", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(), db = firebase.firestore(), storage = firebase.storage();
 
         let map, marker, activeChatJobId = null, chatListener = null, currentCategory = "General";
 
-        // Dynamic greeting via system clock
         const hrs = new Date().getHours();
         document.getElementById('lblGreeting').innerText = hrs < 12 ? "Good Morning!☀️" : hrs < 17 ? "Good Afternoon!🌤️" : "Good Evening!🌙";
 
@@ -323,8 +323,6 @@
             document.getElementById('postFormArea').style.display = "block";
             document.getElementById('jobTitle').value = catDisplaySI + " කරගැනීම";
             setTimeout(initMap, 200);
-            
-            // Scroll to the form layout smoothly
             document.getElementById('postFormArea').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -345,7 +343,6 @@
                     }
                 });
 
-                // Load activities setup real time queries filtered
                 db.collection("jobs").where("customerId", "==", user.uid).orderBy("timestamp", "desc").onSnapshot(snapshot => {
                     const container = document.getElementById('jobsContainer');
                     if(snapshot.empty) { container.innerHTML = `<p style='color:var(--text-muted); font-size:14px;'>තාම කිසිම ඇනවුමක් සිදුකර නැත...</p>`; return; }
@@ -414,6 +411,7 @@
                 let pNum = (userDoc.exists && userDoc.data().phoneNumber) ? userDoc.data().phoneNumber : "නැත";
                 
                 if (file) {
+                    // 🚨 FIXED: UPLOADS ACCURATELY NOW WITHOUT STICKING
                     const storageRef = storage.ref('job_images/' + Date.now() + '_' + file.name);
                     storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(downloadUrl => {
                         return db.collection("jobs").add({
@@ -421,23 +419,27 @@
                             customerId: auth.currentUser.uid, customerName: auth.currentUser.displayName, customerPhone: pNum,
                             status: "available", otpCode: randomOTP, rated: false, imageUrl: downloadUrl, timestamp: firebase.firestore.FieldValue.serverTimestamp()
                         });
-                    }).then(() => { finishPost(); });
+                    }).then(() => { finishPost(); }).catch(err => { alert("Upload error: " + err.message); resetBtn(); });
                 } else {
                     db.collection("jobs").add({
                         title: title, description: description, budget: budget, lat: lat, lng: lng, category: currentCategory,
                         customerId: auth.currentUser.uid, customerName: auth.currentUser.displayName, customerPhone: pNum,
                         status: "available", otpCode: randomOTP, rated: false, imageUrl: null, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    }).then(() => { finishPost(); });
+                    }).then(() => { finishPost(); }).catch(err => { alert("Error: " + err.message); resetBtn(); });
                 }
             });
         });
+
+        function resetBtn() {
+            const btn = document.getElementById('btnSubmitPost');
+            btn.disabled = false; btn.innerText = "කාර්මික ශිල්පියෙකු සොයන්න (Find Fixer) 🚀";
+        }
 
         function finishPost() {
             alert("✅ ඔබේ QuickFix ඇනවුම සාර්ථකව පෝස්ට් කරා මචං!");
             document.getElementById('jobPostForm').reset();
             document.getElementById('postFormArea').style.display = "none";
-            const btn = document.getElementById('btnSubmitPost');
-            btn.disabled = false; btn.innerText = "කාර්මික ශිල්පියෙකු සොයන්න (Find Fixer) 🚀";
+            resetBtn();
             switchView('view-activities', 'nav-activities');
         }
 
