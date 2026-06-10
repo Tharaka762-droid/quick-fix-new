@@ -97,10 +97,15 @@
         #map { width: 100%; height: 200px; border-radius: 10px; margin-top: 5px; border: 1px solid var(--border-color); z-index: 1; }
         
         .btn-yellow { background: var(--accent); color: #111; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; }
-        .job-card { background: white; border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; margin-bottom: 12px; position: relative; }
+        .job-card { background: white; border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; margin-bottom: 12px; position: relative; text-align: left; }
         .job-card h3 { margin: 0 0 5px 0; font-size: 16px; color: #111; }
         .job-img { width: 100%; max-width: 200px; height: 120px; object-fit: cover; border-radius: 8px; margin-top: 8px; }
         .status-badge { position: absolute; top: 15px; right: 15px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+
+        /* 🔔 NOTIFICATION STYLE (PickMe Style) */
+        .noti-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,0.02); text-align: left; }
+        .noti-card h4 { margin: 0 0 5px 0; color: #111; font-size: 15px; }
+        .noti-card p { margin: 0; color: var(--text-muted); font-size: 13px; }
 
         /* 💬 CHAT BOX WINDOW */
         .chat-container { background: white; border: 1px solid var(--border-color); border-radius: 12px; margin-top: 15px; display: none; flex-direction: column; height: 280px; overflow: hidden; }
@@ -237,7 +242,7 @@
         </div>
 
         <div id="view-activities" class="view-section">
-            <h2 style="font-size: 20px; margin-bottom: 15px;">ඔබ ඇනවුම් කල වැඩ (Activities)</h2>
+            <h2 style="font-size: 20px; margin-bottom: 15px; text-align: left;">ඔබ ඇනවුම් කල වැඩ (Activities)</h2>
             <div id="jobsContainer"></div>
 
             <div id="customerChatBox" class="chat-container">
@@ -250,8 +255,15 @@
             </div>
         </div>
 
+        <div id="view-notifications" class="view-section">
+            <h2 style="font-size: 20px; margin-bottom: 15px; text-align: left;">දැනුම්දීම් (Notifications)</h2>
+            <div id="notificationsContainer">
+                <p style="color:var(--text-muted); font-size:14px; text-align:left;">තාම අලුත් Notifications කිසිවක් නැත...</p>
+            </div>
+        </div>
+
         <div id="view-account" class="view-section">
-            <h2 style="font-size: 20px;">මගේ ගිණුම (Account)</h2>
+            <h2 style="font-size: 20px; text-align: left;">මගේ ගිණුම (Account)</h2>
             <div class="form-card" style="text-align: center;">
                 <img id="userProfAvatar" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--accent); object-fit: cover;" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
                 <h3 id="userProfName" style="margin:10px 0 2px 0;">...</h3>
@@ -269,7 +281,7 @@
         <div id="nav-activities" class="nav-item" onclick="switchView('view-activities', 'nav-activities')">
             <span>📋</span>Activities
         </div>
-        <div id="nav-notifications" class="nav-item" onclick="alert('තාම අලුත් Notifications කිසිවක් නැත!')">
+        <div id="nav-notifications" class="nav-item" onclick="switchView('view-notifications', 'nav-notifications')">
             <span>🔔</span>Notification
         </div>
         <div id="nav-account" class="nav-item" onclick="switchView('view-account', 'nav-account')">
@@ -279,7 +291,6 @@
 
     <script>
         const part1 = "AIzaSyD29G6zoTAbg1YybqIWdKzCq"; const part2 = "_v--pAOOfI";
-        // 🚨 FIXED: STORAGE BUCKET URL CORRECTED NATIVE FOR FIREBASE SECURE BYPASS
         const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.firebasestorage.app", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(), db = firebase.firestore(), storage = firebase.storage();
@@ -343,10 +354,19 @@
                     }
                 });
 
-                db.collection("jobs").where("customerId", "==", user.uid).orderBy("timestamp", "desc").onSnapshot(snapshot => {
+                // 🚨 FIXED: JOBS FETCH QUERY (No more query-lock hanging!)
+                db.collection("jobs").where("customerId", "==", user.uid).onSnapshot(snapshot => {
                     const container = document.getElementById('jobsContainer');
-                    if(snapshot.empty) { container.innerHTML = `<p style='color:var(--text-muted); font-size:14px;'>තාම කිසිම ඇනවුමක් සිදුකර නැත...</p>`; return; }
+                    const notiContainer = document.getElementById('notificationsContainer');
+                    
+                    if(snapshot.empty) { 
+                        container.innerHTML = `<p style='color:var(--text-muted); font-size:14px; text-align:left;'>තාම කිසිම ඇනවුමක් සිදුකර නැත...</p>`; 
+                        return; 
+                    }
+                    
                     container.innerHTML = "";
+                    let notiHtml = "";
+
                     snapshot.forEach(doc => {
                         const job = doc.data();
                         let chatBtn = job.status === 'accepted' ? `<button style="background:#00c851; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px;" onclick="openChat('${doc.id}')">බාස් සමඟ චැට් 💬</button>` : '';
@@ -361,10 +381,31 @@
                                 <p style="font-size:13px; color:#555; margin:5px 0;">${job.description}</p>
                                 <div style="font-size:12px; color:#777; margin-bottom:5px;">Category: <b>${job.category}</b></div>
                                 ${imgTag}
-                                <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: රු. ${job.budget}</div>
+                                <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: ਰੁ. ${job.budget}</div>
                                 ${otpBadge} ${chatBtn}
                             </div>`;
+
+                        // 🔔 GENERATE NOTIFICATIONS DYNAMICALLY BASED ON STATUS CHANGE
+                        if(job.status === 'accepted') {
+                            notiHtml += `
+                                <div class="noti-card">
+                                    <h4>🛠️ ඔබේ ඇනවුම බාරගන්නා ලදී!</h4>
+                                    <p>ඔබේ "${job.title}" වැඩය <b>${job.riderName || 'බාස් කෙනෙක්'}</b> විසින් බාරගන්නා ලදී. චැට් එක හරහා සම්බන්ධ වන්න.</p>
+                                </div>`;
+                        } else if (job.status === 'completed') {
+                            notiHtml += `
+                                <div class="noti-card" style="border-left-color: #00c851;">
+                                    <h4>✅ වැඩය සාර්ථකව අවසන්!</h4>
+                                    <p>"${job.title}" වැඩය සාර්ථකව නිම කර ඇත. ස්තූතියි!</p>
+                                </div>`;
+                        }
                     });
+
+                    if(notiHtml !== "") {
+                        notiContainer.innerHTML = notiHtml;
+                    } else {
+                        notiContainer.innerHTML = `<p style="color:var(--text-muted); font-size:14px; text-align:left;">තාම අලුත් දැනුම්දීම් කිසිවක් නැත...</p>`;
+                    }
                 });
             }
         });
@@ -411,7 +452,6 @@
                 let pNum = (userDoc.exists && userDoc.data().phoneNumber) ? userDoc.data().phoneNumber : "නැත";
                 
                 if (file) {
-                    // 🚨 FIXED: UPLOADS ACCURATELY NOW WITHOUT STICKING
                     const storageRef = storage.ref('job_images/' + Date.now() + '_' + file.name);
                     storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(downloadUrl => {
                         return db.collection("jobs").add({
