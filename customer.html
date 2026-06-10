@@ -64,32 +64,36 @@
         .view-section { display: none; }
         .view-section.active { display: block; }
 
-        /* 🚖 CATEGORY GRID SYSTEM */
+        /* 🚖 NEW GRID SYSTEM (2 Columns per Row for better fit) */
         .category-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
             margin-top: 10px;
         }
         .category-card {
             background: var(--panel-bg);
             border-radius: 16px;
-            padding: 15px 5px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            padding: 18px 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
             cursor: pointer;
             transition: 0.2s;
-            border: 1px solid transparent;
+            border: 1px solid #eaeaea;
         }
-        .category-card:hover { transform: translateY(-3px); border-color: var(--accent); }
-        .category-icon { font-size: 32px; margin-bottom: 8px; display: block; }
-        .category-name { font-size: 12px; font-weight: bold; color: #333; }
+        .category-card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 6px 15px rgba(0,0,0,0.06); }
+        .category-icon { font-size: 28px; }
+        .category-name-wrapper { text-align: left; }
+        .category-name { font-size: 14px; font-weight: bold; color: #222; display: block; }
+        .category-desc { font-size: 11px; color: var(--text-muted); }
 
         /* 💼 FORM & CARDS STYLES */
         .form-card { background: white; padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); }
         .form-group { margin-bottom: 15px; text-align: left; }
         .form-group label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; }
-        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; outline: none; background: #f9f9f9; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; outline: none; background: #f9f9f9; font-family: inherit; }
         #map { width: 100%; height: 200px; border-radius: 10px; margin-top: 5px; border: 1px solid var(--border-color); z-index: 1; }
         
         .btn-yellow { background: var(--accent); color: #111; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; }
@@ -126,73 +130,107 @@
         <div class="header-user">
             <div class="user-info">
                 <p id="lblGreeting">Good Evening!</p>
-                <h3 id="topUserName">Tharaka Madushan</h3>
+                <h3 id="topUserName">Loading...</h3>
             </div>
             <img id="topUserAvatar" class="header-avatar" src="https://www.w3schools.com/howto/img_avatar.png" alt="User Avatar">
         </div>
         
         <div class="search-container">
             <span>🔍</span>
-            <input type="text" placeholder="Where are you going?" disabled>
+            <input type="text" placeholder="ඔබට අද කරගත යුතු වැඩේ මොකක්ද?" disabled>
         </div>
     </div>
 
     <div class="app-body">
         
         <div id="view-home" class="view-section active">
+            <h4 style="margin: 10px 0 15px 0; color: #555; font-size: 14px;">🛠️ සේවාවන් තෝරන්න (Select Service)</h4>
+            
             <div class="category-grid">
-                <div class="category-card" onclick="openQuickFixForm('රයිඩ් / Delivery')">
-                    <span class="category-icon">🚗</span><span class="category-name">රයිඩ්</span>
+                <div class="category-card" onclick="openQuickFixForm('Electrical', 'ලයිට් වැඩ / විදුලි කාර්මික ශිල්පී')">
+                    <span class="category-icon">⚡</span>
+                    <div class="category-name-wrapper">
+                        <span class="category-name">Electrical</span>
+                        <span class="category-desc">ලයිට්, වයිරින්, AC</span>
+                    </div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('ෆුඩ් / Food Order')">
-                    <span class="category-icon">🍔</span><span class="category-name">ෆුඩ්</span>
+                <div class="category-card" onclick="openQuickFixForm('Mechanical', 'යාන්ත්‍රික වැඩ / Mechanical බාස්')">
+                    <span class="category-icon">👨‍🔧</span>
+                    <div class="category-name-wrapper">
+                        <span class="category-name">Mechanical</span>
+                        <span class="category-desc">වාහන, බයික් රෙපෙයාර්</span>
+                    </div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('මාකට් / Market')">
-                    <span class="category-icon">🛒</span><span class="category-name">මාකට්</span>
+                <div class="category-card" onclick="openQuickFixForm('Plumbing', 'නල වැඩ / ප්ලම්බර් බාස්')">
+                    <span class="category-icon">🚰</span>
+                    <div class="category-name-wrapper">
+                        <span class="category-name">Plumbing</span>
+                        <span class="category-desc">බට ලීක්, ටැංකි, පයිප්ප</span>
+                    </div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('Events Pack')">
-                    <span class="category-icon">🤘</span><span class="category-name">Events</span>
+                <div class="category-card" onclick="openQuickFixForm('Electronics', 'ඉලෙක්ට්‍රොනික උපකරණ රෙපෙයාර්')">
+                    <span class="category-icon">📺</span>
+                    <div class="category-name-wrapper">
+                        <span class="category-name">Electronics</span>
+                        <span class="category-desc">TV, ෆ්‍රිජ්, පෑන්, ෆෝන්</span>
+                    </div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('රෙන්ටල් / Rental')">
-                    <span class="category-icon">📅</span><span class="category-name">රෙන්ටල්</span>
+                <div class="category-card" onclick="openQuickFixForm('Carpentry', 'වඩු වැඩ / වඩු බාස්')">
+                    <span class="category-icon">🪚</span>
+                    <div class="category-name-wrapper">
+                        <span class="category-name">Carpentry</span>
+                        <span class="category-desc">දොරවල්, අල්මාරි, ගෘහභාණ්ඩ</span>
+                    </div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('ෆ්ලෑෂ් ඩිලිවරි / Flash')">
-                    <span class="category-icon">📦</span><span class="category-name">ෆ්ලෑෂ්</span>
+                <div class="category-card" onclick="openQuickFixForm('Masonry & Painting', 'පින්තාරු සහ පෙදරේරු වැඩ')">
+                    <span class="category-icon">🎨</span>
+                    <div class="category-name-wrapper">
+                        <span class="category-name">Painting</span>
+                        <span class="category-desc">තීන්ත, මේසන්, ටයිල්</span>
+                    </div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('ට්‍රක් / Truck ඩිලිවරි')">
-                    <span class="category-icon">🚚</span><span class="category-name">ට්‍රක්</span>
+                <div class="category-card" onclick="openQuickFixForm('Transport', 'ප්‍රවාහන / Delivery / රයිඩ්')">
+                    <span class="category-icon">🚚</span>
+                    <div class="category-name-wrapper">
+                        <span class="category-name">Transport</span>
+                        <span class="category-desc">ත්‍රිවීල්, බයික්, ට්‍රක්</span>
+                    </div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('ස්කෑන් N Go')">
-                    <span class="category-icon">📲</span><span class="category-name">ස්කෑන්</span>
+                <div class="category-card" onclick="openQuickFixForm('Other Fixes', 'වෙනත් ඕනෑම Fix වැඩක්')">
+                    <span class="category-icon">🛠️</span>
+                    <div class="category-name-wrapper">
+                        <span class="category-name">Other Fixes</span>
+                        <span class="category-desc">වත්ත සුදුවැඩ, පිරිසිදු කිරීම්</span>
+                    </div>
                 </div>
             </div>
 
             <div id="postFormArea" style="display: none; margin-top: 25px;">
-                <h4 style="margin: 0 0 10px 0; color: #111;">अලුත් <span id="selectedCategoryName" style="color: #e6b800;">...</span> වැඩක් දාන්න</h4>
+                <h4 style="margin: 0 0 10px 0; color: #111;">🎯 අලුත් <span id="selectedCategoryDisplay" style="color: #e6b800;">...</span> වැඩක් දාන්න</h4>
                 <div class="form-card">
                     <form id="jobPostForm">
                         <div class="form-group">
-                            <label>වැඩේ මාතෘකාව (Title)</label>
+                            <label>වැඩේ කෙටි හැඳින්වීම (Title)</label>
                             <input type="text" id="jobTitle" required>
                         </div>
                         <div class="form-group">
-                            <label>වැඩේ විස්තරය (Description)</label>
-                            <textarea id="jobDesc" rows="2" required></textarea>
+                            <label>වැඩේ සහ ලෙඩේ විස්තරය (Describe the issue)</label>
+                            <textarea id="jobDesc" rows="3" placeholder="කරගන්න ඕන වැඩේ ගැන විස්තරයක් ලියන්න..." required></textarea>
                         </div>
                         <div class="form-group">
                             <label>වැඩේට අදාළ ඡායාරූපයක් (Upload Photo) 📸</label>
                             <input type="file" id="jobImageFile" accept="image/*">
                         </div>
                         <div class="form-group">
-                            <label>ඔබ ඉන්න තැන පින් කරන්න (Pin Location) 📍</label>
+                            <label>වැඩේ තියෙන තැන පින් කරන්න (Pin Location) 📍</label>
                             <div id="map"></div>
                             <input type="hidden" id="latInput"><input type="hidden" id="lngInput">
                         </div>
                         <div class="form-group">
-                            <label>ඔබ දෙන මුදල (Budget - LKR)</label>
-                            <input type="number" id="jobBudget" required>
+                            <label>ඔබ දෙන උපරිම ගාස්තුව (Budget - LKR)</label>
+                            <input type="number" id="jobBudget" placeholder="රු. 1500" required>
                         </div>
-                        <button type="submit" id="btnSubmitPost" class="btn-yellow">වැඩේ පෝස්ට් කරන්න 🚀</button>
+                        <button type="submit" id="btnSubmitPost" class="btn-yellow">කාර්මික ශිල්පියෙකු සොයන්න (Find Fixer) 🚀</button>
                     </form>
                 </div>
             </div>
@@ -215,7 +253,7 @@
         <div id="view-account" class="view-section">
             <h2 style="font-size: 20px;">මගේ ගිණුම (Account)</h2>
             <div class="form-card" style="text-align: center;">
-                <img id="userProfAvatar" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--accent);" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
+                <img id="userProfAvatar" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--accent); object-fit: cover;" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
                 <h3 id="userProfName" style="margin:10px 0 2px 0;">...</h3>
                 <p id="userProfEmail" style="color:var(--text-muted); margin:0 0 15px 0;">...</p>
                 <button class="btn-yellow" style="background:#ff4444; color:white;" onclick="logoutUser()">Log Out (ගිණුමෙන් ඉවත් වන්න)</button>
@@ -247,7 +285,7 @@
 
         let map, marker, activeChatJobId = null, chatListener = null, currentCategory = "General";
 
-        // Dynamic greeting set via system clock
+        // Dynamic greeting via system clock
         const hrs = new Date().getHours();
         document.getElementById('lblGreeting').innerText = hrs < 12 ? "Good Morning!☀️" : hrs < 17 ? "Good Afternoon!🌤️" : "Good Evening!🌙";
 
@@ -279,19 +317,20 @@
             document.getElementById(navId).classList.add('active');
         }
 
-        function openQuickFixForm(catName) {
+        function openQuickFixForm(catName, catDisplaySI) {
             currentCategory = catName;
-            document.getElementById('selectedCategoryName').innerText = catName;
+            document.getElementById('selectedCategoryDisplay').innerText = catDisplaySI;
             document.getElementById('postFormArea').style.display = "block";
-            document.getElementById('jobTitle').value = catName + " වැඩක් කරගන්න";
+            document.getElementById('jobTitle').value = catDisplaySI + " කරගැනීම";
             setTimeout(initMap, 200);
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            
+            // Scroll to the form layout smoothly
+            document.getElementById('postFormArea').scrollIntoView({ behavior: 'smooth' });
         }
 
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.href = "auth.html"; }
             else {
-                // Populate Headers & profile layout sync
                 document.getElementById('topUserName').innerText = user.displayName || "QuickFix User";
                 document.getElementById('userProfName').innerText = user.displayName || "QuickFix User";
                 document.getElementById('userProfEmail').innerText = user.email;
@@ -313,7 +352,7 @@
                     container.innerHTML = "";
                     snapshot.forEach(doc => {
                         const job = doc.data();
-                        let chatBtn = job.status === 'accepted' ? `<button style="background:#00c851; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px;" onclick="openChat('${doc.id}')">රයිඩර් සමඟ චැට් 💬</button>` : '';
+                        let chatBtn = job.status === 'accepted' ? `<button style="background:#00c851; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px;" onclick="openChat('${doc.id}')">බාස් සමඟ චැට් 💬</button>` : '';
                         let otpBadge = job.status === 'accepted' ? `<div style="margin-top:8px; font-size:13px; font-weight:bold; color:#111;">🔐 Security OTP: <span style="background:var(--accent); padding:2px 8px; border-radius:4px;">${job.otpCode}</span></div>` : '';
                         let imgTag = job.imageUrl ? `<img src="${job.imageUrl}" class="job-img" alt="Job Image">` : '';
                         let badgeColor = job.status === 'available' ? '#ffcc00' : job.status === 'accepted' ? '#00c851' : '#777';
@@ -323,6 +362,7 @@
                                 <span class="status-badge" style="background:${badgeColor}; color:${job.status==='available'?'#111':'#fff'}">${job.status}</span>
                                 <h3>${job.title}</h3>
                                 <p style="font-size:13px; color:#555; margin:5px 0;">${job.description}</p>
+                                <div style="font-size:12px; color:#777; margin-bottom:5px;">Category: <b>${job.category}</b></div>
                                 ${imgTag}
                                 <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: රු. ${job.budget}</div>
                                 ${otpBadge} ${chatBtn}
@@ -397,7 +437,7 @@
             document.getElementById('jobPostForm').reset();
             document.getElementById('postFormArea').style.display = "none";
             const btn = document.getElementById('btnSubmitPost');
-            btn.disabled = false; btn.innerText = "වැඩේ පෝස්ට් කරන්න 🚀";
+            btn.disabled = false; btn.innerText = "කාර්මික ශිල්පියෙකු සොයන්න (Find Fixer) 🚀";
             switchView('view-activities', 'nav-activities');
         }
 
