@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickFix - Multi-Auth Secure</title>
+    <title>QuickFix - Customer Auth</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #121212; margin: 0; padding: 0; color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
@@ -16,10 +15,6 @@
         .logo { color: #ffcc00; margin: 0 0 5px 0; font-size: 36px; font-weight: 800; }
         .subtitle { color: #777; margin: 0 0 25px 0; font-size: 14px; }
         
-        .lang-container { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 20px; width: 100%; }
-        .lang-btn { background: #2b2b2b; color: #aaa; border: 1px solid #444; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .lang-btn.active { background: #ffcc00; color: #111; border-color: #ffcc00; }
-
         .form-toggle { display: flex; justify-content: space-between; margin-bottom: 25px; background: #252525; padding: 5px; border-radius: 10px; border: 1px solid #333; }
         .tab-btn { width: 50%; padding: 12px; font-weight: bold; cursor: pointer; border: none; background: transparent; border-radius: 8px; font-size: 14px; color: #aaa; transition: 0.2s; }
         .tab-btn.active { background: #ffcc00; color: #111; }
@@ -33,24 +28,13 @@
         .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #333; }
         
         .social-btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; background: #df4a32; transition: 0.2s; }
-        
-        .role-area { display: none; margin-top: 15px; text-align: left; }
-        .role-selector { display: flex; justify-content: space-between; gap: 15px; margin: 10px 0 20px 0; }
-        .role-box { width: 50%; padding: 15px 10px; border: 2px solid #444; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 14px; background: #2b2b2b; color: #aaa; text-align: center; }
-        .role-box.active { border-color: #ffcc00; background: #221f15; color: #ffcc00; }
         .hidden { display: none; }
-        
         #loadingOverlay { display: none; color: #ffcc00; font-weight: bold; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
     <div class="auth-container">
-        <div class="lang-container" id="langBar">
-            <button id="lang-si" class="lang-btn active" onclick="changeLanguage('si')">සිංහල</button>
-            <button id="lang-en" class="lang-btn" onclick="changeLanguage('en')">English</button>
-        </div>
-
         <h1 class="logo">QuickFix</h1>
         <p class="subtitle" id="mainSubtitle">ඔබේ ගිණුමට ඇතුල් වන්න</p>
         
@@ -64,310 +48,133 @@
         <form id="mainAuthForm">
             <div id="signupFields" class="hidden">
                 <div class="input-group">
-                    <label id="lblFullName">ඔබේ සම්පූර්ණ නම</label>
+                    <label>ඔබේ සම්පූර්ණ නම</label>
                     <input type="text" id="authName" placeholder="Kamal Perera">
                 </div>
-            </div>
-
-            <div class="input-group" id="photoContainer" style="display: none;">
-                <label style="color: #ffcc00; font-weight: bold;">ප්‍රොෆයිල් ඡායාරූපයක් එක් කරන්න 📸</label>
-                <input type="file" id="authProfilePic" accept="image/*">
-            </div>
-
-            <div class="input-group" id="phoneContainer" style="display: none;">
-                <label id="lblPhone">දුරකථන අංකය</label>
-                <input type="tel" id="authPhone" placeholder="07XXXXXXXX">
+                <div class="input-group">
+                    <label>දුරකථන අංකය</label>
+                    <input type="tel" id="authPhone" placeholder="07XXXXXXXX">
+                </div>
             </div>
 
             <div class="input-group" id="identifierContainer">
-                <label id="identifierLabel">ඊමේල් හෝ දුරකථන අංකය</label>
-                <input type="text" id="authIdentifier" placeholder="example@gmail.com / 07XXXXXXXX" required>
+                <label id="identifierLabel">ඊමේල් ලිපිනය (Email Address)</label>
+                <input type="email" id="authIdentifier" placeholder="example@gmail.com" required>
             </div>
             
             <div class="input-group" id="passwordContainer">
-                <label id="lblPassword">මුරපදය</label>
+                <label>මුරපදය (Password)</label>
                 <input type="password" id="authPassword" placeholder="••••••••" required>
-            </div>
-
-            <div id="roleArea" class="role-area">
-                <label style="color: #ffcc00; font-weight: bold;" id="lblSelectRole">ඔබේ භූමිකාව තෝරන්න (Select Role):</label>
-                <div class="role-selector">
-                    <div id="roleCust" class="role-box active" onclick="selectRole('customer')">🙋‍♂️ <span id="lblRoleCust">කස්ටමර්</span></div>
-                    <div id="roleSupp" class="role-box" onclick="selectRole('supplier')">🛠️ <span id="lblRoleSupp">රයිඩර්</span></div>
-                </div>
-            </div>
-
-            <div class="input-group" id="documentContainer" style="display: none;">
-                <label style="color: #ffcc00; font-weight: bold;">හඳුනාගැනීමේ පත්‍රය (NIC / License Photo) 🪪</label>
-                <p style="font-size: 11px; color: #aaa; margin: 0 0 8px 0;">ආරක්ෂාව සඳහා ඔබේ ID කාඩ් හෝ ලයිසන් එකක පැහැදිලි ෆොටෝ එකක් දාන්න.</p>
-                <input type="file" id="authRiderDoc" accept="image/*">
             </div>
 
             <button type="submit" id="submitBtn" class="btn-submit">ඇතුල් වන්න</button>
         </form>
 
         <div id="socialDiv">
-            <div class="divider" id="lblDivider">නැතහොත් වෙනත් ක්‍රමයකින්</div>
-            <button class="social-btn" id="lblGoogleBtn" onclick="loginWithGoogle()">🌐 Continue with Google</button>
+            <div class="divider">නැතහොත් වෙනත් ක්‍රමයකින්</div>
+            <button class="social-btn" onclick="loginWithGoogle()">🌐 Continue with Google</button>
         </div>
     </div>
 
     <script>
         const part1 = "AIzaSyD29G6zoTAbg1YybqIWdKzCq"; const part2 = "_v--pAOOfI";
-        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.firebasestorage.app", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
+        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth(), db = firebase.firestore(), storage = firebase.storage();
+        const auth = firebase.auth(), db = firebase.firestore();
 
-        // 🚨 CRITICAL LOCK: FORCES STORAGE TO ABORT RETRIES AFTER 5 SECONDS TO PREVENT INDEFINITE FREEZING
-        storage.setMaxUploadRetryTime(5000);
-
-        let currentTab = 'login', chosenRole = 'customer', googleUserObj = null, currentLang = 'si';
-        let checkLock = false;
-
-        const translations = {
-            si: { subtitle: "ඔබේ ආරක්ෂිත ගිණුමට ලොග් වන්න", step2: "ගිණුම සක්‍රීය කිරීමට අවසාන පියවර (ඡායාරූපය සහ දුරකථනය අනිවාර්යයි)", fullName: "සම්පූර්ණ නම", phone: "දුරකථන අංකය", pass: "මුරපදය", selectRole: "ඔබේ භූමිකාව තෝරන්න:", customer: "කස්ටමර්", supplier: "රයිඩර්", loginBtn: "ඇතුල් වන්න", signupBtn: "ගිණුම සාදන්න", finishBtn: "ලියාපදිංචිය අවසන් කරන්න", emailOrPhone: "ඊමේල් හෝ දුරකථන අංකය", emailOnly: "ඊමේල් ලිපිනය (Email)", divider: "නැතහොත් වෙනත් ක්‍රමයකින්" },
-            en: { subtitle: "Login to your secure account", step2: "Final step to activate account", fullName: "Full Name", phone: "Phone Number", pass: "Password", selectRole: "Select Your Role:", customer: "Customer", supplier: "Rider", loginBtn: "Login", signupBtn: "Sign Up", finishBtn: "Complete Registration", emailOrPhone: "Email or Phone Number", emailOnly: "Email Address", divider: "Or via other methods" }
-        };
-
-        function changeLanguage(lang) {
-            currentLang = lang;
-            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`lang-${lang}`).classList.add('active');
-            
-            document.getElementById('lblFullName').innerText = translations[lang].fullName;
-            document.getElementById('lblPhone').innerText = translations[lang].phone;
-            document.getElementById('lblPassword').innerText = translations[lang].pass;
-            document.getElementById('lblSelectRole').innerText = translations[lang].selectRole;
-            document.getElementById('lblRoleCust').innerText = translations[lang].customer;
-            document.getElementById('lblRoleSupp').innerText = translations[lang].supplier;
-            document.getElementById('lblDivider').innerText = translations[lang].divider;
-            
-            if(currentTab === 'login') {
-                document.getElementById('mainSubtitle').innerText = translations[lang].subtitle;
-                document.getElementById('submitBtn').innerText = translations[lang].loginBtn;
-                document.getElementById('identifierLabel').innerText = translations[lang].emailOrPhone;
-            } else if(currentTab === 'signup') {
-                document.getElementById('mainSubtitle').innerText = translations[lang].subtitle;
-                document.getElementById('submitBtn').innerText = translations[lang].signupBtn;
-                document.getElementById('identifierLabel').innerText = translations[lang].emailOnly;
-            } else {
-                document.getElementById('mainSubtitle').innerText = translations[lang].step2;
-                document.getElementById('submitBtn').innerText = translations[lang].finishBtn;
-            }
-        }
+        let currentTab = 'login', checkLock = false;
 
         function switchTab(tab) {
             currentTab = tab;
             document.getElementById('mainAuthForm').reset();
-            document.getElementById('roleArea').style.display = 'none';
-            document.getElementById('documentContainer').style.display = 'none';
-            document.getElementById('identifierContainer').style.display = 'block';
-            document.getElementById('passwordContainer').style.display = 'block';
             
             if (tab === 'login') {
                 document.getElementById('loginTab').classList.add('active');
                 document.getElementById('signupTab').classList.remove('active');
                 document.getElementById('signupFields').classList.add('hidden');
-                document.getElementById('phoneContainer').style.display = 'none';
-                document.getElementById('photoContainer').style.display = 'none';
-                document.getElementById('socialDiv').style.display = 'block';
+                document.getElementById('mainSubtitle').innerText = "ඔබේ ආරක්ෂිත ගිණුමට ලොග් වන්න";
+                document.getElementById('submitBtn').innerText = "ඇතුල් වන්න";
+                document.getElementById('authPhone').removeAttribute('required');
             } else {
                 document.getElementById('signupTab').classList.add('active');
                 document.getElementById('loginTab').classList.remove('active');
                 document.getElementById('signupFields').classList.remove('hidden');
-                document.getElementById('phoneContainer').style.display = 'block';
-                document.getElementById('photoContainer').style.display = 'block';
-                document.getElementById('roleArea').style.display = 'block';
-            }
-            changeLanguage(currentLang);
-        }
-        
-        switchTab('login');
-
-        function selectRole(role) {
-            chosenRole = role;
-            document.getElementById('roleCust').classList.remove('active');
-            document.getElementById('roleSupp').classList.remove('active');
-            
-            if (role === 'customer') {
-                document.getElementById('roleCust').classList.add('active');
-                document.getElementById('documentContainer').style.display = 'none';
-            } else {
-                document.getElementById('roleSupp').classList.add('active');
-                if(currentTab !== 'login') {
-                    document.getElementById('documentContainer').style.display = 'block';
-                }
+                document.getElementById('mainSubtitle').innerText = "නව ගිණුමක් සාදා ඇතුල් වන්න";
+                document.getElementById('submitBtn').innerText = "ගිණුම සාදන්න";
+                document.getElementById('authPhone').setAttribute('required', 'required');
             }
         }
 
+        // Auto Redirect On State Change
         auth.onAuthStateChanged((user) => {
-            if (user && !checkLock && currentTab !== 'google-new-role') {
+            if (user && !checkLock) {
                 checkLock = true;
-                document.getElementById('loadingOverlay').style.display = 'block';
-                db.collection("users").doc(user.uid).get().then((doc) => {
-                    if (doc.exists) {
-                        redirectUser(doc.data().role);
-                    } else {
-                        document.getElementById('loadingOverlay').style.display = 'none';
-                        checkLock = false;
-                    }
-                }).catch(() => { document.getElementById('loadingOverlay').style.display = 'none'; checkLock = false; });
+                window.location.href = "customer.html";
             }
         });
 
+        // ✅ FIXED WORKFLOW FOR GOOGLE AUTH SIGN-IN
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).then((result) => {
-                googleUserObj = result.user;
-                document.getElementById('loadingOverlay').style.display = 'block';
-                checkLock = true;
-                
-                db.collection("users").doc(googleUserObj.uid).get().then((doc) => {
-                    if (doc.exists) {
-                        redirectUser(doc.data().role);
-                    } else {
-                        document.getElementById('loadingOverlay').style.display = 'none';
-                        document.getElementById('tabBar').classList.add('hidden');
-                        document.getElementById('socialDiv').style.display = 'none';
-                        document.getElementById('signupFields').classList.add('hidden');
-                        document.getElementById('identifierContainer').style.display = 'none';
-                        document.getElementById('passwordContainer').style.display = 'none';
-                        
-                        document.getElementById('photoContainer').style.display = 'block';
-                        document.getElementById('phoneContainer').style.display = 'block';
-                        document.getElementById('roleArea').style.display = 'block';
-                        
-                        currentTab = 'google-new-role';
-                        selectRole('customer');
-                    }
-                });
-            }).catch((error) => { alert("Google Login Failed: " + error.message); document.getElementById('loadingOverlay').style.display = 'none'; checkLock = false; });
+            document.getElementById('loadingOverlay').style.display = 'block';
+            
+            auth.signInWithPopup(provider).then(async (result) => {
+                // සැනින් Firestore එකේ කස්ටමර් ප්‍රොෆයිල් එකක් හදනවා Storage නැතුව
+                await db.collection("users").doc(result.user.uid).set({
+                    fullName: result.user.displayName,
+                    email: result.user.email,
+                    phoneNumber: result.user.phoneNumber || "නැත",
+                    role: "customer",
+                    avatar: result.user.photoURL || "https://www.w3schools.com/howto/img_avatar.png",
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                window.location.href = "customer.html";
+            }).catch((error) => { 
+                document.getElementById('loadingOverlay').style.display = 'none';
+                alert("Google Login Failed: " + error.message); 
+            });
         }
 
-        // 🧠 RE-ARCHITECTED ADVANCED ASYNC/AWAIT SUBMIT CONTROLLER
         document.getElementById('mainAuthForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            let identifier = document.getElementById('authIdentifier').value.trim();
+            const email = document.getElementById('authIdentifier').value.trim();
             const password = document.getElementById('authPassword').value;
-            const phone = document.getElementById('authPhone').value.trim();
-            const file = document.getElementById('authProfilePic').files[0];
-            const docFile = document.getElementById('authRiderDoc').files[0];
             const btn = document.getElementById('submitBtn');
-
-            if ((currentTab === 'signup' || currentTab === 'google-new-role') && !file) {
-                alert("❌ කරුණාකර මුලින්ම ඔබේ ප්‍රොෆයිල් ඡායාරූපයක් (Profile Photo) තෝරන්න!");
-                return;
-            }
-
-            if ((currentTab === 'signup' || currentTab === 'google-new-role') && chosenRole === 'supplier' && !docFile) {
-                alert("❌ රයිඩර් කෙනෙක් ලෙස ලියාපදිංචි වීමට නම් අනිවාර්යයෙන්ම NIC / License ෆොටෝ එකක් දැමිය යුතුය!");
-                return;
-            }
 
             btn.innerText = "සකසමින් පවතිී... ⏳";
             btn.disabled = true;
 
             try {
                 if (currentTab === 'signup') {
-                    const name = document.getElementById('authName').value;
-                    if(!phone || phone.length < 9) { alert("දුරකථන අංකය නිවැරදි නැත!"); resetSubmitBtn(); return; }
-                    if(!identifier.includes("@")) { alert("❌ කරුණාකර වලංගු ඊමේල් ලිපිනයක් ඇතුළත් කරන්න!"); resetSubmitBtn(); return; }
+                    const name = document.getElementById('authName').value.trim();
+                    const phone = document.getElementById('authPhone').value.trim();
 
-                    // Create user account auth nodes
-                    const cred = await auth.createUserWithEmailAndPassword(identifier, password);
+                    const cred = await auth.createUserWithEmailAndPassword(email, password);
                     
-                    // Upload profile picture elegantly
-                    let avatarUrl = "https://www.w3schools.com/howto/img_avatar.png";
-                    try {
-                        const avatarSnap = await storage.ref('profiles/' + cred.user.uid).put(file);
-                        avatarUrl = await avatarSnap.ref.getDownloadURL();
-                    } catch (storeErr) {
-                        alert("⚠️ Storage එකට ෆොටෝ එක අප්ලෝඩ් වීම අසාර්ථකයි! (Firebase Storage එක පණගන්වා නැත) නමුත් එකවුන්ට් එක සෑදීම ඉදිරියට යයි.");
-                    }
+                    await db.collection("users").doc(cred.user.uid).set({
+                        fullName: name,
+                        email: email,
+                        phoneNumber: phone,
+                        role: "customer",
+                        avatar: "https://www.w3schools.com/howto/img_avatar.png",
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
 
-                    // Upload identity proof strictly if supplier role triggered
-                    let docUrl = null;
-                    if (chosenRole === 'supplier') {
-                        try {
-                            const docSnap = await storage.ref('documents/' + cred.user.uid).put(docFile);
-                            docUrl = await docSnap.ref.getDownloadURL();
-                        } catch (storeErr) {
-                            alert("❌ Storage වැරැද්දක් නිසා හැඳුනුම්පත අප්ලෝඩ් කිරීම අසාර්ථක විය! කරුණාකර නැවත උත්සාහ කරන්න.");
-                            await cred.user.delete(); // Rollback clean
-                            resetSubmitBtn();
-                            return;
-                        }
-                    }
-
-                    // Save transactional records directly to Firestore
-                    await saveUserData(cred.user.uid, name, identifier, phone, chosenRole, avatarUrl, docUrl, chosenRole === 'supplier' ? "pending" : "approved");
-                    
-                    alert("🎉 ලියාපදිංචිය සාර්ථකයි මචං! දැන් Login ටැබ් එකෙන් ලොග් වෙන්න.");
-                    switchTab('login');
-                    resetSubmitBtn();
-
-                } else if (currentTab === 'google-new-role') {
-                    if(!phone || phone.length < 9) { alert("කරුණාකර දුරකථන අංකයක් ඇතුළත් කරන්න!"); resetSubmitBtn(); return; }
-
-                    let avatarUrl = googleUserObj.photoURL || "https://www.w3schools.com/howto/img_avatar.png";
-                    try {
-                        const avatarSnap = await storage.ref('profiles/' + googleUserObj.uid).put(file);
-                        avatarUrl = await avatarSnap.ref.getDownloadURL();
-                    } catch(e) {}
-
-                    let docUrl = null;
-                    if (chosenRole === 'supplier') {
-                        const docSnap = await storage.ref('documents/' + googleUserObj.uid).put(docFile);
-                        docUrl = await docSnap.ref.getDownloadURL();
-                    }
-
-                    await saveUserData(googleUserObj.uid, googleUserObj.displayName, googleUserObj.email, phone, chosenRole, avatarUrl, docUrl, chosenRole === 'supplier' ? "pending" : "approved");
-                    redirectUser(chosenRole);
+                    alert("🎉 ගිණුම සාර්ථකව සාදන ලදී මචං!");
+                    window.location.href = "customer.html";
 
                 } else {
-                    // LOGIN FLOWS WITH PROPER ERROR MANAGEMENT INTERCEPTIONS
-                    if (identifier.includes("@")) {
-                        const cred = await auth.signInWithEmailAndPassword(identifier, password);
-                        const doc = await db.collection("users").doc(cred.user.uid).get();
-                        if(doc.exists) redirectUser(doc.data().role);
-                        else { alert("❌ ඔබේ ගිණුමේ විස්තර ඩේටාබේස් එකේ නැත!"); resetSubmitBtn(); }
-                    } else {
-                        const snapshot = await db.collection("users").where("phoneNumber", "==", identifier).get();
-                        if(snapshot.empty) { alert("❌ මෙම දුරකථන අංකය ලියාපදිංචි කර නැත!"); resetSubmitBtn(); return; }
-                        
-                        let userEmail = "";
-                        snapshot.forEach(doc => { userEmail = doc.data().email; });
-                        
-                        const cred = await auth.signInWithEmailAndPassword(userEmail, password);
-                        const doc = await db.collection("users").doc(cred.user.uid).get();
-                        if(doc.exists) redirectUser(doc.data().role);
-                        else { alert("❌ ඔබේ ගිණුමේ විස්තර ඩේටාබේස් එකේ නැත!"); resetSubmitBtn(); }
-                    }
+                    await auth.signInWithEmailAndPassword(email, password);
+                    window.location.href = "customer.html";
                 }
             } catch (err) {
-                // 🚨 CATCHES ALL ERRORS LIVE & ALERTS INSTANTLY INSTEAD OF FREEZING
                 alert("❌ ක්‍රියාවලිය අසාර්ථකයි: " + err.message);
-                resetSubmitBtn();
+                btn.disabled = false;
+                btn.innerText = (currentTab === 'login') ? "ඇතුල් වන්න" : "ගිණුම සාදන්න";
             }
         });
-
-        function resetSubmitBtn() {
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = false;
-            btn.innerText = (currentTab === 'login') ? "ඇතුල් වන්න" : (currentTab === 'signup') ? "ගිණුම සාදන්න" : "ලියාපදිංචිය අවසන් කරන්න";
-        }
-
-        function saveUserData(uid, name, email, phone, role, avatarUrl, docUrl, verifiedStatus) {
-            return db.collection("users").doc(uid).set({
-                fullName: name, email: email, phoneNumber: phone, role: role, avatar: avatarUrl, documentUrl: docUrl, status: verifiedStatus, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        }
-
-        function redirectUser(role) {
-            if (role === 'customer') window.location.href = "customer.html";
-            else if (role === 'supplier') window.location.href = "supplier.html";
-        }
     </script>
 </body>
 </html>
