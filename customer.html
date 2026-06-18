@@ -57,20 +57,31 @@
         .job-img { width: 100%; max-width: 200px; height: 120px; object-fit: cover; border-radius: 8px; margin-top: 8px; }
         .status-badge { position: absolute; top: 15px; right: 15px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
 
-        /* 🔐 OTP DISPlAY CARD DESIGN */
         .otp-display-box { background: #fff9db; border: 1px solid #ffe066; padding: 10px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; font-size: 14px; color: #2b2b2b; margin-top: 10px; }
         .otp-number { background: var(--accent); padding: 2px 8px; border-radius: 4px; font-size: 15px; color: #111; letter-spacing: 1px; }
 
+        /* 🎛️ ACTIVITIES FILTER TABS */
+        .filter-tab-bar { display: flex; gap: 10px; margin-bottom: 15px; }
+        .filter-btn { flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; background: #ddd; color: #333; transition: 0.2s; }
+        .filter-btn.active { background: var(--accent); color: #111; border-color: var(--accent); }
+
+        /* ⭐ STARS RATING BLOCK */
+        .star-rating span { font-size: 24px; cursor: pointer; color: #ccc; transition: 0.1s; }
+        .star-rating span:hover, .star-rating span.active { color: #ffcc00; }
+
         .noti-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--accent); text-align: left; }
-        .chat-container { background: white; border: 1px solid var(--border-color); border-radius: 12px; margin-top: 15px; display: none; flex-direction: column; height: 280px; overflow: hidden; }
+        
+        /* 💬 CHAT DESIGN & PHOTO SHARING INJECTION */
+        .chat-container { background: white; border: 1px solid var(--border-color); border-radius: 12px; margin-top: 15px; display: none; flex-direction: column; height: 320px; overflow: hidden; }
         .chat-header { background: #222; color: white; padding: 10px; font-weight: bold; display: flex; justify-content: space-between; }
         .chat-messages { flex-grow: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
         .msg { padding: 8px 12px; border-radius: 12px; max-width: 75%; font-size: 13px; }
         .msg.sent { background: var(--accent); color: #111; align-self: flex-end; }
         .msg.received { background: #f0f0f0; color: #333; align-self: flex-start; }
-        .chat-input-area { display: flex; border-top: 1px solid var(--border-color); }
-        .chat-input-area input { flex-grow: 1; border: none; padding: 10px; outline: none; }
-        .chat-input-area button { background: var(--accent); border: none; padding: 0 15px; font-weight: bold; }
+        .chat-input-area { display: flex; border-top: 1px solid var(--border-color); align-items: center; background: #fff; }
+        .chat-input-area input { flex-grow: 1; border: none; padding: 12px; outline: none; font-size: 14px; }
+        .chat-input-area button { background: var(--accent); border: none; padding: 12px 18px; font-weight: bold; cursor: pointer; }
+        .chat-cam-btn { background: none; border: none; font-size: 20px; cursor: pointer; padding: 0 10px; color: #555; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: white; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 999; }
         .nav-item { text-align: center; color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 11px; width: 25%; transition: 0.2s; }
@@ -106,7 +117,7 @@
                 </div>
                 <div class="category-card" onclick="openQuickFixForm('Mechanical', 'යාන්ත්‍රික වැඩ / Mechanical බාස්', 90)">
                     <span class="category-icon">👨‍🔧</span>
-                    <div class="category-name-wrapper"><span class="category-name">Mechanical</span><span class="category-desc">වාහන, බයික් ਰෙපෙයාර්</span></div>
+                    <div class="category-name-wrapper"><span class="category-name">Mechanical</span><span class="category-desc">වාහන, බයික් රෙපෙයාර්</span></div>
                 </div>
                 <div class="category-card" onclick="openQuickFixForm('Plumbing', 'නල වැඩ / ප්ලම්බර් බාස්', 75)">
                     <span class="category-icon">🚰</span>
@@ -153,7 +164,7 @@
                         
                         <div class="form-group">
                             <label>ස්ථාන ලකුණු කරන්න (Set Pickup & Destination) 📍</label>
-                            <div class="map-instruction" id="mapHint">පියවර 1: සිතියම මත ක්ලික් කර ඔබ ඉන්න තැන (🟢 Pickup) ලකුණු කරන්න.</div>
+                            <div class="map-instruction" id="mapHint">පියවර 1: සිතියම මත ඔබ ඉන්න තැන (🟢 Pickup) ලකුණු කරන්න.</div>
                             <div id="map"></div>
                             <input type="hidden" id="pickupLat"><input type="hidden" id="pickupLng">
                             <input type="hidden" id="dropLat"><input type="hidden" id="dropLng">
@@ -178,13 +189,21 @@
         </div>
 
         <div id="view-activities" class="view-section">
-            <h2 style="font-size: 20px; margin-bottom: 15px; text-align: left;">ඔබ ඇනවුම් කල වැඩ (Activities)</h2>
-            <div id="jobsContainer"></div>
+            <div class="filter-tab-bar">
+                <button id="btnTabActive" class="filter-btn active" onclick="switchActivitiesFilter('active')">පවතින වැඩ (Active)</button>
+                <button id="btnTabPast" class="filter-btn" onclick="switchActivitiesFilter('past')">පසුගිය ඉතිහාසය (History)</button>
+            </div>
+            
+            <div id="activeJobsContainer"></div>
+            <div id="pastJobsContainer" style="display: none;"></div>
 
             <div id="customerChatBox" class="chat-container">
-                <div class="chat-header">💬 ලයිව් චැට් බොක්ස් <span style="cursor:pointer;" onclick="document.getElementById('customerChatBox').style.display='none'">✖</span></div>
+                <div class="chat-header">💬 බාස් සමඟ සජීවී චැට් එක <span style="cursor:pointer;" onclick="document.getElementById('customerChatBox').style.display='none'">✖</span></div>
                 <div id="chatMessages" class="chat-messages"></div>
                 <form id="chatForm" class="chat-input-area">
+                    <button type="button" class="chat-cam-btn" onclick="document.getElementById('chatImageFile').click()">📷</button>
+                    <input type="file" id="chatImageFile" accept="image/*" style="display:none;" onchange="uploadChatPhoto()">
+                    
                     <input type="text" id="chatMsgInput" placeholder="මැසේජ් එකක් ලියන්න..." required autocomplete="off">
                     <button type="submit">යවන්න</button>
                 </form>
@@ -222,8 +241,7 @@
         const auth = firebase.auth(), db = firebase.firestore(), storage = firebase.storage();
 
         let map, routingControl, pickupMarker, dropMarker;
-        let activeChatJobId = null, chatListener = null, currentCategory = "General";
-        let perKmRate = 80;
+        let activeChatJobId = null, chatListener = null, currentCategory = "General", perKmRate = 80;
 
         const hrs = new Date().getHours();
         document.getElementById('lblGreeting').innerText = hrs < 12 ? "Good Morning!☀️" : hrs < 17 ? "Good Afternoon!🌤️" : "Good Evening!🌙";
@@ -306,9 +324,7 @@
                 document.getElementById('txtDuration').innerText = durationInMins + " Mins";
                 document.getElementById('txtCalculatedPrice').innerText = "රු. " + calculatedTotal + ".00";
                 document.getElementById('jobBudget').value = calculatedTotal;
-
                 document.getElementById('priceDisplayPanel').style.display = "block";
-                document.getElementById('mapHint').innerText = "✅ පාර සහ මිල සාර්ථකව ගණනය කර ඇත!";
             });
         }
 
@@ -319,14 +335,27 @@
             document.getElementById(navId).classList.add('active');
         }
 
-        function openQuickFixForm(catName, catDisplaySI, currentKmRate) {
-            currentCategory = catName;
-            perKmRate = currentKmRate;
+        // 📜 SPLIT ACTIVE & PAST ARCHIVE SYSTEM VISUALLY 
+        function switchActivitiesFilter(filterType) {
+            document.getElementById('btnTabActive').classList.remove('active');
+            document.getElementById('btnTabPast').classList.remove('active');
             
+            if(filterType === 'active') {
+                document.getElementById('btnTabActive').classList.add('active');
+                document.getElementById('activeJobsContainer').style.display = "block";
+                document.getElementById('pastJobsContainer').style.display = "none";
+            } else {
+                document.getElementById('btnTabPast').classList.add('active');
+                document.getElementById('activeJobsContainer').style.display = "none";
+                document.getElementById('pastJobsContainer').style.display = "block";
+            }
+        }
+
+        function openQuickFixForm(catName, catDisplaySI, currentKmRate) {
+            currentCategory = catName; perKmRate = currentKmRate;
             document.getElementById('selectedCategoryDisplay').innerText = catDisplaySI;
             document.getElementById('postFormArea').style.display = "block";
             document.getElementById('jobTitle').value = catDisplaySI + " කරගැනීම";
-            
             resetRoutingSetup();
             setTimeout(initMap, 200);
             document.getElementById('postFormArea').scrollIntoView({ behavior: 'smooth' });
@@ -346,64 +375,114 @@
                     }
                 });
 
+                // REALTIME ACTIVE & HISTORY DATA RETRIEVAL MANAGEMENT
                 db.collection("jobs").where("customerId", "==", user.uid).onSnapshot(snapshot => {
-                    const container = document.getElementById('jobsContainer');
+                    const activeContainer = document.getElementById('activeJobsContainer');
+                    const pastContainer = document.getElementById('pastJobsContainer');
                     const notiContainer = document.getElementById('notificationsContainer');
                     
-                    if(snapshot.empty) { container.innerHTML = `<p style='color:var(--text-muted); font-size:14px; text-align:left;'>තාම කිසිම ඇනවුමක් සිදුකර නැත...</p>`; return; }
-                    container.innerHTML = "";
-                    let notiHtml = "";
+                    activeContainer.innerHTML = ""; pastContainer.innerHTML = "";
+                    let notiHtml = "", hasActive = false, hasPast = false;
 
                     snapshot.forEach(doc => {
                         const job = doc.data();
-                        let chatBtn = job.status === 'accepted' ? `<button style="background:#00c851; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px;" onclick="openChat('${doc.id}')">බාස් සමඟ චැට් 💬</button>` : '';
                         let imgTag = job.imageUrl ? `<img src="${job.imageUrl}" class="job-img" alt="Job Image">` : '';
-                        let badgeColor = job.status === 'available' ? '#ffcc00' : job.status === 'accepted' ? '#00c851' : '#777';
                         
-                        // 🔐 FIXED: REALTIME Security OTP Display injection added securely back!
-                        let otpCodeArea = job.status === 'accepted' ? `
-                            <div class="otp-display-box">
-                                🔐 ආරක්ෂිත OTP කේතය: <span class="otp-number">${job.otpCode}</span>
-                            </div>` : '';
-                        
-                        container.innerHTML += `
-                            <div class="job-card">
-                                <span class="status-badge" style="background:${badgeColor}; color:${job.status==='available'?'#111':'#fff'}">${job.status}</span>
-                                <h3>${job.title}</h3>
-                                <p style="font-size:13px; color:#555; margin:5px 0;">${job.description}</p>
-                                <div style="font-size:12px; color:#777; margin-bottom:5px;">Category: <b>${job.category}</b> | 📏 ${job.distance || '0 KM'}</div>
-                                ${imgTag}
-                                <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: රු. ${job.budget}</div>
-                                ${otpCodeArea}
-                                <div style="margin-top: 5px;">${chatBtn}</div>
-                            </div>`;
+                        if (job.status === 'available' || job.status === 'accepted') {
+                            hasActive = true;
+                            let chatBtn = job.status === 'accepted' ? `<button style="background:#00c851; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px;" onclick="openChat('${doc.id}')">බාස් සමඟ චැට් 💬</button>` : '';
+                            let otpCodeArea = job.status === 'accepted' ? `<div class="otp-display-box">🔐 ආරක්ෂිත OTP කේතය: <span class="otp-number">${job.otpCode}</span></div>` : '';
+                            let badgeColor = job.status === 'available' ? '#ffcc00' : '#00c851';
+                            
+                            activeContainer.innerHTML += `
+                                <div class="job-card">
+                                    <span class="status-badge" style="background:${badgeColor}; color:${job.status==='available'?'#111':'#fff'}">${job.status}</span>
+                                    <h3>${job.title}</h3>
+                                    <p style="font-size:13px; color:#555; margin:5px 0;">${job.description}</p>
+                                    <div style="font-size:12px; color:#777; margin-bottom:5px;">Category: <b>${job.category}</b> | 📏 ${job.distance || '0 KM'}</div>
+                                    ${imgTag} <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: රු. ${job.budget}</div>
+                                    ${otpCodeArea} <div style="margin-top: 5px;">${chatBtn}</div>
+                                </div>`;
+                        } else if (job.status === 'completed') {
+                            hasPast = true;
+                            
+                            // ⭐ REAL-TIME RATING STAR MANAGEMENT MODULE INJECTION
+                            let ratingBlock = "";
+                            if (!job.rated) {
+                                ratingBlock = `
+                                    <div style="margin-top:10px; border-top:1px dashed #ddd; padding-top:8px;" id="rateBox-${doc.id}">
+                                        <p style="font-size:12px; font-weight:bold; margin:0 0- 4px 0;">බාස්ගේ සේවාව ඇගයීමට තරු ලකුණු කරන්න ⭐</p>
+                                        <div class="star-rating">
+                                            <span onclick="submitLiveRating('${doc.id}', 1)">★</span><span onclick="submitLiveRating('${doc.id}', 2)">★</span><span onclick="submitLiveRating('${doc.id}', 3)">★</span><span onclick="submitLiveRating('${doc.id}', 4)">★</span><span onclick="submitLiveRating('${doc.id}', 5)">★</span>
+                                        </div>
+                                    </div>`;
+                            } else {
+                                ratingBlock = `<div style="color:var(--accent); font-weight:bold; font-size:13px; margin-top:8px;">ලබාදුන් ශ්‍රේණිගත කිරීම: ${'★'.repeat(job.rating)}</div>`;
+                            }
 
+                            pastContainer.innerHTML += `
+                                <div class="job-card" style="opacity:0.85;">
+                                    <span class="status-badge" style="background:#777; color:#fff">COMPLETED</span>
+                                    <h3>${job.title}</h3>
+                                    <p style="font-size:13px; color:#555; margin:5px 0;">${job.description}</p>
+                                    <div style="font-size:12px; color:#777;">Category: <b>${job.category}</b> | Finished 🏁</div>
+                                    ${imgTag} ${ratingBlock}
+                                </div>`;
+                        }
+
+                        // Notifications engine maps
                         if(job.status === 'accepted') {
-                            notiHtml += `<div class="noti-card"><h4>🛠️ ඔබේ ඇනවුම බාරගන්නා ලදී!</h4><p>ඔබේ "${job.title}" වැඩය <b>${job.riderName || 'බාස් කෙනෙක්'}</b> විසින් බාරගන්නා ලදී.</p></div>`;
+                            notiHtml += `<div class="noti-card"><h4>🛠️ ඔබේ ඇනවුම බාරගන්නා ලදී!</h4><p>ඔබේ "${job.title}" වැඩය බාරගෙන ඇත. ලයිව් චැට් කරන්න.</p></div>`;
                         } else if (job.status === 'completed') {
                             notiHtml += `<div class="noti-card" style="border-left-color: #00c851;"><h4>✅ වැඩය සාර්ථකව අවසන්!</h4><p>"${job.title}" වැඩය සාර්ථකව නිම කර ඇත.</p></div>`;
                         }
                     });
 
+                    if(!hasActive) activeContainer.innerHTML = `<p style='color:var(--text-muted); font-size:14px; text-align:left;'>දැනට පවතින සක්‍රීය වැඩ කිසිවක් නැත...</p>`;
+                    if(!hasPast) pastContainer.innerHTML = `<p style='color:var(--text-muted); font-size:14px; text-align:left;'>පසුගිය ඉතිහාසයක් මෙතෙක් වාර්තා වී නැත...</p>`;
                     notiContainer.innerHTML = notiHtml !== "" ? notiHtml : `<p style="color:var(--text-muted); font-size:14px; text-align:left;">තාම අලුත් දැනුම්දීම් කිසිවක් නැත...</p>`;
                 });
             }
         });
+
+        // ⭐ SAVE LIVE RATING SYSTEM LOGIC
+        function submitLiveRating(jobId, starValue) {
+            db.collection("jobs").doc(jobId).update({
+                rated: true, rating: starValue
+            }).then(() => { alert("⭐ ස්තූතියි මචං! ඔබේ වටිනා ශ්‍රේණිගත කිරීම සුරැකුණා."); });
+        }
 
         function openChat(jobId) {
             activeChatJobId = jobId;
             document.getElementById('customerChatBox').style.display = 'flex';
             const msgContainer = document.getElementById('chatMessages');
             if(chatListener) chatListener();
+            
             chatListener = db.collection("jobs").doc(jobId).collection("messages").orderBy("timestamp", "asc").onSnapshot(snapshot => {
                 msgContainer.innerHTML = "";
                 snapshot.forEach(doc => {
                     const msg = doc.data();
                     let msgClass = msg.senderId === auth.currentUser.uid ? 'sent' : 'received';
-                    msgContainer.innerHTML += `<div class="msg ${msgClass}">${msg.text}</div>`;
+                    
+                    // Render Image if available inside chat nodes, else fallback text
+                    let msgContent = msg.imageUrl ? `<img src="${msg.imageUrl}" style="max-width:180px; border-radius:8px; display:block; border:1px solid #ddd;">` : msg.text;
+                    msgContainer.innerHTML += `<div class="msg ${msgClass}">${msgContent}</div>`;
                 });
                 msgContainer.scrollTop = msgContainer.scrollHeight;
             });
+        }
+
+        // 📸 CHAT PHOTO SHARING UPLOADER INTERPOLATOR
+        function uploadChatPhoto() {
+            const file = document.getElementById('chatImageFile').files[0];
+            if(!file || !activeChatJobId) return;
+            
+            const storageRef = storage.ref('chat_images/' + Date.now() + '_' + file.name);
+            storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(downloadUrl => {
+                return db.collection("jobs").doc(activeChatJobId).collection("messages").add({
+                    text: "", imageUrl: downloadUrl, senderId: auth.currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }).then(() => { document.getElementById('chatImageFile').value = ""; });
         }
 
         document.getElementById('chatForm').addEventListener('submit', function(e) {
@@ -426,7 +505,7 @@
             let dLng = parseFloat(document.getElementById('dropLng').value) || pLng;
             let distText = document.getElementById('txtDistance').innerText;
 
-            if(!pLat) { alert("❌ කරුණාකර සිතියම මත ඔබ ඉන්නා ස්ථානය ලකුණු කරන්න!"); return; }
+            if(!pLat) { alert("❌ කරුණාකර සිතියම මත ස්ථානය ලකුණු කරන්න!"); return; }
 
             btn.innerText = "පෝස්ට් වෙමින්... ⏳"; btn.disabled = true;
             const title = document.getElementById('jobTitle').value;
@@ -465,7 +544,7 @@
             alert("✅ ඔබේ QuickFix ඇනවුම සාර්ථකව පෝස්ට් කරා මචං!");
             document.getElementById('jobPostForm').reset();
             document.getElementById('postFormArea').style.display = "none";
-            resetBtn();
+            resetBtn(); switchActivitiesFilter('active');
             switchView('view-activities', 'nav-activities');
         }
 
