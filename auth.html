@@ -114,10 +114,12 @@
 
     <script>
         const part1 = "AIzaSyD29G6zoTAbg1YybqIWdKzCq"; const part2 = "_v--pAOOfI";
-        // 🎯 TESTED: FALLBACK STORAGE INTEGRATION STABLE
-        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.appspot.com", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
+        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.firebasestorage.app", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(), db = firebase.firestore(), storage = firebase.storage();
+
+        // 🚨 CRITICAL LOCK: FORCES STORAGE TO ABORT RETRIES AFTER 5 SECONDS TO PREVENT INDEFINITE FREEZING
+        storage.setMaxUploadRetryTime(5000);
 
         let currentTab = 'login', chosenRole = 'customer', googleUserObj = null, currentLang = 'si';
         let checkLock = false;
@@ -242,8 +244,10 @@
             }).catch((error) => { alert("Google Login Failed: " + error.message); document.getElementById('loadingOverlay').style.display = 'none'; checkLock = false; });
         }
 
-        document.getElementById('mainAuthForm').addEventListener('submit', function(e) {
+        // 🧠 RE-ARCHITECTED ADVANCED ASYNC/AWAIT SUBMIT CONTROLLER
+        document.getElementById('mainAuthForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
             let identifier = document.getElementById('authIdentifier').value.trim();
             const password = document.getElementById('authPassword').value;
             const phone = document.getElementById('authPhone').value.trim();
@@ -264,55 +268,87 @@
             btn.innerText = "සකසමින් පවතිී... ⏳";
             btn.disabled = true;
 
-            if (currentTab === 'signup') {
-                const name = document.getElementById('authName').value;
-                if(!phone || phone.length < 9) { alert("දුරකථන අංකය නිවැරදි නැත!"); resetSubmitBtn(); return; }
+            try {
+                if (currentTab === 'signup') {
+                    const name = document.getElementById('authName').value;
+                    if(!phone || phone.length < 9) { alert("දුරකථන අංකය නිවැරදි නැත!"); resetSubmitBtn(); return; }
+                    if(!identifier.includes("@")) { alert("❌ කරුණාකර වලංගු ඊමේල් ලිපිනයක් ඇතුළත් කරන්න!"); resetSubmitBtn(); return; }
 
-                auth.createUserWithEmailAndPassword(identifier, password).then((cred) => {
-                    return storage.ref('profiles/' + cred.user.uid).put(file).then(snap => snap.ref.getDownloadURL()).then(avatarUrl => {
-                        if (chosenRole === 'supplier') {
-                            return storage.ref('documents/' + cred.user.uid).put(docFile).then(dSnap => dSnap.ref.getDownloadURL()).then(docUrl => {
-                                return saveUserData(cred.user.uid, name, identifier, phone, chosenRole, avatarUrl, docUrl, "pending");
-                            });
-                        } else {
-                            return saveUserData(cred.user.uid, name, identifier, phone, chosenRole, avatarUrl, null, "approved");
+                    // Create user account auth nodes
+                    const cred = await auth.createUserWithEmailAndPassword(identifier, password);
+                    
+                    // Upload profile picture elegantly
+                    let avatarUrl = "https://www.w3schools.com/howto/img_avatar.png";
+                    try {
+                        const avatarSnap = await storage.ref('profiles/' + cred.user.uid).put(file);
+                        avatarUrl = await avatarSnap.ref.getDownloadURL();
+                    } catch (storeErr) {
+                        alert("⚠️ Storage එකට ෆොටෝ එක අප්ලෝඩ් වීම අසාර්ථකයි! (Firebase Storage එක පණගන්වා නැත) නමුත් එකවුන්ට් එක සෑදීම ඉදිරියට යයි.");
+                    }
+
+                    // Upload identity proof strictly if supplier role triggered
+                    let docUrl = null;
+                    if (chosenRole === 'supplier') {
+                        try {
+                            const docSnap = await storage.ref('documents/' + cred.user.uid).put(docFile);
+                            docUrl = await docSnap.ref.getDownloadURL();
+                        } catch (storeErr) {
+                            alert("❌ Storage වැරැද්දක් නිසා හැඳුනුම්පත අප්ලෝඩ් කිරීම අසාර්ථක විය! කරුණාකර නැවත උත්සාහ කරන්න.");
+                            await cred.user.delete(); // Rollback clean
+                            resetSubmitBtn();
+                            return;
                         }
-                    });
-                }).then(() => {
-                    alert("🎉 ලියාපදිංචිය සාර්ථකයි! දැන් Login වන්න.");
+                    }
+
+                    // Save transactional records directly to Firestore
+                    await saveUserData(cred.user.uid, name, identifier, phone, chosenRole, avatarUrl, docUrl, chosenRole === 'supplier' ? "pending" : "approved");
+                    
+                    alert("🎉 ලියාපදිංචිය සාර්ථකයි මචං! දැන් Login ටැබ් එකෙන් ලොග් වෙන්න.");
                     switchTab('login');
                     resetSubmitBtn();
-                }).catch(err => { alert("❌ SignUp Failed: " + err.message); resetSubmitBtn(); });
 
-            } else if (currentTab === 'google-new-role') {
-                if(!phone || phone.length < 9) { alert("කරුණාකර දුරකථන අංකයක් ඇතුළත් කරන්න!"); resetSubmitBtn(); return; }
+                } else if (currentTab === 'google-new-role') {
+                    if(!phone || phone.length < 9) { alert("කරුණාකර දුරකථන අංකයක් ඇතුළත් කරන්න!"); resetSubmitBtn(); return; }
 
-                storage.ref('profiles/' + googleUserObj.uid).put(file).then(snap => snap.ref.getDownloadURL()).then(avatarUrl => {
+                    let avatarUrl = googleUserObj.photoURL || "https://www.w3schools.com/howto/img_avatar.png";
+                    try {
+                        const avatarSnap = await storage.ref('profiles/' + googleUserObj.uid).put(file);
+                        avatarUrl = await avatarSnap.ref.getDownloadURL();
+                    } catch(e) {}
+
+                    let docUrl = null;
                     if (chosenRole === 'supplier') {
-                        return storage.ref('documents/' + googleUserObj.uid).put(docFile).then(dSnap => dSnap.ref.getDownloadURL()).then(docUrl => {
-                            return saveUserData(googleUserObj.uid, googleUserObj.displayName, googleUserObj.email, phone, chosenRole, avatarUrl, docUrl, "pending");
-                        });
-                    } else {
-                        return saveUserData(googleUserObj.uid, googleUserObj.displayName, googleUserObj.email, phone, chosenRole, avatarUrl, null, "approved");
+                        const docSnap = await storage.ref('documents/' + googleUserObj.uid).put(docFile);
+                        docUrl = await docSnap.ref.getDownloadURL();
                     }
-                }).then(() => { redirectUser(chosenRole); }).catch(err => { alert("❌ Google Registration Failed: " + err.message); resetSubmitBtn(); });
 
-            } else {
-                // LOGIN FLOW
-                if (identifier.includes("@")) {
-                    auth.signInWithEmailAndPassword(identifier, password).then((cred) => {
-                        db.collection("users").doc(cred.user.uid).get().then(doc => { if(doc.exists) redirectUser(doc.data().role); });
-                    }).catch(err => { alert("❌ Login Failed: " + err.message); resetSubmitBtn(); });
+                    await saveUserData(googleUserObj.uid, googleUserObj.displayName, googleUserObj.email, phone, chosenRole, avatarUrl, docUrl, chosenRole === 'supplier' ? "pending" : "approved");
+                    redirectUser(chosenRole);
+
                 } else {
-                    db.collection("users").where("phoneNumber", "==", identifier).get().then(snapshot => {
+                    // LOGIN FLOWS WITH PROPER ERROR MANAGEMENT INTERCEPTIONS
+                    if (identifier.includes("@")) {
+                        const cred = await auth.signInWithEmailAndPassword(identifier, password);
+                        const doc = await db.collection("users").doc(cred.user.uid).get();
+                        if(doc.exists) redirectUser(doc.data().role);
+                        else { alert("❌ ඔබේ ගිණුමේ විස්තර ඩේටාබේස් එකේ නැත!"); resetSubmitBtn(); }
+                    } else {
+                        const snapshot = await db.collection("users").where("phoneNumber", "==", identifier).get();
                         if(snapshot.empty) { alert("❌ මෙම දුරකථන අංකය ලියාපදිංචි කර නැත!"); resetSubmitBtn(); return; }
+                        
                         let userEmail = "";
                         snapshot.forEach(doc => { userEmail = doc.data().email; });
-                        auth.signInWithEmailAndPassword(userEmail, password).then((cred) => {
-                            db.collection("users").doc(cred.user.uid).get().then(doc => { if(doc.exists) redirectUser(doc.data().role); });
-                        }).catch(err => { alert("❌ මුරපදය වැරදියි!"); resetSubmitBtn(); });
-                    });
+                        
+                        const cred = await auth.signInWithEmailAndPassword(userEmail, password);
+                        const doc = await db.collection("users").doc(cred.user.uid).get();
+                        if(doc.exists) redirectUser(doc.data().role);
+                        else { alert("❌ ඔබේ ගිණුමේ විස්තර ඩේටාබේස් එකේ නැත!"); resetSubmitBtn(); }
+                    }
                 }
+            } catch (err) {
+                // 🚨 CATCHES ALL ERRORS LIVE & ALERTS INSTANTLY INSTEAD OF FREEZING
+                alert("❌ ක්‍රියාවලිය අසාර්ථකයි: " + err.message);
+                resetSubmitBtn();
             }
         });
 
