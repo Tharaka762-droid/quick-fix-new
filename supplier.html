@@ -3,20 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickFix - Rider Dashboard</title>
+    <title>QuickFix - World Class Rider App</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
     <style>
         :root {
-            --bg-main: #f5f6fa; --panel-bg: #ffffff; --accent: #ffcc00; --text-main: #222222; --text-muted: #777777; --border-color: #e0e0e0;
+            --bg-main: #f5f6fa; --panel-bg: #ffffff; --accent: #ffcc00; --text-main: #222222; --text-muted: #777777; --border-color: #e0e0e0; --success: #00c851;
         }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        /* 👑 PREMIUM HEADER */
         .top-header { background: #222; color: white; padding: 20px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .header-user { display: flex; justify-content: space-between; align-items: center; }
         .user-info h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--accent); }
@@ -31,29 +36,50 @@
         .lock-screen { display: none; text-align: center; padding: 40px 20px; background: white; border-radius: 20px; border: 1px solid var(--border-color); margin-top: 20px; }
         .lock-icon { font-size: 50px; margin-bottom: 15px; display: block; }
 
-        .job-card { background: white; border: 1px solid var(--border-color); padding: 18px; border-radius: 16px; margin-bottom: 15px; position: relative; text-align: left; }
+        /* 💼 CARDS STYLES */
+        .job-card { background: white; border: 1px solid var(--border-color); padding: 18px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); position: relative; text-align: left; }
         .job-card h3 { margin: 0 0 6px 0; font-size: 17px; color: #111; }
-        .job-img { width: 100%; max-width: 250px; height: 140px; object-fit: cover; border-radius: 10px; margin: 8px 0; }
-        .btn-yellow { background: var(--accent); color: #111; padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; box-sizing: border-box; }
-        .call-btn { background: #00c851; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; width: 100%; box-sizing: border-box; }
+        .job-card p { margin: 0 0 10px 0; font-size: 13px; color: #555; line-height: 1.4; }
+        .job-img { width: 100%; max-width: 250px; height: 140px; object-fit: cover; border-radius: 10px; margin: 8px 0; border: 1px solid var(--border-color); }
+        
+        .btn-yellow { background: var(--accent); color: #111; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; width: 100%; box-sizing: border-box; }
+        .btn-status-step { background: #222; color: #fff; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; width: 100%; margin-bottom: 10px; }
+        .call-btn { background: #00c851; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; width: 100%; box-sizing: border-box; font-size: 14px; }
 
+        /* 📊 PROGRESS STEPPER */
+        .stepper-wrapper { display: flex; justify-content: space-between; margin: 10px 0 15px 0; padding: 0; }
+        .stepper-item { display: flex; flex-direction: column; align-items: center; flex: 1; font-size: 10px; font-weight: bold; color: #aaa; text-align: center; position: relative; }
+        .stepper-item::before { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 8px; left: -50%; z-index: 1; }
+        .stepper-item:first-child::before { content: none; }
+        .step-counter { position: relative; z-index: 5; display: flex; justify-content: center; align-items: center; width: 16px; height: 18px; border-radius: 50%; background: #ccc; margin-bottom: 4px; }
+        .stepper-item.completed { color: var(--success); }
+        .stepper-item.completed .step-counter { background-color: var(--success); color: white; }
+        .stepper-item.active { color: #ffcc00; }
+        .stepper-item.active .step-counter { background-color: #ffcc00; color: #111; }
+
+        /* 🗺️ ACTIVE WORKSPACE (Map + Chat) */
         .workspace-box { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
-        #riderMap { width: 100%; height: 200px; border-radius: 12px; border: 1px solid var(--border-color); z-index: 1; }
-        .chat-panel { background: white; border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; height: 260px; overflow: hidden; }
+        #riderMap { width: 100%; height: 240px; border-radius: 12px; border: 1px solid var(--border-color); z-index: 1; }
+        
+        .chat-panel { background: white; border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; height: 320px; overflow: hidden; }
         .chat-messages { flex-grow: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
         .msg { padding: 8px 12px; border-radius: 12px; max-width: 75%; font-size: 13px; text-align: left; }
         .msg.sent { background: var(--accent); color: #111; align-self: flex-end; }
         .msg.received { background: #f0f0f0; color: #333; align-self: flex-start; }
-        .chat-input-area { display: flex; border-top: 1px solid var(--border-color); }
-        .chat-input-area input { flex-grow: 1; border: none; padding: 12px; outline: none; }
-        .chat-input-area button { background: var(--accent); border: none; padding: 0 20px; font-weight: bold; }
+        .chat-input-area { display: flex; border-top: 1px solid var(--border-color); align-items: center; background: #fff; }
+        .chat-input-area input { flex-grow: 1; border: none; padding: 12px; outline: none; font-size: 14px; }
+        .chat-input-area button { background: var(--accent); border: none; padding: 12px 18px; font-weight: bold; cursor: pointer; }
+        .chat-cam-btn { background: none; border: none; font-size: 20px; cursor: pointer; padding: 0 12px; color: #555; }
 
-        .otp-verify-area { background: white; border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; margin-top: 15px; }
-        .otp-verify-area input { padding: 12px; background: #f5f6fa; border: 1px solid var(--border-color); border-radius: 8px; width: 100%; text-align: center; font-size: 18px; font-weight: bold; box-sizing: border-box; margin-bottom: 10px; }
+        .otp-verify-area { background: white; border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; margin-top: 15px; text-align: left; }
+        .otp-verify-area input { padding: 12px; background: #f5f6fa; border: 1px solid var(--border-color); border-radius: 8px; width: 100%; text-align: center; font-size: 18px; font-weight: bold; box-sizing: border-box; margin-bottom: 10px; outline: none; }
+        
         .noti-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--accent); text-align: left; }
+        .noti-card h4 { margin: 0 0 5px 0; color: #111; font-size: 14px; }
+        .noti-card p { margin: 0; color: var(--text-muted); font-size: 12px; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: white; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 999; }
-        .nav-item { text-align: center; color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 11px; width: 25%; }
+        .nav-item { text-align: center; color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 11px; width: 25%; transition: 0.2s; }
         .nav-item span { display: block; font-size: 22px; margin-bottom: 2px; }
         .nav-item.active { color: #111; }
     </style>
@@ -79,6 +105,7 @@
         </div>
 
         <div id="verifiedContent" style="display: block;">
+            
             <div id="view-home" class="view-section active">
                 <h4 style="margin: 0 0 15px 0; color: #555; font-size: 14px; text-align: left;">🛠️ ලබාගත හැකි නව ඇනවුම් (Job Pool)</h4>
                 <div id="availableJobsContainer"></div>
@@ -89,18 +116,28 @@
                 <div id="acceptedJobsContainer"></div>
                 
                 <div id="navigationArea" style="display: none;">
+                    <div id="supplierStepperArea"></div>
+
+                    <button id="btnUpdateStatusStep" class="btn-submit-step" onclick="updateRiderLiveProgressStep()"></button>
+
                     <a id="btnClickToCall" href="#" class="call-btn">📞 පාරිභෝගිකයා අමතන්න (Call Customer)</a>
+                    
                     <div class="workspace-box">
                         <div id="riderMap"></div>
+                        
                         <div class="chat-panel">
                             <div style="background:#222; color:white; padding:10px; font-weight:bold; text-align: left;">💬 පාරිභෝගිකයා සමඟ සජීවී චැට් එක</div>
                             <div id="riderChatMessages" class="chat-messages"></div>
                             <form id="riderChatForm" class="chat-input-area">
+                                <button type="button" class="chat-cam-btn" onclick="document.getElementById('chatImageFile').click()">📷</button>
+                                <input type="file" id="chatImageFile" accept="image/*" style="display:none;" onchange="uploadRiderChatPhoto()">
+                                
                                 <input type="text" id="riderChatMsgInput" placeholder="මැසේජ් එකක් යවන්න..." required autocomplete="off">
                                 <button type="submit">යවන්න</button>
                             </form>
                         </div>
                     </div>
+
                     <div class="otp-verify-area">
                         <h4 style="margin:0 0 10px 0; color:#111; font-size: 14px;">🔐 වැඩ අවසන් කිරීමට පාරිභෝගිකයාගේ OTP කේතය ගහන්න</h4>
                         <input type="number" id="inputOtpCheck" placeholder="XXXX">
@@ -115,7 +152,7 @@
             </div>
 
             <div id="view-account" class="view-section">
-                <h2>මගේ ගිණුම (Account)</h2>
+                <h2 style="font-size: 20px; text-align: left;">මගේ ගිණුම (Account)</h2>
                 <div class="job-card" style="text-align: center;">
                     <img id="userProfAvatar" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--accent); object-fit: cover;" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
                     <h3 id="userProfName" style="margin:10px 0 2px 0;">...</h3>
@@ -137,9 +174,9 @@
         const part1 = "AIzaSyD29G6zoTAbg1YybqIWdKzCq"; const part2 = "_v--pAOOfI";
         const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.firebasestorage.app", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth(), db = firebase.firestore();
+        const auth = firebase.auth(), db = firebase.firestore(), storage = firebase.storage();
 
-        let rMap, rMarker, activeJobId = null, chatListener = null, activeJobRealOTP = null;
+        let rMap, routingControl, rMarker, activeJobId = null, chatListener = null, activeJobRealOTP = null, currentJobStatus = "";
 
         const hrs = new Date().getHours();
         document.getElementById('lblGreeting').innerText = hrs < 12 ? "Good Morning!☀️" : hrs < 17 ? "Good Afternoon!🌤️" : "Good Evening!🌙";
@@ -158,7 +195,6 @@
                 document.getElementById('userProfName').innerText = user.displayName || "QuickFix Rider";
                 document.getElementById('userProfEmail').innerText = user.email;
                 
-                // 🔐 CHECK VERIFICATION STATUS LIVE FROM FIRESTORE
                 db.collection("users").doc(user.uid).onSnapshot(doc => {
                     if(doc.exists) {
                         const userData = doc.data();
@@ -166,14 +202,11 @@
                             document.getElementById('topUserAvatar').src = userData.avatar;
                             document.getElementById('userProfAvatar').src = userData.avatar;
                         }
-                        
-                        // 🔒 If Rider is 'pending', Lock the dashboard down completely
                         if (userData.status === "pending") {
                             document.getElementById('verifiedContent').style.display = "none";
                             document.getElementById('bottomNav').style.display = "none";
                             document.getElementById('verificationLockScreen').style.display = "block";
                         } else {
-                            // Approved Riders unlock
                             document.getElementById('verifiedContent').style.display = "block";
                             document.getElementById('bottomNav').style.display = "flex";
                             document.getElementById('verificationLockScreen').style.display = "none";
@@ -181,10 +214,10 @@
                     }
                 });
 
-                // Load available pool
+                // Job Pool Listener
                 db.collection("jobs").where("status", "==", "available").onSnapshot(snapshot => {
                     const container = document.getElementById('availableJobsContainer');
-                    if(snapshot.empty) { container.innerHTML = "<p style='color:var(--text-muted); font-size:14px; text-align:left;'>ලබාගත හැකි නව වැඩ කිසිවක් නැත...</p>"; return; }
+                    if(snapshot.empty) { container.innerHTML = "<p style='color:var(--text-muted); font-size:14px;'>ලබාගත හැකි නව වැඩ කිසිවක් නැත...</p>"; return; }
                     container.innerHTML = "";
                     snapshot.forEach(doc => {
                         const job = doc.data();
@@ -192,42 +225,72 @@
                         container.innerHTML += `
                             <div class="job-card">
                                 <span style="position:absolute; top:15px; right:15px; font-size:11px; background:#eee; padding:3px 8px; border-radius:10px; font-weight:bold;">${job.category}</span>
-                                <h3>${job.title}</h3>
-                                <p>${job.description}</p>
-                                ${imgTag}
-                                <div style="font-size:12px; color:#666; margin-bottom:10px;">කර්තෘ: <b>${job.customerName}</b></div>
+                                <h3>${job.title}</h3> <p>${job.description}</p> ${imgTag}
+                                <div style="font-size:12px; color:#666; margin-bottom:10px;">📏 දුර: <b>${job.distance || '0 KM'}</b> | කස්ටමර්: ${job.customerName}</div>
                                 <button class="btn-yellow" onclick="acceptJob('${doc.id}')">වැඩේ බාරගන්න (Accept Job) 🤝</button>
                             </div>`;
                     });
                 });
 
-                // Load active jobs
-                db.collection("jobs").where("riderId", "==", user.uid).where("status", "==", "accepted").onSnapshot(snapshot => {
+                // 📊 ACTIVE & MULTI-STEP PROGRESS ROUTING DETECTOR SNAPSHOT
+                db.collection("jobs").where("riderId", "==", user.uid).where("status", "in", ["accepted", "on_the_way", "arrived"]).onSnapshot(snapshot => {
                     const container = document.getElementById('acceptedJobsContainer');
                     const notiContainer = document.getElementById('notificationsContainer');
-                    if(snapshot.empty) { container.innerHTML = "<p style='color:var(--text-muted); font-size:14px; text-align:left;'>ඔබ දැනට කිසිම වැඩක් බාරගෙන නැත...</p>"; document.getElementById('navigationArea').style.display = "none"; return; }
-                    container.innerHTML = "";
-                    let notiHtml = "";
+                    if(snapshot.empty) { container.innerHTML = "<p style='color:var(--text-muted); font-size:14px;'>ඔබ දැනට කිසිම වැඩක් බාරගෙන නැත...</p>"; document.getElementById('navigationArea').style.display = "none"; return; }
+                    
+                    container.innerHTML = ""; let notiHtml = "";
 
                     snapshot.forEach(doc => {
                         const job = doc.data();
-                        activeJobId = doc.id; activeJobRealOTP = job.otpCode;
-                        container.innerHTML += `<div class="job-card" style="border-left:4px solid #00c851"><h3>${job.title}</h3><p><b>පාරිභෝගිකයා:</b> ${job.customerName}<br><b>දුරකථනය:</b> ${job.customerPhone || 'නැත'}</p></div>`;
+                        activeJobId = doc.id; activeJobRealOTP = job.otpCode; currentJobStatus = job.status;
+                        
+                        container.innerHTML += `<div class="job-card" style="border-left:4px solid #00c851"><h3>${job.title}</h3><p><b>කස්ටමර්:</b> ${job.customerName}<br><b>දුරකථනය:</b> ${job.customerPhone || 'නැත'}</p></div>`;
                         
                         if (job.customerPhone && job.customerPhone !== "නැත") {
                             document.getElementById('btnClickToCall').href = "tel:" + job.customerPhone;
                             document.getElementById('btnClickToCall').style.display = "inline-flex";
                         } else { document.getElementById('btnClickToCall').style.display = "none"; }
 
+                        // STEPPER SYNC GRAPHICS ATTACHMENT
+                        let s1 = "completed", s2 = "next", s3 = "next", s4 = "next";
+                        let btnText = "ගමන ආරම්භ කරන්න 🏍️";
+                        
+                        if(job.status === "accepted") { s2 = "active"; btnText = "ගමන ආරම්භ කරන්න 🏍️"; }
+                        else if(job.status === "on_the_way") { s2 = "completed"; s3 = "active"; btnText = "මම ස්ථානයට පැමිණියා 📍"; }
+                        else if(job.status === "arrived") { s2 = "completed"; s3 = "completed"; s4 = "active"; btnText = "වැඩේ නිමයි (OTP අවශ්‍යයි) 🔐"; }
+
+                        document.getElementById('supplierStepperArea').innerHTML = `
+                            <div class="stepper-wrapper">
+                                <div class="stepper-item ${s1}"><div class="step-counter">1</div>බාරගත්තා</div>
+                                <div class="stepper-item ${s2}"><div class="step-counter">2</div>පිටත් වුණා</div>
+                                <div class="stepper-item ${s3}"><div class="step-counter">3</div>පැමිණියා</div>
+                                <div class="stepper-item ${s4}"><div class="step-counter">4</div>නිමයි</div>
+                            </div>`;
+
+                        let stepBtn = document.getElementById('btnUpdateStatusStep');
+                        stepBtn.innerText = btnText;
+                        stepBtn.className = "btn-status-step";
+
                         document.getElementById('navigationArea').style.display = "block";
-                        setTimeout(() => { showNavigationMap(job.lat, job.lng); }, 300);
+                        setTimeout(() => { showNavigationMap(job.lat, job.lng, job.dropLat, job.dropLng); }, 300);
                         listenToRiderChat(doc.id);
-                        notiHtml += `<div class="noti-card"><h4>💬 නව වැඩක් සක්‍රීයයි!</h4><p>ඔබ බාරගත් "${job.title}" වැඩේ සඳහා කස්ටමර් බලා සිටී.</p></div>`;
+                        notiHtml += `<div class="noti-card"><h4>💬 සක්‍රීය ඇනවුම!</h4><p>"${job.title}" සඳහා කස්ටමර් සමඟ චැට් එකෙන් සම්බන්ධ වන්න.</p></div>`;
                     });
                     notiContainer.innerHTML = notiHtml;
                 });
             }
         });
+
+        // 🎛️ UPDATE PROGRESS TRIGGER LOGIC LIVE MAPPED
+        function updateRiderLiveProgressStep() {
+            if(!activeJobId) return;
+            let nextStatus = "accepted";
+            if(currentJobStatus === "accepted") nextStatus = "on_the_way";
+            else if(currentJobStatus === "on_the_way") nextStatus = "arrived";
+            else { alert("🔐 කරුණාකර පල්ලෙහා ඇති කොටුවට කස්ටමර්ගේ OTP එක ගසා වැඩේ අවසන් කරන්න."); return; }
+
+            db.collection("jobs").doc(activeJobId).update({ status: nextStatus });
+        }
 
         function listenToRiderChat(jobId) {
             const msgContainer = document.getElementById('riderChatMessages');
@@ -237,10 +300,23 @@
                 snapshot.forEach(doc => {
                     const msg = doc.data();
                     let msgClass = msg.senderId === auth.currentUser.uid ? 'sent' : 'received';
-                    msgContainer.innerHTML += `<div class="msg ${msgClass}">${msg.text}</div>`;
+                    let msgContent = msg.imageUrl ? `<img src="${msg.imageUrl}" style="max-width:180px; border-radius:8px;">` : msg.text;
+                    msgContainer.innerHTML += `<div class="msg ${msgClass}">${msgContent}</div>`;
                 });
                 msgContainer.scrollTop = msgContainer.scrollHeight;
             });
+        }
+
+        // 📸 PHOTO SHARING MODULE INJECTED
+        function uploadRiderChatPhoto() {
+            const file = document.getElementById('chatImageFile').files[0];
+            if(!file || !activeJobId) return;
+            const storageRef = storage.ref('chat_images/' + Date.now() + '_' + file.name);
+            storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(downloadUrl => {
+                return db.collection("jobs").doc(activeJobId).collection("messages").add({
+                    text: "", imageUrl: downloadUrl, senderId: auth.currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }).then(() => { document.getElementById('chatImageFile').value = ""; });
         }
 
         document.getElementById('riderChatForm').addEventListener('submit', function(e) {
@@ -258,19 +334,31 @@
             }).then(() => { switchView('view-myjobs', 'nav-myjobs'); });
         }
 
-        function showNavigationMap(lat, lng) {
+        // 🗺️ ADVANCED MAP ROUTING DISPLAY INJECTION FOR SUPPLIER
+        function showNavigationMap(pLat, pLng, dLat, dLng) {
             if (!rMap) {
-                rMap = L.map('riderMap').setView([lat, lng], 16);
+                rMap = L.map('riderMap').setView([pLat, pLng], 14);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(rMap);
-                rMarker = L.marker([lat, lng]).addTo(rMap);
-            } else { rMap.setView([lat, lng], 16); rMarker.setLatLng([lat, lng]); }
+            }
+            if(routingControl) rMap.removeControl(routingControl);
+
+            routingControl = L.Routing.control({
+                waypoints: [ L.latLng(pLat, pLng), L.latLng(dLat || pLat, dLng || pLng) ],
+                router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+                lineOptions: { styles: [{ color: '#00c851', opacity: 0.8, weight: 6 }] },
+                createMarker: function(i, wp) {
+                    let mColor = i === 0 ? 'green' : 'red';
+                    let mLabel = i === 0 ? '🟢 කස්ටමර් ඉන්න තැන' : '🔴 යායුතු ස්ථානය';
+                    return L.marker(wp.latLng, {icon: L.icon({iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${mColor}.png`, shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41]})}).bindPopup(mLabel);
+                }
+            }).addTo(rMap);
         }
 
         function completeJobWithOTP() {
             const typedOTP = document.getElementById('inputOtpCheck').value;
-            if(parseInt(typedOTP) !== parseInt(activeJobRealOTP)) { alert("❌ වැරදි OTP කේතයක්!"); return; }
+            if(parseInt(typedOTP) !== parseInt(activeJobRealOTP)) { alert("❌ වැරදි OTP කේතයක් මචං!"); return; }
             db.collection("jobs").doc(activeJobId).update({ status: "completed" }).then(() => {
-                alert("✅ වැඩේ අවසන් කරා මචං!");
+                alert("✅ නියමයි බාස්! වැඩේ සාර්ථකව නිම කරලා අවසන් කරා.");
                 document.getElementById('inputOtpCheck').value = "";
                 document.getElementById('navigationArea').style.display = "none";
                 switchView('view-home', 'nav-home');
