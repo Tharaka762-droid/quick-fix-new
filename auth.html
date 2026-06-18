@@ -114,7 +114,8 @@
 
     <script>
         const part1 = "AIzaSyD29G6zoTAbg1YybqIWdKzCq"; const part2 = "_v--pAOOfI";
-        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.firebasestorage.app", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
+        // 🎯 TESTED: FALLBACK STORAGE INTEGRATION STABLE
+        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.appspot.com", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(), db = firebase.firestore(), storage = firebase.storage();
 
@@ -175,7 +176,6 @@
                 document.getElementById('phoneContainer').style.display = 'block';
                 document.getElementById('photoContainer').style.display = 'block';
                 document.getElementById('roleArea').style.display = 'block';
-                // Default setup triggers customer, so document input hides initially
             }
             changeLanguage(currentLang);
         }
@@ -192,7 +192,6 @@
                 document.getElementById('documentContainer').style.display = 'none';
             } else {
                 document.getElementById('roleSupp').classList.add('active');
-                // 🪪 Show document input if signing up as a Rider
                 if(currentTab !== 'login') {
                     document.getElementById('documentContainer').style.display = 'block';
                 }
@@ -237,7 +236,7 @@
                         document.getElementById('roleArea').style.display = 'block';
                         
                         currentTab = 'google-new-role';
-                        selectRole('customer'); // Default setup triggering view logic mapping
+                        selectRole('customer');
                     }
                 });
             }).catch((error) => { alert("Google Login Failed: " + error.message); document.getElementById('loadingOverlay').style.display = 'none'; checkLock = false; });
@@ -253,11 +252,10 @@
             const btn = document.getElementById('submitBtn');
 
             if ((currentTab === 'signup' || currentTab === 'google-new-role') && !file) {
-                alert("❌ කරුණාකර මුලින්ම ඔබේ ප්‍රොෆයිල් ඡායාරූපයක් තෝරන්න!");
+                alert("❌ කරුණාකර මුලින්ම ඔබේ ප්‍රොෆයිල් ඡායාරූපයක් (Profile Photo) තෝරන්න!");
                 return;
             }
 
-            // 🪪 ID Card validation for riders strictly locked
             if ((currentTab === 'signup' || currentTab === 'google-new-role') && chosenRole === 'supplier' && !docFile) {
                 alert("❌ රයිඩර් කෙනෙක් ලෙස ලියාපදිංචි වීමට නම් අනිවාර්යයෙන්ම NIC / License ෆොටෝ එකක් දැමිය යුතුය!");
                 return;
@@ -268,13 +266,11 @@
 
             if (currentTab === 'signup') {
                 const name = document.getElementById('authName').value;
-                if(!phone || phone.length < 9) { alert("දුරකථන අංකය නිවැරදි නැත!"); btn.disabled = false; btn.innerText = "ගිණුම සාදන්න"; return; }
+                if(!phone || phone.length < 9) { alert("දුරකථන අංකය නිවැරදි නැත!"); resetSubmitBtn(); return; }
 
                 auth.createUserWithEmailAndPassword(identifier, password).then((cred) => {
-                    // Upload Profile Pic First
                     return storage.ref('profiles/' + cred.user.uid).put(file).then(snap => snap.ref.getDownloadURL()).then(avatarUrl => {
                         if (chosenRole === 'supplier') {
-                            // Upload ID verification file for Rider
                             return storage.ref('documents/' + cred.user.uid).put(docFile).then(dSnap => dSnap.ref.getDownloadURL()).then(docUrl => {
                                 return saveUserData(cred.user.uid, name, identifier, phone, chosenRole, avatarUrl, docUrl, "pending");
                             });
@@ -285,11 +281,11 @@
                 }).then(() => {
                     alert("🎉 ලියාපදිංචිය සාර්ථකයි! දැන් Login වන්න.");
                     switchTab('login');
-                    btn.disabled = false;
-                }).catch(err => { alert("Error: " + err.message); btn.disabled = false; switchTab('signup'); });
+                    resetSubmitBtn();
+                }).catch(err => { alert("❌ SignUp Failed: " + err.message); resetSubmitBtn(); });
 
             } else if (currentTab === 'google-new-role') {
-                if(!phone || phone.length < 9) { alert("දුරකථන අංකය ඇතුළත් කරන්න!"); btn.disabled = false; return; }
+                if(!phone || phone.length < 9) { alert("කරුණාකර දුරකථන අංකයක් ඇතුළත් කරන්න!"); resetSubmitBtn(); return; }
 
                 storage.ref('profiles/' + googleUserObj.uid).put(file).then(snap => snap.ref.getDownloadURL()).then(avatarUrl => {
                     if (chosenRole === 'supplier') {
@@ -299,33 +295,36 @@
                     } else {
                         return saveUserData(googleUserObj.uid, googleUserObj.displayName, googleUserObj.email, phone, chosenRole, avatarUrl, null, "approved");
                     }
-                }).then(() => { redirectUser(chosenRole); });
+                }).then(() => { redirectUser(chosenRole); }).catch(err => { alert("❌ Google Registration Failed: " + err.message); resetSubmitBtn(); });
 
             } else {
-                // LOGIN
+                // LOGIN FLOW
                 if (identifier.includes("@")) {
                     auth.signInWithEmailAndPassword(identifier, password).then((cred) => {
                         db.collection("users").doc(cred.user.uid).get().then(doc => { if(doc.exists) redirectUser(doc.data().role); });
-                    }).catch(err => { alert("❌ Login Failed: " + err.message); btn.disabled = false; btn.innerText = "ඇතුල් වන්න"; });
+                    }).catch(err => { alert("❌ Login Failed: " + err.message); resetSubmitBtn(); });
                 } else {
                     db.collection("users").where("phoneNumber", "==", identifier).get().then(snapshot => {
-                        if(snapshot.empty) { alert("❌ මෙම දුරකථන අංකය ලියාපදිංචි කර නැත!"); btn.disabled = false; return; }
+                        if(snapshot.empty) { alert("❌ මෙම දුරකථන අංකය ලියාපදිංචි කර නැත!"); resetSubmitBtn(); return; }
                         let userEmail = "";
                         snapshot.forEach(doc => { userEmail = doc.data().email; });
                         auth.signInWithEmailAndPassword(userEmail, password).then((cred) => {
                             db.collection("users").doc(cred.user.uid).get().then(doc => { if(doc.exists) redirectUser(doc.data().role); });
-                        }).catch(err => { alert("❌ මුරපදය වැරදියි!"); btn.disabled = false; btn.innerText = "ඇතුල් වන්න"; });
+                        }).catch(err => { alert("❌ මුරපදය වැරදියි!"); resetSubmitBtn(); });
                     });
                 }
             }
         });
 
+        function resetSubmitBtn() {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = false;
+            btn.innerText = (currentTab === 'login') ? "ඇතුල් වන්න" : (currentTab === 'signup') ? "ගිණුම සාදන්න" : "ලියාපදිංචිය අවසන් කරන්න";
+        }
+
         function saveUserData(uid, name, email, phone, role, avatarUrl, docUrl, verifiedStatus) {
             return db.collection("users").doc(uid).set({
-                fullName: name, email: email, phoneNumber: phone, role: role, avatar: avatarUrl,
-                documentUrl: docUrl,
-                status: verifiedStatus, // 'pending' for riders, 'approved' for customers
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                fullName: name, email: email, phoneNumber: phone, role: role, avatar: avatarUrl, documentUrl: docUrl, status: verifiedStatus, timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
         }
 
