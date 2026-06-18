@@ -12,102 +12,54 @@
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
     <style>
         :root {
-            --bg-main: #f5f6fa;
-            --panel-bg: #ffffff;
-            --accent: #ffcc00;
-            --text-main: #222222;
-            --text-muted: #777777;
-            --border-color: #e0e0e0;
+            --bg-main: #f5f6fa; --panel-bg: #ffffff; --accent: #ffcc00; --text-main: #222222; --text-muted: #777777; --border-color: #e0e0e0;
         }
-
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background-color: var(--bg-main); 
-            color: var(--text-main); 
-            margin: 0; padding: 0; 
-            display: flex; flex-direction: column; 
-            height: 100vh; overflow: hidden; 
-        }
-
-        /* 👑 TOP HEADER (PickMe Style) */
-        .top-header {
-            background: var(--accent);
-            padding: 20px;
-            border-bottom-left-radius: 24px;
-            border-bottom-right-radius: 24px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        .top-header { background: var(--accent); padding: 20px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .header-user { display: flex; justify-content: space-between; align-items: center; }
         .user-info h3 { margin: 0; font-size: 18px; font-weight: 700; color: #111; }
         .user-info p { margin: 2px 0 0 0; font-size: 13px; color: #444; }
         .header-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid white; object-fit: cover; }
+        .search-container { background: white; border-radius: 12px; padding: 12px 15px; margin-top: 15px; display: flex; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .search-container input { border: none; outline: none; width: 100%; font-size: 15px; color: #333; margin-left: 10px; }
 
-        /* 🔍 SEARCH BAR */
-        .search-container {
-            background: white;
-            border-radius: 12px;
-            padding: 12px 15px;
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        .search-container input {
-            border: none; outline: none; width: 100%; font-size: 15px; color: #333; margin-left: 10px;
-        }
-
-        /* 💻 MAIN APPS SCREEN */
         .app-body { flex-grow: 1; padding: 20px; overflow-y: auto; padding-bottom: 90px; }
         .view-section { display: none; }
         .view-section.active { display: block; }
 
-        /* 🚖 GRID SYSTEM */
-        .category-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-top: 10px;
-        }
-        .category-card {
-            background: var(--panel-bg);
-            border-radius: 16px;
-            padding: 18px 10px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-            cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid #eaeaea;
-        }
-        .category-card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 6px 15px rgba(0,0,0,0.06); }
+        .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; }
+        .category-card { background: var(--panel-bg); border-radius: 16px; padding: 18px 10px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; transition: 0.2s; border: 1px solid #eaeaea; }
+        .category-card:hover { transform: translateY(-2px); border-color: var(--accent); }
         .category-icon { font-size: 28px; }
-        .category-name-wrapper { text-align: left; }
         .category-name { font-size: 14px; font-weight: bold; color: #222; display: block; }
         .category-desc { font-size: 11px; color: var(--text-muted); }
 
-        /* 💼 FORM & CARDS STYLES */
         .form-card { background: white; padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); }
         .form-group { margin-bottom: 15px; text-align: left; }
         .form-group label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; }
-        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; outline: none; background: #f9f9f9; font-family: inherit; }
-        #map { width: 100%; height: 200px; border-radius: 10px; margin-top: 5px; border: 1px solid var(--border-color); z-index: 1; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; outline: none; background: #f9f9f9; }
         
+        /* 🗺️ ADVANCED MAP BOX */
+        #map { width: 100%; height: 280px; border-radius: 12px; margin-top: 5px; border: 1px solid var(--border-color); z-index: 1; }
+        .map-instruction { font-size: 12px; color: #d6a100; font-weight: bold; margin: 5px 0; text-align: left; }
+        
+        /* 💰 PRICING DISPLAY PANEL */
+        .pricing-panel { background: #fffde7; border: 1px dashed #ffcc00; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: left; }
+        .pricing-data { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; font-weight: 600; }
+
         .btn-yellow { background: var(--accent); color: #111; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; }
         .job-card { background: white; border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; margin-bottom: 12px; position: relative; text-align: left; }
         .job-card h3 { margin: 0 0 5px 0; font-size: 16px; color: #111; }
         .job-img { width: 100%; max-width: 200px; height: 120px; object-fit: cover; border-radius: 8px; margin-top: 8px; }
         .status-badge { position: absolute; top: 15px; right: 15px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
 
-        /* 🔔 NOTIFICATION STYLE (PickMe Style) */
-        .noti-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,0.02); text-align: left; }
-        .noti-card h4 { margin: 0 0 5px 0; color: #111; font-size: 15px; }
-        .noti-card p { margin: 0; color: var(--text-muted); font-size: 13px; }
-
-        /* 💬 CHAT BOX WINDOW */
+        .noti-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--accent); text-align: left; }
         .chat-container { background: white; border: 1px solid var(--border-color); border-radius: 12px; margin-top: 15px; display: none; flex-direction: column; height: 280px; overflow: hidden; }
         .chat-header { background: #222; color: white; padding: 10px; font-weight: bold; display: flex; justify-content: space-between; }
         .chat-messages { flex-grow: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
@@ -118,12 +70,7 @@
         .chat-input-area input { flex-grow: 1; border: none; padding: 10px; outline: none; }
         .chat-input-area button { background: var(--accent); border: none; padding: 0 15px; font-weight: bold; }
 
-        /* 📱 BOTTOM NAVIGATION BAR */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
-            background: white; border-top: 1px solid var(--border-color);
-            display: flex; justify-content: space-around; align-items: center; z-index: 999;
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: white; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 999; }
         .nav-item { text-align: center; color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 11px; width: 25%; transition: 0.2s; }
         .nav-item span { display: block; font-size: 22px; margin-bottom: 2px; }
         .nav-item.active { color: #111; }
@@ -139,7 +86,6 @@
             </div>
             <img id="topUserAvatar" class="header-avatar" src="https://www.w3schools.com/howto/img_avatar.png" alt="User Avatar">
         </div>
-        
         <div class="search-container">
             <span>🔍</span>
             <input type="text" placeholder="ඔබට අද කරගත යුතු වැඩේ මොකක්ද?" disabled>
@@ -152,61 +98,37 @@
             <h4 style="margin: 10px 0 15px 0; color: #555; font-size: 14px;">🛠️ සේවාවන් තෝරන්න (Select Service)</h4>
             
             <div class="category-grid">
-                <div class="category-card" onclick="openQuickFixForm('Electrical', 'ලයිට් වැඩ / විදුලි කාර්මික ශිල්පී')">
+                <div class="category-card" onclick="openQuickFixForm('Electrical', 'ලයිට් වැඩ / විදුලි කාර්මික ଶිල්පී', 80)">
                     <span class="category-icon">⚡</span>
-                    <div class="category-name-wrapper">
-                        <span class="category-name">Electrical</span>
-                        <span class="category-desc">ලයිට්, වයිරින්, AC</span>
-                    </div>
+                    <div class="category-name-wrapper"><span class="category-name">Electrical</span><span class="category-desc">ලයිට්, වයිරින්, AC</span></div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('Mechanical', 'යාන්ත්‍රික වැඩ / Mechanical බාස්')">
+                <div class="category-card" onclick="openQuickFixForm('Mechanical', 'යාන්ත්‍රික වැඩ / Mechanical බාස්', 90)">
                     <span class="category-icon">👨‍🔧</span>
-                    <div class="category-name-wrapper">
-                        <span class="category-name">Mechanical</span>
-                        <span class="category-desc">වාහන, බයික් රෙපෙයාර්</span>
-                    </div>
+                    <div class="category-name-wrapper"><span class="category-name">Mechanical</span><span class="category-desc">වාහන, බයික් රෙපෙයාර්</span></div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('Plumbing', 'නල වැඩ / ප්ලම්බර් බාස්')">
+                <div class="category-card" onclick="openQuickFixForm('Plumbing', 'නල වැඩ / ප්ලම්බර් බාස්', 75)">
                     <span class="category-icon">🚰</span>
-                    <div class="category-name-wrapper">
-                        <span class="category-name">Plumbing</span>
-                        <span class="category-desc">බට ලීක්, ටැංකි, පයිප්ප</span>
-                    </div>
+                    <div class="category-name-wrapper"><span class="category-name">Plumbing</span><span class="category-desc">බට ලීක්, ටැංකි, පයිප්ප</span></div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('Electronics', 'ඉලෙක්ට්‍රොනික උපකරණ රෙපෙයාර්')">
+                <div class="category-card" onclick="openQuickFixForm('Electronics', 'ඉලෙක්ට්‍රොනික උපකරණ රෙපෙයාර්', 70)">
                     <span class="category-icon">📺</span>
-                    <div class="category-name-wrapper">
-                        <span class="category-name">Electronics</span>
-                        <span class="category-desc">TV, ෆ්‍රිජ්, පෑන්, ෆෝන්</span>
-                    </div>
+                    <div class="category-name-wrapper"><span class="category-name">Electronics</span><span class="category-desc">TV, ෆ්‍රිජ්, පෑන්, ෆෝන්</span></div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('Carpentry', 'වඩු වැඩ / වඩු බාස්')">
+                <div class="category-card" onclick="openQuickFixForm('Carpentry', 'වඩු වැඩ / වඩු බාස්', 85)">
                     <span class="category-icon">🪚</span>
-                    <div class="category-name-wrapper">
-                        <span class="category-name">Carpentry</span>
-                        <span class="category-desc">දොරවල්, අල්මාරි, ගෘහභාණ්ඩ</span>
-                    </div>
+                    <div class="category-name-wrapper"><span class="category-name">Carpentry</span><span class="category-desc">දොරවල්, අල්මාරි, ගෘහභාණ්ඩ</span></div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('Masonry & Painting', 'පින්තාරු සහ පෙදරේරු වැඩ')">
+                <div class="category-card" onclick="openQuickFixForm('Masonry & Painting', 'පින්තාරු සහ පෙදරේරු වැඩ', 80)">
                     <span class="category-icon">🎨</span>
-                    <div class="category-name-wrapper">
-                        <span class="category-name">Painting</span>
-                        <span class="category-desc">තීන්ත, මේසන්, ටයිල්</span>
-                    </div>
+                    <div class="category-name-wrapper"><span class="category-name">Painting</span><span class="category-desc">තීන්ත, මේසන්, ටයිල්</span></div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('Transport', 'ප්‍රවාහන / Delivery / රයිඩ්')">
+                <div class="category-card" onclick="openQuickFixForm('Transport', 'ප්‍රවාහන / Delivery / රයිඩ්', 120)">
                     <span class="category-icon">🚚</span>
-                    <div class="category-name-wrapper">
-                        <span class="category-name">Transport</span>
-                        <span class="category-desc">ත්‍රිවීල්, බයික්, ට්‍රක්</span>
-                    </div>
+                    <div class="category-name-wrapper"><span class="category-name">Transport</span><span class="category-desc">ත්‍රිවීල්, බයික්, ට්‍රක්</span></div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('Other Fixes', 'වෙනත් ඕනෑම Fix වැඩක්')">
+                <div class="category-card" onclick="openQuickFixForm('Other Fixes', 'වෙනත් ඕනෑම Fix වැඩක්', 60)">
                     <span class="category-icon">🛠️</span>
-                    <div class="category-name-wrapper">
-                        <span class="category-name">Other Fixes</span>
-                        <span class="category-desc">වත්ත සුදුවැඩ, පිරිසිදු කිරීම්</span>
-                    </div>
+                    <div class="category-name-wrapper"><span class="category-name">Other Fixes</span><span class="category-desc">වත්ත සුදුවැඩ, පිරිසිදු කිරීම්</span></div>
                 </div>
             </div>
 
@@ -226,11 +148,23 @@
                             <label>වැඩේට අදාළ ඡායාරූපයක් (Upload Photo) 📸</label>
                             <input type="file" id="jobImageFile" accept="image/*">
                         </div>
+                        
                         <div class="form-group">
-                            <label>වැඩේ තියෙන තැන පින් කරන්න (Pin Location) 📍</label>
+                            <label>ස්ථාන ලකුණු කරන්න (Set Pickup & Destination) 📍</label>
+                            <div class="map-instruction" id="mapHint">පියවර 1: සිතියම මත ක්ලික් කර ඔබ ඉන්න තැන (🟢 Pickup) ලකුණු කරන්න.</div>
                             <div id="map"></div>
-                            <input type="hidden" id="latInput"><input type="hidden" id="lngInput">
+                            <input type="hidden" id="pickupLat"><input type="hidden" id="pickupLng">
+                            <input type="hidden" id="dropLat"><input type="hidden" id="dropLng">
                         </div>
+
+                        <div class="pricing-panel" id="priceDisplayPanel">
+                            <div class="pricing-data"><span>දුර ප්‍රමාණය (Distance):</span> <span id="txtDistance">0.0 KM</span></div>
+                            <div class="pricing-data"><span>ගතවන කාලය (Duration):</span> <span id="txtDuration">0 Mins</span></div>
+                            <div class="pricing-data" style="color:#c00; font-size:15px; margin-top:5px; border-top:1px solid #ddd; padding-top:5px;">
+                                <span>ඇස්තමේන්තුගත මුදල (Auto Budget):</span> <span id="txtCalculatedPrice">රු. 0.00</span>
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             <label>ඔබ දෙන උපරිම ගාස්තුව (Budget - LKR)</label>
                             <input type="number" id="jobBudget" placeholder="රු. 1500" required>
@@ -257,9 +191,7 @@
 
         <div id="view-notifications" class="view-section">
             <h2 style="font-size: 20px; margin-bottom: 15px; text-align: left;">දැනුම්දීම් (Notifications)</h2>
-            <div id="notificationsContainer">
-                <p style="color:var(--text-muted); font-size:14px; text-align:left;">තාම අලුත් Notifications කිසිවක් නැත...</p>
-            </div>
+            <div id="notificationsContainer"><p style="color:var(--text-muted); font-size:14px; text-align:left;">තාම අලුත් Notifications කිසිවක් නැත...</p></div>
         </div>
 
         <div id="view-account" class="view-section">
@@ -275,18 +207,10 @@
     </div>
 
     <div class="bottom-nav">
-        <div id="nav-home" class="nav-item active" onclick="switchView('view-home', 'nav-home')">
-            <span>🏠</span>Home
-        </div>
-        <div id="nav-activities" class="nav-item" onclick="switchView('view-activities', 'nav-activities')">
-            <span>📋</span>Activities
-        </div>
-        <div id="nav-notifications" class="nav-item" onclick="switchView('view-notifications', 'nav-notifications')">
-            <span>🔔</span>Notification
-        </div>
-        <div id="nav-account" class="nav-item" onclick="switchView('view-account', 'nav-account')">
-            <span>👤</span>Account
-        </div>
+        <div id="nav-home" class="nav-item active" onclick="switchView('view-home', 'nav-home')"><span>🏠</span>Home</div>
+        <div id="nav-activities" class="nav-item" onclick="switchView('view-activities', 'nav-activities')"><span>📋</span>Activities</div>
+        <div id="nav-notifications" class="nav-item" onclick="switchView('view-notifications', 'nav-notifications')"><span>🔔</span>Notification</div>
+        <div id="nav-account" class="nav-item" onclick="switchView('view-account', 'nav-account')"><span>👤</span>Account</div>
     </div>
 
     <script>
@@ -295,30 +219,101 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(), db = firebase.firestore(), storage = firebase.storage();
 
-        let map, marker, activeChatJobId = null, chatListener = null, currentCategory = "General";
+        let map, routingControl, pickupMarker, dropMarker;
+        let activeChatJobId = null, chatListener = null, currentCategory = "General";
+        let perKmRate = 80; // Default Rate per KM
 
         const hrs = new Date().getHours();
         document.getElementById('lblGreeting').innerText = hrs < 12 ? "Good Morning!☀️" : hrs < 17 ? "Good Afternoon!🌤️" : "Good Evening!🌙";
 
+        // 🗺️ ADVANCED MAP ROUTING MANAGEMENT SYSTEM
         function initMap() {
             if(map) return;
             map = L.map('map').setView([6.9271, 79.8612], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            marker = L.marker([6.9271, 79.8612], {draggable: true}).addTo(map);
-            marker.on('dragend', function () {
-                let pos = marker.getLatLng();
-                document.getElementById('latInput').value = pos.lat;
-                document.getElementById('lngInput').value = pos.lng;
-            });
+
+            // Fetch Live GPS Coordinates initially
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(pos => {
                     let lat = pos.coords.latitude, lng = pos.coords.longitude;
-                    map.setView([lat, lng], 16);
-                    marker.setLatLng([lat, lng]);
-                    document.getElementById('latInput').value = lat;
-                    document.getElementById('lngInput').value = lng;
+                    map.setView([lat, lng], 15);
+                    setPickupLocation(lat, lng);
                 }, null, { enableHighAccuracy: true });
             }
+
+            // Map click listener routing interpolation
+            map.on('click', function(e) {
+                if (!document.getElementById('pickupLat').value) {
+                    setPickupLocation(e.latlng.lat, e.latlng.lng);
+                } else if (!document.getElementById('dropLat').value) {
+                    setDropLocation(e.latlng.lat, e.latlng.lng);
+                    calculateRoute();
+                } else {
+                    // Reset mapping configuration to start over
+                    resetRoutingSetup();
+                    setPickupLocation(e.latlng.lat, e.latlng.lng);
+                }
+            });
+        }
+
+        function setPickupLocation(lat, lng) {
+            document.getElementById('pickupLat').value = lat;
+            document.getElementById('pickupLng').value = lng;
+            if(pickupMarker) map.removeLayer(pickupMarker);
+            pickupMarker = L.marker([lat, lng], {icon: L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41]})}).addTo(map).bindPopup("🟢 ඔබේ ස්ථානය (Pickup)").openPopup();
+            document.getElementById('mapHint').innerText = "පියවර 2: දැන් බඩු යවන්න ඕන හෝ බාස් එන්න ඕන තැන (🔴 Destination) සිතියම මත ක්ලික් කර පින් කරන්න.";
+        }
+
+        function setDropLocation(lat, lng) {
+            document.getElementById('dropLat').value = lat;
+            document.getElementById('dropLng').value = lng;
+            if(dropMarker) map.removeLayer(dropMarker);
+            dropMarker = L.marker([lat, lng], {icon: L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41]})}).addTo(map).bindPopup("🔴 යායුතු ස්ථානය (Destination)").openPopup();
+        }
+
+        function resetRoutingSetup() {
+            document.getElementById('pickupLat').value = ""; document.getElementById('pickupLng').value = "";
+            document.getElementById('dropLat').value = ""; document.getElementById('dropLng').value = "";
+            if(pickupMarker) map.removeLayer(pickupMarker);
+            if(dropMarker) map.removeLayer(dropMarker);
+            if(routingControl) map.removeControl(routingControl);
+            document.getElementById('priceDisplayPanel').style.display = "none";
+        }
+
+        // 🧠 AUTOMATED ADVANCED PRICING CALCULATOR ENGINE VIA DYNAMIC CATEGORY LOGIC
+        function calculateRoute() {
+            let pLat = parseFloat(document.getElementById('pickupLat').value);
+            let pLng = parseFloat(document.getElementById('pickupLng').value);
+            let dLat = parseFloat(document.getElementById('dropLat').value);
+            let dLng = parseFloat(document.getElementById('dropLng').value);
+
+            if(routingControl) map.removeControl(routingControl);
+
+            routingControl = L.Routing.control({
+                waypoints: [ L.latLng(pLat, pLng), L.latLng(dLat, dLat ? dLng : pLng) ], // Fallback guard integrated
+                router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+                lineOptions: { styles: [{ color: '#2979ff', opacity: 0.8, weight: 6 }] },
+                createMarker: function() { return null; } // Prevent redundant duplicate routing markers
+            }).addTo(map);
+
+            routingControl.on('routesfound', function(e) {
+                let routes = e.routes;
+                let summary = routes[0].summary;
+                let distanceInKm = (summary.totalDistance / 1000).toFixed(1);
+                let durationInMins = Math.round(summary.totalTime / 60);
+
+                // Pricing calculation base algorithms
+                let basePrice = 200; // Fixed starting minimum standard callout base charge
+                let calculatedTotal = Math.round(basePrice + (distanceInKm * perKmRate));
+
+                document.getElementById('txtDistance').innerText = distanceInKm + " KM";
+                document.getElementById('txtDuration').innerText = durationInMins + " Mins";
+                document.getElementById('txtCalculatedPrice').innerText = "රු. " + calculatedTotal + ".00";
+                document.getElementById('jobBudget').value = calculatedTotal; // Force input field auto filling sync
+
+                document.getElementById('priceDisplayPanel').style.display = "block";
+                document.getElementById('mapHint').innerText = "✅ පාර සහ මිල සාර්ථකව ගණනය කර ඇත! ඔබට අවශ්‍ය නම් පින් එක ආයේ ක්ලික් කර වෙනස් කරන්න පුළුවන්.";
+            });
         }
 
         function switchView(viewId, navId) {
@@ -328,11 +323,15 @@
             document.getElementById(navId).classList.add('active');
         }
 
-        function openQuickFixForm(catName, catDisplaySI) {
+        function openQuickFixForm(catName, catDisplaySI, currentKmRate) {
             currentCategory = catName;
+            perKmRate = currentKmRate; // Set adaptive category rates live instantly
+            
             document.getElementById('selectedCategoryDisplay').innerText = catDisplaySI;
             document.getElementById('postFormArea').style.display = "block";
             document.getElementById('jobTitle').value = catDisplaySI + " කරගැනීම";
+            
+            resetRoutingSetup();
             setTimeout(initMap, 200);
             document.getElementById('postFormArea').scrollIntoView({ behavior: 'smooth' });
         }
@@ -348,22 +347,14 @@
                     if(doc.exists && doc.data().avatar) {
                         document.getElementById('topUserAvatar').src = doc.data().avatar;
                         document.getElementById('userProfAvatar').src = doc.data().avatar;
-                    } else if(user.photoURL) {
-                        document.getElementById('topUserAvatar').src = user.photoURL;
-                        document.getElementById('userProfAvatar').src = user.photoURL;
                     }
                 });
 
-                // 🚨 FIXED: JOBS FETCH QUERY (No more query-lock hanging!)
                 db.collection("jobs").where("customerId", "==", user.uid).onSnapshot(snapshot => {
                     const container = document.getElementById('jobsContainer');
                     const notiContainer = document.getElementById('notificationsContainer');
                     
-                    if(snapshot.empty) { 
-                        container.innerHTML = `<p style='color:var(--text-muted); font-size:14px; text-align:left;'>තාම කිසිම ඇනවුමක් සිදුකර නැත...</p>`; 
-                        return; 
-                    }
-                    
+                    if(snapshot.empty) { container.innerHTML = `<p style='color:var(--text-muted); font-size:14px; text-align:left;'>තාම කිසිම ඇනවුමක් සිදුකර නැත...</p>`; return; }
                     container.innerHTML = "";
                     let notiHtml = "";
 
@@ -379,33 +370,20 @@
                                 <span class="status-badge" style="background:${badgeColor}; color:${job.status==='available'?'#111':'#fff'}">${job.status}</span>
                                 <h3>${job.title}</h3>
                                 <p style="font-size:13px; color:#555; margin:5px 0;">${job.description}</p>
-                                <div style="font-size:12px; color:#777; margin-bottom:5px;">Category: <b>${job.category}</b></div>
+                                <div style="font-size:12px; color:#777; margin-bottom:5px;">Category: <b>${job.category}</b> | 📏 ${job.distance || '0 KM'}</div>
                                 ${imgTag}
-                                <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: ਰੁ. ${job.budget}</div>
+                                <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: රු. ${job.budget}</div>
                                 ${otpBadge} ${chatBtn}
                             </div>`;
 
-                        // 🔔 GENERATE NOTIFICATIONS DYNAMICALLY BASED ON STATUS CHANGE
                         if(job.status === 'accepted') {
-                            notiHtml += `
-                                <div class="noti-card">
-                                    <h4>🛠️ ඔබේ ඇනවුම බාරගන්නා ලදී!</h4>
-                                    <p>ඔබේ "${job.title}" වැඩය <b>${job.riderName || 'බාස් කෙනෙක්'}</b> විසින් බාරගන්නා ලදී. චැට් එක හරහා සම්බන්ධ වන්න.</p>
-                                </div>`;
+                            notiHtml += `<div class="noti-card"><h4>🛠️ ඔබේ ඇනවුම බාරගන්නා ලදී!</h4><p>ඔබේ "${job.title}" වැඩය <b>${job.riderName || 'බාස් කෙනෙක්'}</b> විසින් බාරගන්නා ලදී.</p></div>`;
                         } else if (job.status === 'completed') {
-                            notiHtml += `
-                                <div class="noti-card" style="border-left-color: #00c851;">
-                                    <h4>✅ වැඩය සාර්ථකව අවසන්!</h4>
-                                    <p>"${job.title}" වැඩය සාර්ථකව නිම කර ඇත. ස්තූතියි!</p>
-                                </div>`;
+                            notiHtml += `<div class="noti-card" style="border-left-color: #00c851;"><h4>✅ වැඩය සාර්ථකව අවසන්!</h4><p>"${job.title}" වැඩය සාර්ථකව නිම කර ඇත.</p></div>`;
                         }
                     });
 
-                    if(notiHtml !== "") {
-                        notiContainer.innerHTML = notiHtml;
-                    } else {
-                        notiContainer.innerHTML = `<p style="color:var(--text-muted); font-size:14px; text-align:left;">තාම අලුත් දැනුම්දීම් කිසිවක් නැත...</p>`;
-                    }
+                    notiContainer.innerHTML = notiHtml !== "" ? notiHtml : `<p style="color:var(--text-muted); font-size:14px; text-align:left;">තාම අලුත් දැනුම්දීම් කිසිවක් නැත...</p>`;
                 });
             }
         });
@@ -439,33 +417,39 @@
             e.preventDefault();
             const btn = document.getElementById('btnSubmitPost');
             const file = document.getElementById('jobImageFile').files[0];
-            btn.innerText = "පෝස්ට් වෙමින්... ⏳"; btn.disabled = true;
+            
+            let pLat = parseFloat(document.getElementById('pickupLat').value);
+            let pLng = parseFloat(document.getElementById('pickupLng').value);
+            let dLat = parseFloat(document.getElementById('dropLat').value) || pLat;
+            let dLng = parseFloat(document.getElementById('dropLng').value) || pLng;
+            let distText = document.getElementById('txtDistance').innerText;
 
+            if(!pLat) { alert("❌ කරුණාකර සිතියම මත ඔබ ඉන්නා ස්ථානය ලකුණු කරන්න!"); return; }
+
+            btn.innerText = "පෝස්ට් වෙමින්... ⏳"; btn.disabled = true;
             const title = document.getElementById('jobTitle').value;
             const description = document.getElementById('jobDesc').value;
             const budget = document.getElementById('jobBudget').value;
-            const lat = parseFloat(document.getElementById('latInput').value) || 6.9271;
-            const lng = parseFloat(document.getElementById('lngInput').value) || 79.8612;
             const randomOTP = Math.floor(1000 + Math.random() * 9000);
 
             db.collection("users").doc(auth.currentUser.uid).get().then(userDoc => {
                 let pNum = (userDoc.exists && userDoc.data().phoneNumber) ? userDoc.data().phoneNumber : "නැත";
                 
+                let jobPayload = {
+                    title: title, description: description, budget: budget, category: currentCategory,
+                    lat: pLat, lng: pLng, dropLat: dLat, dropLng: dLng, distance: distText,
+                    customerId: auth.currentUser.uid, customerName: auth.currentUser.displayName, customerPhone: pNum,
+                    status: "available", otpCode: randomOTP, rated: false, imageUrl: null, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
                 if (file) {
                     const storageRef = storage.ref('job_images/' + Date.now() + '_' + file.name);
                     storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(downloadUrl => {
-                        return db.collection("jobs").add({
-                            title: title, description: description, budget: budget, lat: lat, lng: lng, category: currentCategory,
-                            customerId: auth.currentUser.uid, customerName: auth.currentUser.displayName, customerPhone: pNum,
-                            status: "available", otpCode: randomOTP, rated: false, imageUrl: downloadUrl, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }).then(() => { finishPost(); }).catch(err => { alert("Upload error: " + err.message); resetBtn(); });
+                        jobPayload.imageUrl = downloadUrl;
+                        return db.collection("jobs").add(jobPayload);
+                    }).then(() => { finishPost(); }).catch(() => { resetBtn(); });
                 } else {
-                    db.collection("jobs").add({
-                        title: title, description: description, budget: budget, lat: lat, lng: lng, category: currentCategory,
-                        customerId: auth.currentUser.uid, customerName: auth.currentUser.displayName, customerPhone: pNum,
-                        status: "available", otpCode: randomOTP, rated: false, imageUrl: null, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    }).then(() => { finishPost(); }).catch(err => { alert("Error: " + err.message); resetBtn(); });
+                    db.collection("jobs").add(jobPayload).then(() => { finishPost(); }).catch(() => { resetBtn(); });
                 }
             });
         });
