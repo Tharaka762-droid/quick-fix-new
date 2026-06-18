@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickFix - Customer App</title>
+    <title>QuickFix - World Class Customer App</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -17,7 +16,7 @@
 
     <style>
         :root {
-            --bg-main: #f5f6fa; --panel-bg: #ffffff; --accent: #ffcc00; --text-main: #222222; --text-muted: #777777; --border-color: #e0e0e0;
+            --bg-main: #f5f6fa; --panel-bg: #ffffff; --accent: #ffcc00; --text-main: #222222; --text-muted: #777777; --border-color: #e0e0e0; --success: #00c851;
         }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
@@ -26,8 +25,10 @@
         .user-info h3 { margin: 0; font-size: 18px; font-weight: 700; color: #111; }
         .user-info p { margin: 2px 0 0 0; font-size: 13px; color: #444; }
         .header-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid white; object-fit: cover; }
-        .search-container { background: white; border-radius: 12px; padding: 12px 15px; margin-top: 15px; display: flex; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .search-container input { border: none; outline: none; width: 100%; font-size: 15px; color: #333; margin-left: 10px; }
+        
+        .search-container { background: white; border-radius: 12px; padding: 10px 15px; margin-top: 15px; display: flex; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .search-container input { border: none; outline: none; width: 100%; font-size: 14px; color: #333; margin-left: 10px; }
+        .search-btn { background: #222; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; }
 
         .app-body { flex-grow: 1; padding: 20px; overflow-y: auto; padding-bottom: 90px; }
         .view-section { display: none; }
@@ -45,33 +46,43 @@
         .form-group label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; }
         .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; outline: none; background: #f9f9f9; }
         
-        #map { width: 100%; height: 280px; border-radius: 12px; margin-top: 5px; border: 1px solid var(--border-color); z-index: 1; }
+        #map { width: 100%; height: 260px; border-radius: 12px; margin-top: 5px; border: 1px solid var(--border-color); z-index: 1; }
         .map-instruction { font-size: 12px; color: #d6a100; font-weight: bold; margin: 5px 0; text-align: left; }
         
         .pricing-panel { background: #fffde7; border: 1px dashed #ffcc00; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: left; }
         .pricing-data { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; font-weight: 600; }
+        
+        .promo-group { display: flex; gap: 8px; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; }
+        .promo-input { flex-grow: 1; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; outline: none; font-size: 12px; }
+        .promo-btn { background: #222; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
 
         .btn-yellow { background: var(--accent); color: #111; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; }
+        .btn-cancel { background: #ff4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
+        
         .job-card { background: white; border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; margin-bottom: 12px; position: relative; text-align: left; }
         .job-card h3 { margin: 0 0 5px 0; font-size: 16px; color: #111; }
-        .job-img { width: 100%; max-width: 200px; height: 120px; object-fit: cover; border-radius: 8px; margin-top: 8px; }
-        .status-badge { position: absolute; top: 15px; right: 15px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
 
-        .otp-display-box { background: #fff9db; border: 1px solid #ffe066; padding: 10px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; font-size: 14px; color: #2b2b2b; margin-top: 10px; }
-        .otp-number { background: var(--accent); padding: 2px 8px; border-radius: 4px; font-size: 15px; color: #111; letter-spacing: 1px; }
+        .stepper-wrapper { display: flex; justify-content: space-between; margin: 15px 0 10px 0; padding: 0; position: relative; }
+        .stepper-item { position: relative; display: flex; flex-direction: column; align-items: center; flex: 1; font-size: 10px; font-weight: bold; color: #aaa; text-align: center; }
+        .stepper-item::before { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 8px; left: -50%; z-index: 1; }
+        .stepper-item:first-child::before { content: none; }
+        .step-counter { position: relative; z-index: 5; display: flex; justify-content: center; align-items: center; width: 18px; height: 18px; border-radius: 50%; background: #ccc; margin-bottom: 4px; }
+        .stepper-item.completed { color: var(--success); }
+        .stepper-item.completed .step-counter { background-color: var(--success); color: white; }
+        .stepper-item.active { color: #ffcc00; }
+        .stepper-item.active .step-counter { background-color: #ffcc00; color: #111; }
 
-        /* 🎛️ ACTIVITIES FILTER TABS */
+        .otp-display-box { background: #fff9db; border: 1px solid #ffe066; padding: 10px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; font-size: 13px; color: #2b2b2b; margin-top: 10px; }
+        .otp-number { background: var(--accent); padding: 2px 8px; border-radius: 4px; font-size: 14px; color: #111; }
+
         .filter-tab-bar { display: flex; gap: 10px; margin-bottom: 15px; }
-        .filter-btn { flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; background: #ddd; color: #333; transition: 0.2s; }
+        .filter-btn { flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; background: #ddd; color: #333; }
         .filter-btn.active { background: var(--accent); color: #111; border-color: var(--accent); }
 
-        /* ⭐ STARS RATING BLOCK */
-        .star-rating span { font-size: 24px; cursor: pointer; color: #ccc; transition: 0.1s; }
-        .star-rating span:hover, .star-rating span.active { color: #ffcc00; }
-
+        .star-rating span { font-size: 24px; cursor: pointer; color: #ccc; }
+        .star-rating span.active { color: #ffcc00; }
         .noti-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--accent); text-align: left; }
         
-        /* 💬 CHAT DESIGN & PHOTO SHARING INJECTION */
         .chat-container { background: white; border: 1px solid var(--border-color); border-radius: 12px; margin-top: 15px; display: none; flex-direction: column; height: 320px; overflow: hidden; }
         .chat-header { background: #222; color: white; padding: 10px; font-weight: bold; display: flex; justify-content: space-between; }
         .chat-messages { flex-grow: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
@@ -81,10 +92,9 @@
         .chat-input-area { display: flex; border-top: 1px solid var(--border-color); align-items: center; background: #fff; }
         .chat-input-area input { flex-grow: 1; border: none; padding: 12px; outline: none; font-size: 14px; }
         .chat-input-area button { background: var(--accent); border: none; padding: 12px 18px; font-weight: bold; cursor: pointer; }
-        .chat-cam-btn { background: none; border: none; font-size: 20px; cursor: pointer; padding: 0 10px; color: #555; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: white; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 999; }
-        .nav-item { text-align: center; color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 11px; width: 25%; transition: 0.2s; }
+        .nav-item { text-align: center; color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 11px; width: 25%; }
         .nav-item span { display: block; font-size: 22px; margin-bottom: 2px; }
         .nav-item.active { color: #111; }
     </style>
@@ -99,9 +109,11 @@
             </div>
             <img id="topUserAvatar" class="header-avatar" src="https://www.w3schools.com/howto/img_avatar.png" alt="User Avatar">
         </div>
+        
         <div class="search-container">
             <span>🔍</span>
-            <input type="text" placeholder="ඔබට අද කරගත යුතු වැඩේ මොකක්ද?" disabled>
+            <input type="text" id="globalAddressSearchInput" placeholder="යායුතු නගරය මෙතන ගසා සර්ච් කරන්න...">
+            <button class="search-btn" onclick="searchGlobalAddressRoute()">Search</button>
         </div>
     </div>
 
@@ -157,14 +169,10 @@
                             <label>වැඩේ සහ ලෙඩේ විස්තරය (Describe the issue)</label>
                             <textarea id="jobDesc" rows="3" placeholder="කරගන්න ඕන වැඩේ ගැන විස්තරයක් ලියන්න..." required></textarea>
                         </div>
-                        <div class="form-group">
-                            <label>වැඩේට අදාළ ඡායාරූපයක් (Upload Photo) 📸</label>
-                            <input type="file" id="jobImageFile" accept="image/*">
-                        </div>
                         
                         <div class="form-group">
                             <label>ස්ථාන ලකුණු කරන්න (Set Pickup & Destination) 📍</label>
-                            <div class="map-instruction" id="mapHint">පියවර 1: සිතියම මත ඔබ ඉන්න තැන (🟢 Pickup) ලකුණු කරන්න.</div>
+                            <div class="map-instruction" id="mapHint">සිතියම මත ක්ලික් කර ඔබ ඉන්න තැන (🟢 Pickup) ලකුණු කරන්න.</div>
                             <div id="map"></div>
                             <input type="hidden" id="pickupLat"><input type="hidden" id="pickupLng">
                             <input type="hidden" id="dropLat"><input type="hidden" id="dropLng">
@@ -175,6 +183,11 @@
                             <div class="pricing-data"><span>ගතවන කාලය (Duration):</span> <span id="txtDuration">0 Mins</span></div>
                             <div class="pricing-data" style="color:#c00; font-size:15px; margin-top:5px; border-top:1px solid #ddd; padding-top:5px;">
                                 <span>ඇස්තමේන්තුගත මුදල (Auto Budget):</span> <span id="txtCalculatedPrice">රු. 0.00</span>
+                            </div>
+                            
+                            <div class="promo-group">
+                                <input type="text" id="promoInputCode" class="promo-input" placeholder="Promo Code (QFIX2026)">
+                                <button type="button" class="promo-btn" onclick="applyPromoDiscountCode()">Apply</button>
                             </div>
                         </div>
 
@@ -201,9 +214,6 @@
                 <div class="chat-header">💬 බාස් සමඟ සජීවී චැට් එක <span style="cursor:pointer;" onclick="document.getElementById('customerChatBox').style.display='none'">✖</span></div>
                 <div id="chatMessages" class="chat-messages"></div>
                 <form id="chatForm" class="chat-input-area">
-                    <button type="button" class="chat-cam-btn" onclick="document.getElementById('chatImageFile').click()">📷</button>
-                    <input type="file" id="chatImageFile" accept="image/*" style="display:none;" onchange="uploadChatPhoto()">
-                    
                     <input type="text" id="chatMsgInput" placeholder="මැසේජ් එකක් ලියන්න..." required autocomplete="off">
                     <button type="submit">යවන්න</button>
                 </form>
@@ -236,12 +246,12 @@
 
     <script>
         const part1 = "AIzaSyD29G6zoTAbg1YybqIWdKzCq"; const part2 = "_v--pAOOfI";
-        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new", storageBucket: "quickfix-new.firebasestorage.app", messagingSenderId: "316535009311", appId: "1:316535009311:web:975f6b2b89604447c0e52a" };
+        const firebaseConfig = { apiKey: part1 + part2, authDomain: "quickfix-new.firebaseapp.com", projectId: "quickfix-new" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth(), db = firebase.firestore(), storage = firebase.storage();
+        const auth = firebase.auth(), db = firebase.firestore();
 
         let map, routingControl, pickupMarker, dropMarker;
-        let activeChatJobId = null, chatListener = null, currentCategory = "General", perKmRate = 80;
+        let activeChatJobId = null, chatListener = null, currentCategory = "General", perKmRate = 80, originalPrice = 0;
 
         const hrs = new Date().getHours();
         document.getElementById('lblGreeting').innerText = hrs < 12 ? "Good Morning!☀️" : hrs < 17 ? "Good Afternoon!🌤️" : "Good Evening!🌙";
@@ -272,12 +282,38 @@
             });
         }
 
+        function searchGlobalAddressRoute() {
+            let query = document.getElementById('globalAddressSearchInput').value.trim();
+            if(!query) return;
+            
+            if(document.getElementById('postFormArea').style.display === "none") {
+                openQuickFixForm('General', 'QuickFix සේවාව', 80);
+            }
+
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=lk`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.length > 0) {
+                    let lat = parseFloat(data[0].lat);
+                    let lng = parseFloat(data[0].lon);
+                    
+                    if (!document.getElementById('pickupLat').value) {
+                        map.setView([lat, lng], 14);
+                        setPickupLocation(lat, lng);
+                    } else {
+                        setDropLocation(lat, lng);
+                        calculateRoute();
+                    }
+                } else { alert("❌ ස්ථානය සොයාගත නොහැකි විය."); }
+            });
+        }
+
         function setPickupLocation(lat, lng) {
             document.getElementById('pickupLat').value = lat;
             document.getElementById('pickupLng').value = lng;
             if(pickupMarker) map.removeLayer(pickupMarker);
             pickupMarker = L.marker([lat, lng], {icon: L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41]})}).addTo(map).bindPopup("🟢 ඔබේ ස්ථානය (Pickup)").openPopup();
-            document.getElementById('mapHint').innerText = "පියවර 2: දැන් බඩු යවන්න ඕන හෝ බාස් එන්න ඕන තැන (🔴 Destination) සිතියම මත ක්ලික් කර පින් කරන්න.";
+            document.getElementById('mapHint').innerText = "පියවර 2: යායුතු ස්ථානය (Destination) සිතියම මත ක්ලික් කරන්න හෝ උඩින් සර්ච් කරන්න.";
         }
 
         function setDropLocation(lat, lng) {
@@ -294,6 +330,7 @@
             if(dropMarker) map.removeLayer(dropMarker);
             if(routingControl) map.removeControl(routingControl);
             document.getElementById('priceDisplayPanel').style.display = "none";
+            document.getElementById('promoInputCode').value = "";
         }
 
         function calculateRoute() {
@@ -318,14 +355,25 @@
                 let durationInMins = Math.round(summary.totalTime / 60);
 
                 let basePrice = 200;
-                let calculatedTotal = Math.round(basePrice + (distanceInKm * perKmRate));
+                originalPrice = Math.round(basePrice + (distanceInKm * perKmRate));
 
                 document.getElementById('txtDistance').innerText = distanceInKm + " KM";
                 document.getElementById('txtDuration').innerText = durationInMins + " Mins";
-                document.getElementById('txtCalculatedPrice').innerText = "රු. " + calculatedTotal + ".00";
-                document.getElementById('jobBudget').value = calculatedTotal;
+                document.getElementById('txtCalculatedPrice').innerText = "රු. " + originalPrice + ".00";
+                document.getElementById('jobBudget').value = originalPrice;
                 document.getElementById('priceDisplayPanel').style.display = "block";
             });
+        }
+
+        function applyPromoDiscountCode() {
+            let code = document.getElementById('promoInputCode').value.trim();
+            if(code === "QFIX2026") {
+                let discountedPrice = originalPrice - 250;
+                if(discountedPrice < 200) discountedPrice = 200;
+                document.getElementById('txtCalculatedPrice').innerText = "රු. " + discountedPrice + ".00 (Promo Applied! 🎁)";
+                document.getElementById('jobBudget').value = discountedPrice;
+                alert("🎉 QFIX2026 Promo එක සාර්ථකයි!");
+            } else { alert("❌ වලංගු නොවන ප්‍රොමෝ කේතයකි!"); }
         }
 
         function switchView(viewId, navId) {
@@ -335,11 +383,9 @@
             document.getElementById(navId).classList.add('active');
         }
 
-        // 📜 SPLIT ACTIVE & PAST ARCHIVE SYSTEM VISUALLY 
         function switchActivitiesFilter(filterType) {
             document.getElementById('btnTabActive').classList.remove('active');
             document.getElementById('btnTabPast').classList.remove('active');
-            
             if(filterType === 'active') {
                 document.getElementById('btnTabActive').classList.add('active');
                 document.getElementById('activeJobsContainer').style.display = "block";
@@ -352,7 +398,7 @@
         }
 
         function openQuickFixForm(catName, catDisplaySI, currentKmRate) {
-            currentCategory = catName; perKmRate = currentKmRate;
+            currentCategory = catName; perKmRate = currentKmRate || 80;
             document.getElementById('selectedCategoryDisplay').innerText = catDisplaySI;
             document.getElementById('postFormArea').style.display = "block";
             document.getElementById('jobTitle').value = catDisplaySI + " කරගැනීම";
@@ -375,7 +421,6 @@
                     }
                 });
 
-                // REALTIME ACTIVE & HISTORY DATA RETRIEVAL MANAGEMENT
                 db.collection("jobs").where("customerId", "==", user.uid).onSnapshot(snapshot => {
                     const activeContainer = document.getElementById('activeJobsContainer');
                     const pastContainer = document.getElementById('pastJobsContainer');
@@ -386,53 +431,55 @@
 
                     snapshot.forEach(doc => {
                         const job = doc.data();
-                        let imgTag = job.imageUrl ? `<img src="${job.imageUrl}" class="job-img" alt="Job Image">` : '';
+                        if(job.status === "cancelled") return;
                         
+                        let step1 = "completed", step2 = "next", step3 = "next", step4 = "next";
+                        if(job.status === 'accepted') { step1 = "completed"; step2 = "active"; }
+                        if(job.status === 'completed') { step1 = "completed"; step2 = "completed"; step3 = "completed"; step4 = "completed"; }
+                        
+                        let stepperHtml = `
+                            <div class="stepper-wrapper">
+                                <div class="stepper-item ${step1}"><div class="step-counter">1</div>පෝස්ට් කරා</div>
+                                <div class="stepper-item ${step2}"><div class="step-counter">2</div>බාරගත්තා</div>
+                                <div class="stepper-item ${step3}"><div class="step-counter">3</div>ක්‍රියාත්මකයි</div>
+                                <div class="stepper-item ${step4}"><div class="step-counter">4</div>නිමයි</div>
+                            </div>`;
+
                         if (job.status === 'available' || job.status === 'accepted') {
                             hasActive = true;
                             let chatBtn = job.status === 'accepted' ? `<button style="background:#00c851; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px;" onclick="openChat('${doc.id}')">බාස් සමඟ චැට් 💬</button>` : '';
                             let otpCodeArea = job.status === 'accepted' ? `<div class="otp-display-box">🔐 ආරක්ෂිත OTP කේතය: <span class="otp-number">${job.otpCode}</span></div>` : '';
-                            let badgeColor = job.status === 'available' ? '#ffcc00' : '#00c851';
+                            let cancelBtn = `<button class="btn-cancel" onclick="cancelLiveJobOrder('${doc.id}')">ඇනවුම අවලංගු කරන්න ❌</button>`;
                             
                             activeContainer.innerHTML += `
                                 <div class="job-card">
-                                    <span class="status-badge" style="background:${badgeColor}; color:${job.status==='available'?'#111':'#fff'}">${job.status}</span>
                                     <h3>${job.title}</h3>
                                     <p style="font-size:13px; color:#555; margin:5px 0;">${job.description}</p>
                                     <div style="font-size:12px; color:#777; margin-bottom:5px;">Category: <b>${job.category}</b> | 📏 ${job.distance || '0 KM'}</div>
-                                    ${imgTag} <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: රු. ${job.budget}</div>
-                                    ${otpCodeArea} <div style="margin-top: 5px;">${chatBtn}</div>
+                                    ${stepperHtml}
+                                    <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: රු. ${job.budget}</div>
+                                    ${otpCodeArea} <div style="margin-top: 8px; display:flex; gap:10px;">${chatBtn} ${cancelBtn}</div>
                                 </div>`;
                         } else if (job.status === 'completed') {
                             hasPast = true;
-                            
-                            // ⭐ REAL-TIME RATING STAR MANAGEMENT MODULE INJECTION
-                            let ratingBlock = "";
-                            if (!job.rated) {
-                                ratingBlock = `
-                                    <div style="margin-top:10px; border-top:1px dashed #ddd; padding-top:8px;" id="rateBox-${doc.id}">
-                                        <p style="font-size:12px; font-weight:bold; margin:0 0- 4px 0;">බාස්ගේ සේවාව ඇගයීමට තරු ලකුණු කරන්න ⭐</p>
-                                        <div class="star-rating">
-                                            <span onclick="submitLiveRating('${doc.id}', 1)">★</span><span onclick="submitLiveRating('${doc.id}', 2)">★</span><span onclick="submitLiveRating('${doc.id}', 3)">★</span><span onclick="submitLiveRating('${doc.id}', 4)">★</span><span onclick="submitLiveRating('${doc.id}', 5)">★</span>
-                                        </div>
-                                    </div>`;
-                            } else {
-                                ratingBlock = `<div style="color:var(--accent); font-weight:bold; font-size:13px; margin-top:8px;">ලබාදුන් ශ්‍රේණිගත කිරීම: ${'★'.repeat(job.rating)}</div>`;
-                            }
+                            let ratingBlock = !job.rated ? `
+                                <div style="margin-top:10px; border-top:1px dashed #ddd; padding-top:8px;">
+                                    <p style="font-size:12px; font-weight:bold; margin:0 0 4px 0;">බාස්ගේ සේවාව ඇගයීමට තරු ලකුණු කරන්න ⭐</p>
+                                    <div class="star-rating">
+                                        <span onclick="submitLiveRating('${doc.id}', 1)">★</span><span onclick="submitLiveRating('${doc.id}', 2)">★</span><span onclick="submitLiveRating('${doc.id}', 3)">★</span><span onclick="submitLiveRating('${doc.id}', 4)">★</span><span onclick="submitLiveRating('${doc.id}', 5)">★</span>
+                                    </div>
+                                </div>` : `<div style="color:var(--accent); font-weight:bold; font-size:13px; margin-top:8px;">ලබාදුන් ශ්‍රේණිගත කිරීම: ${'★'.repeat(job.rating)}</div>`;
 
                             pastContainer.innerHTML += `
                                 <div class="job-card" style="opacity:0.85;">
-                                    <span class="status-badge" style="background:#777; color:#fff">COMPLETED</span>
                                     <h3>${job.title}</h3>
                                     <p style="font-size:13px; color:#555; margin:5px 0;">${job.description}</p>
-                                    <div style="font-size:12px; color:#777;">Category: <b>${job.category}</b> | Finished 🏁</div>
-                                    ${imgTag} ${ratingBlock}
+                                    ${stepperHtml} ${ratingBlock}
                                 </div>`;
                         }
 
-                        // Notifications engine maps
                         if(job.status === 'accepted') {
-                            notiHtml += `<div class="noti-card"><h4>🛠️ ඔබේ ඇනවුම බාරගන්නා ලදී!</h4><p>ඔබේ "${job.title}" වැඩය බාරගෙන ඇත. ලයිව් චැට් කරන්න.</p></div>`;
+                            notiHtml += `<div class="noti-card"><h4>🛠️ ඔබේ ඇනවුම බාරගන්නා ලදී!</h4><p>ඔබේ "${job.title}" වැඩය බාරගෙන ඇත.</p></div>`;
                         } else if (job.status === 'completed') {
                             notiHtml += `<div class="noti-card" style="border-left-color: #00c851;"><h4>✅ වැඩය සාර්ථකව අවසන්!</h4><p>"${job.title}" වැඩය සාර්ථකව නිම කර ඇත.</p></div>`;
                         }
@@ -445,11 +492,14 @@
             }
         });
 
-        // ⭐ SAVE LIVE RATING SYSTEM LOGIC
+        function cancelLiveJobOrder(jobId) {
+            if(confirm("Are you sure you want to cancel this order?")) {
+                db.collection("jobs").doc(jobId).update({ status: "cancelled" }).then(() => { alert("❌ ඇනවුම අවලංගු කරන ලදී."); });
+            }
+        }
+
         function submitLiveRating(jobId, starValue) {
-            db.collection("jobs").doc(jobId).update({
-                rated: true, rating: starValue
-            }).then(() => { alert("⭐ ස්තූතියි මචං! ඔබේ වටිනා ශ්‍රේණිගත කිරීම සුරැකුණා."); });
+            db.collection("jobs").doc(jobId).update({ rated: true, rating: starValue }).then(() => { alert("⭐ ශ්‍රේණිගත කිරීම සුරැකුණා!"); });
         }
 
         function openChat(jobId) {
@@ -463,26 +513,10 @@
                 snapshot.forEach(doc => {
                     const msg = doc.data();
                     let msgClass = msg.senderId === auth.currentUser.uid ? 'sent' : 'received';
-                    
-                    // Render Image if available inside chat nodes, else fallback text
-                    let msgContent = msg.imageUrl ? `<img src="${msg.imageUrl}" style="max-width:180px; border-radius:8px; display:block; border:1px solid #ddd;">` : msg.text;
-                    msgContainer.innerHTML += `<div class="msg ${msgClass}">${msgContent}</div>`;
+                    msgContainer.innerHTML += `<div class="msg ${msgClass}">${msg.text}</div>`;
                 });
                 msgContainer.scrollTop = msgContainer.scrollHeight;
             });
-        }
-
-        // 📸 CHAT PHOTO SHARING UPLOADER INTERPOLATOR
-        function uploadChatPhoto() {
-            const file = document.getElementById('chatImageFile').files[0];
-            if(!file || !activeChatJobId) return;
-            
-            const storageRef = storage.ref('chat_images/' + Date.now() + '_' + file.name);
-            storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(downloadUrl => {
-                return db.collection("jobs").doc(activeChatJobId).collection("messages").add({
-                    text: "", imageUrl: downloadUrl, senderId: auth.currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            }).then(() => { document.getElementById('chatImageFile').value = ""; });
         }
 
         document.getElementById('chatForm').addEventListener('submit', function(e) {
@@ -497,7 +531,6 @@
         document.getElementById('jobPostForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSubmitPost');
-            const file = document.getElementById('jobImageFile').files[0];
             
             let pLat = parseFloat(document.getElementById('pickupLat').value);
             let pLng = parseFloat(document.getElementById('pickupLng').value);
@@ -516,22 +549,12 @@
             db.collection("users").doc(auth.currentUser.uid).get().then(userDoc => {
                 let pNum = (userDoc.exists && userDoc.data().phoneNumber) ? userDoc.data().phoneNumber : "නැත";
                 
-                let jobPayload = {
+                db.collection("jobs").add({
                     title: title, description: description, budget: budget, category: currentCategory,
                     lat: pLat, lng: pLng, dropLat: dLat, dropLng: dLng, distance: distText,
                     customerId: auth.currentUser.uid, customerName: auth.currentUser.displayName, customerPhone: pNum,
-                    status: "available", otpCode: randomOTP, rated: false, imageUrl: null, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                };
-
-                if (file) {
-                    const storageRef = storage.ref('job_images/' + Date.now() + '_' + file.name);
-                    storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(downloadUrl => {
-                        jobPayload.imageUrl = downloadUrl;
-                        return db.collection("jobs").add(jobPayload);
-                    }).then(() => { finishPost(); }).catch(() => { resetBtn(); });
-                } else {
-                    db.collection("jobs").add(jobPayload).then(() => { finishPost(); }).catch(() => { resetBtn(); });
-                }
+                    status: "available", otpCode: randomOTP, rated: false, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => { finishPost(); }).catch(() => { resetBtn(); });
             });
         });
 
