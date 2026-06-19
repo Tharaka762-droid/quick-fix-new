@@ -9,6 +9,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+    <script src="https://js.stripe.com/v3/"></script>
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
@@ -21,12 +23,10 @@
         }
         body { font-family: 'Segoe UI', -apple-system, sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* 🔔 FLOATING ALERT BANNER */
         .floating-alert { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #202124; color: white; padding: 14px 24px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; z-index: 10000; font-weight: 600; font-size: 13px; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .floating-alert.show { top: 20px; }
         .floating-alert .alert-dot { width: 8px; height: 8px; background: #ffcc00; border-radius: 50%; animation: pulse 1.5s infinite; }
 
-        /* 👑 PREMIUM HEADER & SAVED PLACES */
         .top-header { background: var(--primary-blue); padding: 20px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.15); }
         .header-user { display: flex; justify-content: space-between; align-items: center; }
         .user-info h3 { margin: 0; font-size: 19px; font-weight: 700; color: white; }
@@ -45,13 +45,10 @@
         .view-section { display: none; }
         .view-section.active { display: block; }
 
-        /* 🚨 EMERGENCY SOS BUTTON CSS */
-        .btn-sos-emergency { width: 100%; background: #ff4444; color: white; padding: 16px; border: none; border-radius: 14px; font-weight: 800; font-size: 14px; cursor: pointer; margin-bottom: 18px; box-shadow: 0 4px 15px rgba(255, 68, 68, 0.35); transition: 0.2s ease; letter-spacing: 0.3px; }
-        .btn-sos-emergency:hover { background: #cc0000; transform: translateY(-1px); }
+        .btn-sos-emergency { width: 100%; background: #ff4444; color: white; padding: 16px; border: none; border-radius: 14px; font-weight: 800; font-size: 14px; cursor: pointer; margin-bottom: 18px; box-shadow: 0 4px 15 rgba(255, 68, 68, 0.35); transition: 0.2s ease; letter-spacing: 0.3px; }
 
         .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; }
         .category-card { background: var(--panel-bg); border-radius: 16px; padding: 18px 10px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); cursor: pointer; border: 1px solid var(--border-color); transition: 0.2s; }
-        .category-card:hover { transform: translateY(-2px); border-color: var(--primary-blue); box-shadow: 0 6px 15px rgba(26, 115, 232, 0.1); }
         .category-icon { font-size: 28px; }
         .category-name { font-size: 14px; font-weight: bold; display: block; }
         .category-desc { font-size: 11px; color: var(--text-muted); }
@@ -70,7 +67,6 @@
         .schedule-inputs input { padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 12px; flex: 1; color: #111; font-weight: bold; }
 
         #map { width: 100%; height: 260px; border-radius: 12px; margin-top: 5px; border: 1px solid var(--border-color); z-index: 1; }
-        .map-instruction { font-size: 12px; color: var(--primary-blue); font-weight: bold; margin: 5px 0; text-align: left; }
         
         .pricing-panel { background: #f8f9fa; border: 1px solid var(--border-color); padding: 16px; border-radius: 12px; margin-bottom: 15px; display: none; text-align: left; }
         .breakdown-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
@@ -80,18 +76,20 @@
         .promo-input { flex-grow: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; outline: none; font-size: 12px; }
         .promo-btn { background: #202124; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
 
-        /* 💳 PREMIUM UBER-STYLE PAYMENT CHOICE CHIPS */
+        /* 💳 UBER-STYLE PAYMENT CHOICE CHIPS */
         .payment-chips-container { display: flex; gap: 10px; margin-top: 10px; margin-bottom: 12px; }
         .payment-chip-card { flex: 1; background: #ffffff; border: 2px solid var(--border-color); padding: 14px 10px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 12px; font-weight: bold; color: var(--text-main); }
         .payment-chip-card .chip-icon { font-size: 22px; }
-        .payment-chip-card.selected { border-color: var(--primary-blue); background-color: rgba(26, 115, 232, 0.05); color: var(--primary-blue); box-shadow: 0 4px 10px rgba(26, 115, 232, 0.1); }
+        .payment-chip-card.selected { border-color: var(--primary-blue); background-color: rgba(26, 115, 232, 0.05); color: var(--primary-blue); }
+
+        /* 🔒 STRIPE LUXURY ELEMENT STYLING */
+        #stripe-card-element-wrapper { background: #f8f9fa; padding: 14px; border-radius: 10px; border: 1px solid var(--primary-blue); margin-top: 12px; display: none; box-sizing: border-box; }
 
         .btn-yellow { background: var(--primary-blue); color: white; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; }
         .btn-cancel { background: #ff4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
         
         .btn-resched { background: #fff; color: var(--primary-blue); border: 1px solid var(--primary-blue); padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
-        .resched-box-ui { background: #f1f3f4; padding: 14px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border-color); display: none; text-align: left; }
-        .resched-box-ui label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 4px; margin-top: 8px; color: var(--text-main); }
+        .resched-box-ui { background: #f1f3f4; padding: 14px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border-color); display: none; }
 
         .job-card { background: white; border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 12px; position: relative; text-align: left; }
         .job-card h3 { margin: 0 0 5px 0; font-size: 16px; }
@@ -297,8 +295,13 @@
                                 Bank Name: <b>Bank of Ceylon (BOC)</b><br>
                                 Account Name: <b>QuickFix App (Pvt) Ltd</b><br>
                                 Account Number: <b>874410225</b><br>
-                                Bank Branch: <b>Horana</b><br>
-                                <input type="text" id="bankRefNumberInput" placeholder="සල්ලි යැවූ පසු Transfer Ref Number එක මෙතන ගසන්න..." style="width:100%; padding:10px; margin-top:10px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; color:#111; box-sizing:border-box; outline:none;">
+                                <input type="text" id="bankRefNumberInput" placeholder="Transfer Ref Number එක මෙතන ගසන්න..." style="width:100%; padding:10px; margin-top:10px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; color:#111; box-sizing:border-box; outline:none;">
+                            </div>
+
+                            <div id="stripe-card-element-wrapper">
+                                <p style="margin:0 0 8px 0; font-size:12px; font-weight:bold; color:var(--primary-blue);">💳 ආරක්ෂිතව කාඩ් විස්තර ඇතුළත් කරන්න:</p>
+                                <div id="stripe-card-element"></div>
+                                <div id="card-errors" role="alert" style="color: #ff4444; font-size: 11px; margin-top: 6px; font-weight: bold;"></div>
                             </div>
                         </div>
 
@@ -320,33 +323,11 @@
             <div id="customerChatBox" class="chat-container">
                 <div class="chat-header">💬 බාස් සමඟ සජීවී චැට් එක <span style="cursor:pointer;" onclick="document.getElementById('customerChatBox').style.display='none'">✖</span></div>
                 <div id="chatMessages" class="chat-messages"></div>
-                
-                <div class="chat-quick-replies">
-                    <div class="quick-reply-chip" onclick="sendSmartQuickReplyMessage('මම ලොකේෂන් එකේ ඉන්නවා 👍')">මම ලොකේෂන් එකේ ඉන්නවා 👍</div>
-                    <div class="quick-reply-chip" onclick="sendSmartQuickReplyMessage('වැඩේට ඔක්කොම කීයක් වෙයිද? 💰')">වැඩේට කීයක් වෙයිද? 💰</div>
-                    <div class="quick-reply-chip" onclick="sendSmartQuickReplyMessage('හරි මචං, මම බලාගෙන ඉන්නවා ⏳')">මම බලාගෙන ඉන්නවා ⏳</div>
-                </div>
-
                 <form id="chatForm" class="chat-input-area">
                     <button type="button" id="btnVoiceRecord" class="voice-btn" onclick="toggleVoiceAudioRecording()">🎤</button>
                     <input type="text" id="chatMsgInput" placeholder="මැසේජ් එකක් ලියන්න..." required autocomplete="off">
                     <button type="submit">යවන්න</button>
                 </form>
-            </div>
-        </div>
-
-        <div id="view-notifications" class="view-section">
-            <h2 style="font-size: 20px; margin-bottom: 15px; text-align: left;">දැනුම්දීම් (Notifications)</h2>
-            <div id="notificationsContainer"><p style="color:var(--text-muted); font-size:14px; text-align:left;">තාම අලුත් Notifications කිසිවක් නැත...</p></div>
-        </div>
-
-        <div id="view-account" class="view-section">
-            <h2 style="font-size: 20px; text-align: left;">මගේ ගිණුම (Account)</h2>
-            <div class="form-card" style="text-align: center;">
-                <img id="userProfAvatar" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--primary-blue); object-fit: cover;" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
-                <h3 id="userProfName" style="margin:10px 0 2px 0;">...</h3>
-                <p id="userProfEmail" style="color:var(--text-muted); margin:0 0 15px 0;">...</p>
-                <button class="btn-yellow" style="background:#ff4444; color:white;" onclick="logoutUser()">Log Out (ගිණුමෙන් ඉවත් වන්න)</button>
             </div>
         </div>
 
@@ -361,18 +342,12 @@
 
     <script>
         function selectPaymentMethodViaChips(methodName) {
-            // Remove selection class from all cards
             document.querySelectorAll('.payment-chip-card').forEach(chip => chip.classList.remove('selected'));
-            // Highlight selected chip
             document.getElementById(`chip-${methodName}`).classList.add('selected');
-            // Cache value into hidden node
             document.getElementById('selectedPaymentMethodCache').value = methodName;
             
-            // Dynamic display box switcher logic
-            const bankPanel = document.getElementById('bankDetailsInfoPanel');
-            if(bankPanel) {
-                bankPanel.style.display = (methodName === 'Bank') ? "block" : "none";
-            }
+            document.getElementById('bankDetailsInfoPanel').style.display = (methodName === 'Bank') ? "block" : "none";
+            document.getElementById('stripe-card-element-wrapper').style.display = (methodName === 'Card') ? "block" : "none";
         }
     </script>
     <script src="customer.js"></script>
