@@ -21,7 +21,7 @@
         }
         body { font-family: 'Segoe UI', -apple-system, sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* 🔔 FLOATING REAL-TIME ALERT BANNER */
+        /* 🔔 FLOATING ALERT BANNER */
         .floating-alert { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #202124; color: white; padding: 14px 24px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; z-index: 10000; font-weight: 600; font-size: 13px; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .floating-alert.show { top: 20px; }
         .floating-alert .alert-dot { width: 8px; height: 8px; background: #ffcc00; border-radius: 50%; animation: pulse 1.5s infinite; }
@@ -79,6 +79,12 @@
         .promo-group { display: flex; gap: 8px; margin-top: 12px; }
         .promo-input { flex-grow: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; outline: none; font-size: 12px; }
         .promo-btn { background: #202124; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+
+        /* 💳 PREMIUM UBER-STYLE PAYMENT CHOICE CHIPS */
+        .payment-chips-container { display: flex; gap: 10px; margin-top: 10px; margin-bottom: 12px; }
+        .payment-chip-card { flex: 1; background: #ffffff; border: 2px solid var(--border-color); padding: 14px 10px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 12px; font-weight: bold; color: var(--text-main); }
+        .payment-chip-card .chip-icon { font-size: 22px; }
+        .payment-chip-card.selected { border-color: var(--primary-blue); background-color: rgba(26, 115, 232, 0.05); color: var(--primary-blue); box-shadow: 0 4px 10px rgba(26, 115, 232, 0.1); }
 
         .btn-yellow { background: var(--primary-blue); color: white; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; }
         .btn-cancel { background: #ff4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
@@ -268,17 +274,23 @@
 
                         <div class="form-group" style="border-top:1px dashed #ccc; padding-top:12px; margin-bottom:20px;">
                             <label>💵 ගෙවීම් ක්‍රමය තෝරන්න (Select Payment Method)</label>
-                            <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
-                                <label style="font-weight:normal; display:flex; align-items:center; gap:8px; cursor:pointer;">
-                                    <input type="radio" name="paymentMethod" value="Cash" checked onchange="togglePaymentDetailsDisplay(this.value)"> 💵 Cash on Delivery (අත්පිට මුදල්)
-                                </label>
-                                <label style="font-weight:normal; display:flex; align-items:center; gap:8px; cursor:pointer;">
-                                    <input type="radio" name="paymentMethod" value="Bank" onchange="togglePaymentDetailsDisplay(this.value)"> 🏛️ Bank Transfer (ඔන්ලයින් බැංකු හුවමාරු)
-                                </label>
-                                <label style="font-weight:normal; display:flex; align-items:center; gap:8px; cursor:pointer;">
-                                    <input type="radio" name="paymentMethod" value="Card" onchange="togglePaymentDetailsDisplay(this.value)"> 💳 Credit / Debit Card (Stripe Pay)
-                                </label>
+                            
+                            <div class="payment-chips-container">
+                                <div class="payment-chip-card selected" id="chip-Cash" onclick="selectPaymentMethodViaChips('Cash')">
+                                    <span class="chip-icon">💵</span>
+                                    <span>Cash</span>
+                                </div>
+                                <div class="payment-chip-card" id="chip-Bank" onclick="selectPaymentMethodViaChips('Bank')">
+                                    <span class="chip-icon">🏛️</span>
+                                    <span>Bank Transfer</span>
+                                </div>
+                                <div class="payment-chip-card" id="chip-Card" onclick="selectPaymentMethodViaChips('Card')">
+                                    <span class="chip-icon">💳</span>
+                                    <span>Card (Stripe)</span>
+                                </div>
                             </div>
+                            
+                            <input type="hidden" id="selectedPaymentMethodCache" value="Cash">
 
                             <div id="bankDetailsInfoPanel" style="display:none; background:#e8f0fe; padding:14px; border-radius:10px; border:1px solid #b4d2ff; margin-top:12px; font-size:12px; line-height:1.6;">
                                 <p style="margin:0 0 5px 0; font-weight:bold; color:var(--primary-blue);">🏛️ QuickFix බැංකු ගිණුම් විස්තර:</p>
@@ -348,9 +360,20 @@
     </div>
 
     <script>
-        // 🚨 NO CORE JS ATTACHMENTS Bloat - Native Unified Integration Loop
-        const chatForm = document.getElementById('chatForm');
-        // Combined routing scripts inside customer.js handles backend connections cleanly
+        function selectPaymentMethodViaChips(methodName) {
+            // Remove selection class from all cards
+            document.querySelectorAll('.payment-chip-card').forEach(chip => chip.classList.remove('selected'));
+            // Highlight selected chip
+            document.getElementById(`chip-${methodName}`).classList.add('selected');
+            // Cache value into hidden node
+            document.getElementById('selectedPaymentMethodCache').value = methodName;
+            
+            // Dynamic display box switcher logic
+            const bankPanel = document.getElementById('bankDetailsInfoPanel');
+            if(bankPanel) {
+                bankPanel.style.display = (methodName === 'Bank') ? "block" : "none";
+            }
+        }
     </script>
     <script src="customer.js"></script>
 </body>
