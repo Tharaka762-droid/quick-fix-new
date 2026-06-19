@@ -21,12 +21,10 @@
         }
         body { font-family: 'Segoe UI', -apple-system, sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* 🔔 FLOATING REAL-TIME ALERT BANNER */
         .floating-alert { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #202124; color: white; padding: 14px 24px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; z-index: 10000; font-weight: 600; font-size: 13px; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .floating-alert.show { top: 20px; }
         .floating-alert .alert-dot { width: 8px; height: 8px; background: #ffcc00; border-radius: 50%; animation: pulse 1.5s infinite; }
 
-        /* 👑 PREMIUM HEADER & SAVED PLACES */
         .top-header { background: var(--primary-blue); padding: 20px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.15); }
         .header-user { display: flex; justify-content: space-between; align-items: center; }
         .user-info h3 { margin: 0; font-size: 19px; font-weight: 700; color: white; }
@@ -79,9 +77,10 @@
         .btn-yellow { background: var(--primary-blue); color: white; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; }
         .btn-cancel { background: #ff4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
         
-        /* 🕒 RESCHEDULE LIVE INTERFACE CARD */
+        /* 🕒 IN-LINE COMPREHENSIVE EDIT & RESCHEDULE STYLES */
         .btn-resched { background: #fff; color: var(--primary-blue); border: 1px solid var(--primary-blue); padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
-        .resched-box-ui { background: #f1f3f4; padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border-color); display: none; }
+        .resched-box-ui { background: #f1f3f4; padding: 14px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border-color); display: none; text-align: left; }
+        .resched-box-ui label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 4px; margin-top: 8px; color: var(--text-main); }
 
         .job-card { background: white; border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 12px; position: relative; text-align: left; }
         .job-card h3 { margin: 0 0 5px 0; font-size: 16px; }
@@ -189,7 +188,7 @@
                     <span class="category-icon">🪚</span>
                     <div class="category-name-wrapper"><span class="category-name">Carpentry</span><span class="category-desc">දොරවල්, අල්මාරි, ගෘහභාණ්ඩ</span></div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('Masonry & Painting', 'පින්තාරු සහ පෙදරේරු වැඩ', 80)">
+                <div class="category-card" onclick="openQuickFixForm('Masonry & Painting', 'පින්තාරු සහ充ද්රේරු වැඩ', 80)">
                     <span class="category-icon">🎨</span>
                     <div class="category-name-wrapper"><span class="category-name">Painting</span><span class="category-desc">තීන්ත, මේසන්, ටයිල්</span></div>
                 </div>
@@ -274,7 +273,7 @@
             <div id="pastJobsContainer" style="display: none;"></div>
 
             <div id="customerChatBox" class="chat-container">
-                <div class="chat-header">💬 බාස් සමඟ සජීවී චැට් එක <span style="cursor:pointer;" onclick="document.getElementById('customerChatBox').style.display='none'">✖</span></div>
+                <div class="chat-header">💬 บාස් සමඟ සජීවී චැට් එක <span style="cursor:pointer;" onclick="document.getElementById('customerChatBox').style.display='none'">✖</span></div>
                 <div id="chatMessages" class="chat-messages"></div>
                 
                 <div class="chat-quick-replies">
@@ -336,15 +335,12 @@
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(pos => {
                     let lat = pos.coords.latitude, lng = pos.coords.longitude;
-                    
                     if(!liveLocationMarker) {
                         const liveIcon = L.divIcon({ className: 'live-dot-wrapper', html: '<div class="live-dot"></div>', iconSize: [12, 12] });
                         liveLocationMarker = L.marker([lat, lng], { icon: liveIcon }).addTo(map);
                         map.setView([lat, lng], 15);
                         setPickupLocation(lat, lng);
-                    } else {
-                        liveLocationMarker.setLatLng([lat, lng]);
-                    }
+                    } else { liveLocationMarker.setLatLng([lat, lng]); }
                 }, null, { enableHighAccuracy: true });
             }
 
@@ -362,8 +358,7 @@
 
         function addNewChecklistItemRow() {
             const container = document.getElementById('checklistTasksContainer');
-            const item = document.createElement('div');
-            item.className = "checklist-item";
+            const item = document.createElement('div'); item.className = "checklist-item";
             item.innerHTML = `<input type="text" class="task-input-item" placeholder="උදා: තව වැඩක්...">`;
             container.appendChild(item);
         }
@@ -436,7 +431,6 @@
 
                 document.getElementById('lblKmText').innerText = distanceInKm + " KM";
                 document.getElementById('lblDistanceFare').innerText = "රු. " + distanceCost + ".00";
-                
                 renderCostBreakdownOutput();
                 document.getElementById('priceDisplayPanel').style.display = "block";
             });
@@ -516,25 +510,32 @@
             document.getElementById('postFormArea').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // 🕒 LIVE RESCHEDULE ACTION CONTROLLER
         function toggleInlineRescheduleBox(jobId) {
             const box = document.getElementById(`reschedBox-${jobId}`);
-            if(box.style.display === "block") { box.style.display = "none"; }
-            else { box.style.display = "block"; }
+            box.style.display = (box.style.display === "block") ? "none" : "block";
         }
 
+        // 🧠 CRITICAL LOGIC INJECTION: RESCHEDULE/EDIT RE-NOTIFICATION & ASSIGNMENT RESET ENGINE
         function submitLiveRescheduleTime(jobId) {
+            const newTitle = document.getElementById(`editTitle-${jobId}`).value.trim();
+            const newDesc = document.getElementById(`editDesc-${jobId}`).value.trim();
             const newDate = document.getElementById(`newDate-${jobId}`).value;
             const newTime = document.getElementById(`newTime-${jobId}`).value;
             
-            if(!newDate || !newTime) { alert("❌ කරුණාකර වලංගු දිනයක් සහ වෙලාවක් තෝරන්න!"); return; }
+            if(!newTitle || !newDesc || !newDate || !newTime) { alert("❌ කරුණාකර සියලුම හිස්තැන් පුරවන්න!"); return; }
 
+            // 🚨 REAL UBER-STYLE ABORT: If customer changes job parameters, decouple the current supplier instantly
             db.collection("jobs").doc(jobId).update({
+                title: newTitle,
+                description: newDesc,
                 isScheduled: true,
                 scheduledDate: newDate,
-                scheduledTime: newTime
+                scheduledTime: newTime,
+                status: "available", // Reset status back to pool pool
+                riderId: null,      // Kick out current supplier
+                riderName: null     // Clear supplier info
             }).then(() => {
-                showFloatingBannerMessage("🕒 ඇනවුම සාර්ථකව Reschedule කරන ලදී!");
+                showFloatingBannerMessage("🕒 ඇනවුම සාර්ථකව වෙනස් කරා! බාස්ව ඉවත් කර නැවත Pool එකට දමන ලදී.");
             });
         }
 
@@ -574,17 +575,26 @@
                             let otpCodeArea = job.status !== 'available' ? `<div class="otp-display-box">🔐 ආරක්ෂිත OTP කේතය: <span class="otp-number">${job.otpCode}</span></div>` : '';
                             let cancelBtn = `<button class="btn-cancel" onclick="cancelLiveJobOrder('${doc.id}')">ඇනවුම අවලංගු කරන්න ❌</button>`;
                             
-                            // 🕒 REAL-TIME IN-LINE RESCHEDULE INJECTION BUTTON
-                            let rescheduleBtn = job.status === 'available' ? `<button class="btn-resched" onclick="toggleInlineRescheduleBox('${doc.id}')">දිනය/වෙලාව වෙනස් කරන්න (Reschedule) 🕒</button>` : '';
+                            // 🕒 RESCHEDULE BUTTON: Now visible on both 'available' and 'accepted' status nodes!
+                            let rescheduleBtn = (job.status === 'available' || job.status === 'accepted') ? `<button class="btn-resched" onclick="toggleInlineRescheduleBox('${doc.id}')">වැඩේ සංස්කරණය / Reschedule කරන්න 🕒✏️</button>` : '';
                             
+                            // Full Comprehensive Edit/Reschedule Box Form Modal Injection
                             let rescheduleBoxUi = `
                                 <div class="resched-box-ui" id="reschedBox-${doc.id}">
-                                    <p style="margin:0 0 6px 0; font-size:11px; font-weight:bold; color:var(--primary-blue);">අලුත් දිනය සහ වෙලාව තෝරන්න:</p>
+                                    <p style="margin:0 0 10px 0; font-size:12px; font-weight:bold; color:red;">⚠️ අවධානයට: බාස් කෙනෙක් බාරගත් වැඩක් සංස්කරණය කළහොත්, එම බාස්ව ඉවත් වී වැඩය නැවත පොදු Pool එකට වැටේ!</p>
+                                    
+                                    <label>වැඩේ මාතෘකාව (Title)</label>
+                                    <input type="text" id="editTitle-${doc.id}" value="${job.title}" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-bottom:8px;">
+                                    
+                                    <label>වැඩේ විස්තරය (Description)</label>
+                                    <textarea id="editDesc-${doc.id}" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-bottom:8px;" rows="2">${job.description}</textarea>
+                                    
+                                    <label>නව දිනය සහ වෙලාව (New Schedule)</label>
                                     <div style="display:flex; gap:6px;">
-                                        <input type="date" id="newDate-${doc.id}" style="padding:6px; border:1px solid var(--border-color); border-radius:4px; font-size:11px; flex:1;">
-                                        <input type="time" id="newTime-${doc.id}" style="padding:6px; border:1px solid var(--border-color); border-radius:4px; font-size:11px; flex:1;">
+                                        <input type="date" id="newDate-${doc.id}" value="${job.scheduledDate || ''}" style="padding:8px; border:1px solid var(--border-color); border-radius:4px; font-size:12px; flex:1;">
+                                        <input type="time" id="newTime-${doc.id}" value="${job.scheduledTime || ''}" style="padding:8px; border:1px solid var(--border-color); border-radius:4px; font-size:12px; flex:1;">
                                     </div>
-                                    <button class="btn-yellow" style="padding:8px; margin-top:8px; font-size:11px; border-radius:4px;" onclick="submitLiveRescheduleTime('${doc.id}')">Schedule එක අප්ඩේට් කරන්න 🎯</button>
+                                    <button class="btn-yellow" style="padding:10px; margin-top:12px; font-size:12px; border-radius:6px;" onclick="submitLiveRescheduleTime('${doc.id}')">සංස්කරණය තහවුරු කරන්න (Confirm & Repost) 🎯</button>
                                 </div>`;
 
                             let renderedChecklistHtml = "";
@@ -599,7 +609,7 @@
                                     <h3>${job.title} ${scheduleText}</h3> <p style="font-size:13px; color:#555; margin:5px 0;">${job.description}</p>
                                     ${renderedChecklistHtml}
                                     <div style="font-size:12px; color:#777; margin-bottom:5px;">Category: <b>${job.category}</b> | 📏 ${job.distance || '0 KM'}</div>
-                                    ${stepperHtml} <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: ਰු. ${job.budget}</div>
+                                    ${stepperHtml} <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: රු. ${job.budget}</div>
                                     ${otpCodeArea} 
                                     <div style="margin-top: 8px; display:flex; flex-wrap:wrap; gap:8px;">${chatBtn} ${rescheduleBtn} ${cancelBtn}</div>
                                     ${rescheduleBoxUi}
