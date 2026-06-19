@@ -57,12 +57,10 @@
         .form-group label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; color: var(--text-main); }
         .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; outline: none; background: #fff; font-family: inherit; }
         
-        /* 📋 CHECKLIST STYLES */
         .checklist-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .checklist-item input[type="text"] { flex-grow: 1; padding: 8px; font-size: 13px; }
         .btn-add-task { background: none; border: 1px dashed var(--primary-blue); color: var(--primary-blue); padding: 8px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; width: 100%; margin-top: 5px; }
 
-        /* 🕒 SCHEDULER TIMING ROW */
         .schedule-toggle-bar { display: flex; align-items: center; justify-content: space-between; background: #f1f3f4; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; font-weight: bold; }
         .schedule-inputs { display: flex; gap: 10px; margin-top: 10px; }
         .schedule-inputs input { padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 12px; flex: 1; }
@@ -70,7 +68,6 @@
         #map { width: 100%; height: 260px; border-radius: 12px; margin-top: 5px; border: 1px solid var(--border-color); z-index: 1; }
         .map-instruction { font-size: 12px; color: var(--primary-blue); font-weight: bold; margin: 5px 0; text-align: left; }
         
-        /* 📊 COST BREAKDOWN PANEL */
         .pricing-panel { background: #f8f9fa; border: 1px solid var(--border-color); padding: 16px; border-radius: 12px; margin-bottom: 15px; display: none; text-align: left; }
         .breakdown-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
         .breakdown-row.total { font-size: 15px; font-weight: bold; color: #1967d2; border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 8px; }
@@ -82,6 +79,10 @@
         .btn-yellow { background: var(--primary-blue); color: white; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; }
         .btn-cancel { background: #ff4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
         
+        /* 🕒 RESCHEDULE LIVE INTERFACE CARD */
+        .btn-resched { background: #fff; color: var(--primary-blue); border: 1px solid var(--primary-blue); padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
+        .resched-box-ui { background: #f1f3f4; padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border-color); display: none; }
+
         .job-card { background: white; border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 12px; position: relative; text-align: left; }
         .job-card h3 { margin: 0 0 5px 0; font-size: 16px; }
 
@@ -106,7 +107,6 @@
         .star-rating span.active { color: #fbbc05; }
         .noti-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--primary-blue); text-align: left; }
         
-        /* 💬 CHAT CONTAINER & QUICK REPLIES BAR */
         .chat-container { background: white; border: 1px solid var(--border-color); border-radius: 12px; margin-top: 15px; display: none; flex-direction: column; height: 360px; overflow: hidden; }
         .chat-header { background: var(--text-main); color: white; padding: 12px; font-weight: bold; display: flex; justify-content: space-between; }
         .chat-messages { flex-grow: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
@@ -129,8 +129,7 @@
         .nav-item.active { color: var(--primary-blue); }
         .nav-item.active span { color: var(--primary-blue); }
         
-        /* 🔵 UBER-STYLE LIVE LOCATION DOT */
-        .live-dot { background: #1a73e8; class: pulse; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 6px rgba(26, 115, 232, 0.3); }
+        .live-dot { background: #1a73e8; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 6px rgba(26, 115, 232, 0.3); }
 
         @keyframes pulse { 0% { transform: scale(0.9); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.5; } 100% { transform: scale(0.9); opacity: 1; } }
     </style>
@@ -329,14 +328,12 @@
         const hrs = new Date().getHours();
         document.getElementById('lblGreeting').innerText = hrs < 12 ? "Good Morning!☀️" : hrs < 17 ? "Good Afternoon!🌤️" : "Good Evening!🌙";
 
-        // 🌟 ADVANCED MAP WITH UBER-STYLE LIVE LOCATION DOT TRACKING
         function initMap() {
             if(map) return;
             map = L.map('map').setView([6.9271, 79.8612], 13);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap contributors &copy; CARTO' }).addTo(map);
 
             if (navigator.geolocation) {
-                // Track current pointer live in real-time gracefully
                 navigator.geolocation.watchPosition(pos => {
                     let lat = pos.coords.latitude, lng = pos.coords.longitude;
                     
@@ -358,13 +355,11 @@
             });
         }
 
-        // 🕒 SCHEDULER DYNAMIC INPUT TOGGLE MANAGEMENT
         function toggleSchedulerInputsDisplay(checked) {
             const row = document.getElementById('schedulerInputsRow');
             if(checked) { row.classList.remove('hidden'); } else { row.classList.add('hidden'); }
         }
 
-        // 📋 CHECKLIST ROW INJECTOR
         function addNewChecklistItemRow() {
             const container = document.getElementById('checklistTasksContainer');
             const item = document.createElement('div');
@@ -471,7 +466,6 @@
             setTimeout(() => { banner.classList.remove('show'); }, 3500);
         }
 
-        // 💬 QUICK REPLY INJECTOR TRIGGER SOURCE
         function sendSmartQuickReplyMessage(replyText) {
             if(!activeChatJobId) return;
             db.collection("jobs").doc(activeChatJobId).collection("messages").add({
@@ -522,6 +516,28 @@
             document.getElementById('postFormArea').scrollIntoView({ behavior: 'smooth' });
         }
 
+        // 🕒 LIVE RESCHEDULE ACTION CONTROLLER
+        function toggleInlineRescheduleBox(jobId) {
+            const box = document.getElementById(`reschedBox-${jobId}`);
+            if(box.style.display === "block") { box.style.display = "none"; }
+            else { box.style.display = "block"; }
+        }
+
+        function submitLiveRescheduleTime(jobId) {
+            const newDate = document.getElementById(`newDate-${jobId}`).value;
+            const newTime = document.getElementById(`newTime-${jobId}`).value;
+            
+            if(!newDate || !newTime) { alert("❌ කරුණාකර වලංගු දිනයක් සහ වෙලාවක් තෝරන්න!"); return; }
+
+            db.collection("jobs").doc(jobId).update({
+                isScheduled: true,
+                scheduledDate: newDate,
+                scheduledTime: newTime
+            }).then(() => {
+                showFloatingBannerMessage("🕒 ඇනවුම සාර්ථකව Reschedule කරන ලදී!");
+            });
+        }
+
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.href = "auth.html"; }
             else {
@@ -558,21 +574,35 @@
                             let otpCodeArea = job.status !== 'available' ? `<div class="otp-display-box">🔐 ආරක්ෂිත OTP කේතය: <span class="otp-number">${job.otpCode}</span></div>` : '';
                             let cancelBtn = `<button class="btn-cancel" onclick="cancelLiveJobOrder('${doc.id}')">ඇනවුම අවලංගු කරන්න ❌</button>`;
                             
-                            // Checklist output payload block if exists
+                            // 🕒 REAL-TIME IN-LINE RESCHEDULE INJECTION BUTTON
+                            let rescheduleBtn = job.status === 'available' ? `<button class="btn-resched" onclick="toggleInlineRescheduleBox('${doc.id}')">දිනය/වෙලාව වෙනස් කරන්න (Reschedule) 🕒</button>` : '';
+                            
+                            let rescheduleBoxUi = `
+                                <div class="resched-box-ui" id="reschedBox-${doc.id}">
+                                    <p style="margin:0 0 6px 0; font-size:11px; font-weight:bold; color:var(--primary-blue);">අලුත් දිනය සහ වෙලාව තෝරන්න:</p>
+                                    <div style="display:flex; gap:6px;">
+                                        <input type="date" id="newDate-${doc.id}" style="padding:6px; border:1px solid var(--border-color); border-radius:4px; font-size:11px; flex:1;">
+                                        <input type="time" id="newTime-${doc.id}" style="padding:6px; border:1px solid var(--border-color); border-radius:4px; font-size:11px; flex:1;">
+                                    </div>
+                                    <button class="btn-yellow" style="padding:8px; margin-top:8px; font-size:11px; border-radius:4px;" onclick="submitLiveRescheduleTime('${doc.id}')">Schedule එක අප්ඩේට් කරන්න 🎯</button>
+                                </div>`;
+
                             let renderedChecklistHtml = "";
                             if(job.tasksList && job.tasksList.length > 0) {
                                 renderedChecklistHtml = `<div style="font-size:12px; background:#f1f3f4; padding:8px; border-radius:6px; margin:5px 0;">📋 වැඩ ලැයිස්තුව:<br>` + job.tasksList.map(t => `• ${t}`).join('<br>') + `</div>`;
                             }
 
-                            let scheduleText = job.isScheduled ? `<span style="background:#ff4444; color:white; padding:2px 6px; font-size:10px; font-weight:bold; border-radius:4px;">🕒 SCHEDULED: ${job.scheduledDate} @ ${job.scheduledTime}</span>` : '';
+                            let scheduleText = job.isScheduled ? `<span style="background:#1a73e8; color:white; padding:2px 6px; font-size:10px; font-weight:bold; border-radius:4px;">🕒 SCHEDULED: ${job.scheduledDate} @ ${job.scheduledTime}</span>` : '';
 
                             activeContainer.innerHTML += `
                                 <div class="job-card">
                                     <h3>${job.title} ${scheduleText}</h3> <p style="font-size:13px; color:#555; margin:5px 0;">${job.description}</p>
                                     ${renderedChecklistHtml}
                                     <div style="font-size:12px; color:#777; margin-bottom:5px;">Category: <b>${job.category}</b> | 📏 ${job.distance || '0 KM'}</div>
-                                    ${stepperHtml} <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: රු. ${job.budget}</div>
-                                    ${otpCodeArea} <div style="margin-top: 8px; display:flex; gap:10px;">${chatBtn} ${cancelBtn}</div>
+                                    ${stepperHtml} <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: ਰු. ${job.budget}</div>
+                                    ${otpCodeArea} 
+                                    <div style="margin-top: 8px; display:flex; flex-wrap:wrap; gap:8px;">${chatBtn} ${rescheduleBtn} ${cancelBtn}</div>
+                                    ${rescheduleBoxUi}
                                 </div>`;
                         } else {
                             hasPast = true;
@@ -653,7 +683,6 @@
             btn.innerText = "පෝස්ට් වෙමින්... ⏳"; btn.disabled = true;
             const randomOTP = Math.floor(1000 + Math.random() * 9000);
 
-            // Harvest values from Checklist inputs array
             let finalChecklistArray = [];
             document.querySelectorAll('.task-input-item').forEach(inp => {
                 if(inp.value.trim() !== "") finalChecklistArray.push(inp.value.trim());
@@ -675,7 +704,7 @@
 
         function resetBtn() { const btn = document.getElementById('btnSubmitPost'); btn.disabled = false; btn.innerText = "කාර්මික ශිල්පියෙකු සොයන්න (Find Fixer) 🚀"; }
         function finishPost() {
-            showFloatingBannerMessage("✅ QuickFix ඇනවුම සාර්ථකව පෝස්ට් කරා මචං!");
+            alert("✅ ඔබේ QuickFix ඇනවුම සාර්ථකව පෝස්ට් කරා මචං!");
             document.getElementById('jobPostForm').reset(); document.getElementById('postFormArea').style.display = "none";
             resetBtn(); switchActivitiesFilter('active'); switchView('view-activities', 'nav-activities');
         }
