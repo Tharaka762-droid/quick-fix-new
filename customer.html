@@ -21,7 +21,7 @@
         }
         body { font-family: 'Segoe UI', -apple-system, sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* 🔔 FLOATING ALERT BANNER */
+        /* 🔔 FLOATING REAL-TIME ALERT BANNER */
         .floating-alert { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #202124; color: white; padding: 14px 24px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; z-index: 10000; font-weight: 600; font-size: 13px; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .floating-alert.show { top: 20px; }
         .floating-alert .alert-dot { width: 8px; height: 8px; background: #ffcc00; border-radius: 50%; animation: pulse 1.5s infinite; }
@@ -252,7 +252,7 @@
                         <div class="pricing-panel" id="priceDisplayPanel">
                             <div class="breakdown-row"><span>Base Fare (ආරම්භක පිරිවැය):</span> <span>රු. 200.00</span></div>
                             <div class="breakdown-row"><span>Distance Fare (📏 <span id="lblKmText">0.0 KM</span>):</span> <span id="lblDistanceFare">රු. 0.00</span></div>
-                            <div class="breakdown-row" id="promoRow" style="display:none; color:var(--success);"><span>Promo Discount (වට්ටම 🎁):</span> <span>- රු. 250.00</span></div>
+                            <div class="breakdown-row" id="promoRow" style="display:none; color:var(--success);"><span>Promo Discount (වට්ටම 🎁):</span> <span>- ਰੁ. 250.00</span></div>
                             <div class="breakdown-row total"><span>Total Payable (ඇස්තමේන්තුගත මුදල):</span> <span id="txtCalculatedPrice">රු. 0.00</span></div>
                             
                             <div class="promo-group">
@@ -265,6 +265,31 @@
                             <label>ඔබ දෙන උපරිම ගාස්තුව (Budget - LKR)</label>
                             <input type="number" id="jobBudget" placeholder="රු. 1500" required>
                         </div>
+
+                        <div class="form-group" style="border-top:1px dashed #ccc; padding-top:12px; margin-bottom:20px;">
+                            <label>💵 ගෙවීම් ක්‍රමය තෝරන්න (Select Payment Method)</label>
+                            <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+                                <label style="font-weight:normal; display:flex; align-items:center; gap:8px; cursor:pointer;">
+                                    <input type="radio" name="paymentMethod" value="Cash" checked onchange="togglePaymentDetailsDisplay(this.value)"> 💵 Cash on Delivery (අත්පිට මුදල්)
+                                </label>
+                                <label style="font-weight:normal; display:flex; align-items:center; gap:8px; cursor:pointer;">
+                                    <input type="radio" name="paymentMethod" value="Bank" onchange="togglePaymentDetailsDisplay(this.value)"> 🏛️ Bank Transfer (ඔන්ලයින් බැංකු හුවමාරු)
+                                </label>
+                                <label style="font-weight:normal; display:flex; align-items:center; gap:8px; cursor:pointer;">
+                                    <input type="radio" name="paymentMethod" value="Card" onchange="togglePaymentDetailsDisplay(this.value)"> 💳 Credit / Debit Card (Stripe Pay)
+                                </label>
+                            </div>
+
+                            <div id="bankDetailsInfoPanel" style="display:none; background:#e8f0fe; padding:14px; border-radius:10px; border:1px solid #b4d2ff; margin-top:12px; font-size:12px; line-height:1.6;">
+                                <p style="margin:0 0 5px 0; font-weight:bold; color:var(--primary-blue);">🏛️ QuickFix බැංකු ගිණුම් විස්තර:</p>
+                                Bank Name: <b>Bank of Ceylon (BOC)</b><br>
+                                Account Name: <b>QuickFix App (Pvt) Ltd</b><br>
+                                Account Number: <b>874410225</b><br>
+                                Bank Branch: <b>Horana</b><br>
+                                <input type="text" id="bankRefNumberInput" placeholder="සල්ලි යැවූ පසු Transfer Ref Number එක මෙතන ගසන්න..." style="width:100%; padding:10px; margin-top:10px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; color:#111; box-sizing:border-box; outline:none;">
+                            </div>
+                        </div>
+
                         <button type="submit" id="btnSubmitPost" class="btn-yellow">කාර්මික ශිල්පියෙකු සොයන්න (Find Fixer) 🚀</button>
                     </form>
                 </div>
@@ -322,6 +347,11 @@
         <div id="nav-account" class="nav-item" onclick="switchView('view-account', 'nav-account')"><span>👤</span>Account</div>
     </div>
 
+    <script>
+        // 🚨 NO CORE JS ATTACHMENTS Bloat - Native Unified Integration Loop
+        const chatForm = document.getElementById('chatForm');
+        // Combined routing scripts inside customer.js handles backend connections cleanly
+    </script>
     <script src="customer.js"></script>
 </body>
 </html>
