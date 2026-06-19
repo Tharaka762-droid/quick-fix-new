@@ -16,52 +16,67 @@
 
     <style>
         :root {
-            --bg-main: #f5f6fa; --panel-bg: #ffffff; --accent: #ffcc00; --text-main: #222222; --text-muted: #777777; --border-color: #e0e0e0; --success: #00c851;
+            --primary-blue: #1a73e8;
+            --hover-blue: #1557b0;
+            --bg-main: #f8f9fa; 
+            --panel-bg: #ffffff; 
+            --text-main: #202124; 
+            --text-muted: #5f6368; 
+            --border-color: #dadce0; 
+            --success: #00c851;
         }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { font-family: 'Segoe UI', -apple-system, sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        .top-header { background: var(--accent); padding: 20px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        /* 👑 PREMIUM BLUE HEADER */
+        .top-header { background: var(--primary-blue); padding: 22px 20px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.15); }
         .header-user { display: flex; justify-content: space-between; align-items: center; }
-        .user-info h3 { margin: 0; font-size: 18px; font-weight: 700; color: #111; }
-        .user-info p { margin: 2px 0 0 0; font-size: 13px; color: #444; }
-        .header-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid white; object-fit: cover; }
+        .user-info h3 { margin: 0; font-size: 19px; font-weight: 700; color: white; letter-spacing: -0.3px; }
+        .user-info p { margin: 2px 0 0 0; font-size: 13px; color: rgba(255, 255, 255, 0.8); }
+        .header-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid white; object-fit: cover; background: white; }
         
-        .search-container { background: white; border-radius: 12px; padding: 10px 15px; margin-top: 15px; display: flex; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .search-container input { border: none; outline: none; width: 100%; font-size: 14px; color: #333; margin-left: 10px; }
-        .search-btn { background: #222; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; }
+        /* 🔍 WORLD-CLASS ACTIVE ADDRESS SEARCH BAR */
+        .search-container { background: white; border-radius: 12px; padding: 10px 15px; margin-top: 15px; display: flex; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 1px solid var(--border-color); }
+        .search-container input { border: none; outline: none; width: 100%; font-size: 14px; color: var(--text-dark); margin-left: 10px; }
+        .search-btn { background: var(--primary-blue); color: white; border: none; padding: 7px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .search-btn:hover { background-color: var(--hover-blue); }
 
         .app-body { flex-grow: 1; padding: 20px; overflow-y: auto; padding-bottom: 90px; }
         .view-section { display: none; }
         .view-section.active { display: block; }
 
+        /* 🎛️ CATEGORY GRID CARD DESIGN */
         .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; }
-        .category-card { background: var(--panel-bg); border-radius: 16px; padding: 18px 10px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); cursor: pointer; transition: 0.2s; border: 1px solid #eaeaea; }
-        .category-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+        .category-card { background: var(--panel-bg); border-radius: 16px; padding: 18px 10px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); cursor: pointer; transition: 0.2s ease; border: 1px solid var(--border-color); }
+        .category-card:hover { transform: translateY(-2px); border-color: var(--primary-blue); box-shadow: 0 6px 15px rgba(26, 115, 232, 0.1); }
         .category-icon { font-size: 28px; }
-        .category-name { font-size: 14px; font-weight: bold; color: #222; display: block; }
+        .category-name { font-size: 14px; font-weight: bold; color: var(--text-dark); display: block; }
         .category-desc { font-size: 11px; color: var(--text-muted); }
 
-        .form-card { background: white; padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); }
-        .form-group { margin-bottom: 15px; text-align: left; }
-        .form-group label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; }
-        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; outline: none; background: #f9f9f9; }
+        .form-card { background: white; padding: 25px 20px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .form-group { margin-bottom: 18px; text-align: left; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; color: var(--text-dark); }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; outline: none; background: #fff; font-family: inherit; transition: 0.2s; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary-blue); }
         
         #map { width: 100%; height: 260px; border-radius: 12px; margin-top: 5px; border: 1px solid var(--border-color); z-index: 1; }
-        .map-instruction { font-size: 12px; color: #d6a100; font-weight: bold; margin: 5px 0; text-align: left; }
+        .map-instruction { font-size: 12px; color: var(--primary-blue); font-weight: bold; margin: 5px 0; text-align: left; }
         
-        .pricing-panel { background: #fffde7; border: 1px dashed #ffcc00; padding: 12px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: left; }
-        .pricing-data { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; font-weight: 600; }
+        /* 💰 ADVANCED PRICING PANEL */
+        .pricing-panel { background: #e8f0fe; border: 1px dashed var(--primary-blue); padding: 14px; border-radius: 8px; margin-bottom: 15px; display: none; text-align: left; }
+        .pricing-data { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; font-weight: 600; color: #1967d2; }
         
-        .promo-group { display: flex; gap: 8px; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; }
+        .promo-group { display: flex; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(26, 115, 232, 0.15); padding-top: 10px; }
         .promo-input { flex-grow: 1; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; outline: none; font-size: 12px; }
         .promo-btn { background: #222; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
 
-        .btn-yellow { background: var(--accent); color: #111; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; }
+        .btn-yellow { background: var(--primary-blue); color: white; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; transition: 0.2s; }
+        .btn-yellow:hover { background-color: var(--hover-blue); }
         .btn-cancel { background: #ff4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
         
-        .job-card { background: white; border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; margin-bottom: 12px; position: relative; text-align: left; }
-        .job-card h3 { margin: 0 0 5px 0; font-size: 16px; color: #111; }
+        .job-card { background: white; border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 12px; position: relative; text-align: left; box-shadow: 0 4px 10px rgba(0,0,0,0.01); }
+        .job-card h3 { margin: 0 0 5px 0; font-size: 16px; color: var(--text-dark); }
 
+        /* 📊 VISUAL STEP PROGRESS TRACKER */
         .stepper-wrapper { display: flex; justify-content: space-between; margin: 15px 0 10px 0; padding: 0; position: relative; }
         .stepper-item { position: relative; display: flex; flex-direction: column; align-items: center; flex: 1; font-size: 10px; font-weight: bold; color: #aaa; text-align: center; }
         .stepper-item::before { position: absolute; content: ""; border-bottom: 2px solid #ccc; width: 100%; top: 8px; left: -50%; z-index: 1; }
@@ -69,34 +84,36 @@
         .step-counter { position: relative; z-index: 5; display: flex; justify-content: center; align-items: center; width: 18px; height: 18px; border-radius: 50%; background: #ccc; margin-bottom: 4px; }
         .stepper-item.completed { color: var(--success); }
         .stepper-item.completed .step-counter { background-color: var(--success); color: white; }
-        .stepper-item.active { color: #ffcc00; }
-        .stepper-item.active .step-counter { background-color: #ffcc00; color: #111; }
+        .stepper-item.active { color: var(--primary-blue); }
+        .stepper-item.active .step-counter { background-color: var(--primary-blue); color: white; }
 
-        .otp-display-box { background: #fff9db; border: 1px solid #ffe066; padding: 10px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; font-size: 13px; color: #2b2b2b; margin-top: 10px; }
-        .otp-number { background: var(--accent); padding: 2px 8px; border-radius: 4px; font-size: 14px; color: #111; }
+        .otp-display-box { background: #e8f0fe; border: 1px solid #b4d2ff; padding: 10px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; font-size: 13px; color: var(--primary-blue); margin-top: 10px; }
+        .otp-number { background: var(--primary-blue); padding: 2px 8px; border-radius: 4px; font-size: 14px; color: white; }
 
         .filter-tab-bar { display: flex; gap: 10px; margin-bottom: 15px; }
-        .filter-btn { flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; background: #ddd; color: #333; }
-        .filter-btn.active { background: var(--accent); color: #111; border-color: var(--accent); }
+        .filter-btn { flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; background: #e8eaed; color: var(--text-muted); transition: 0.2s; }
+        .filter-btn.active { background: var(--primary-blue); color: white; border-color: var(--primary-blue); }
 
         .star-rating span { font-size: 24px; cursor: pointer; color: #ccc; }
-        .star-rating span.active { color: #ffcc00; }
-        .noti-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--accent); text-align: left; }
+        .star-rating span.active { color: #fbbc05; }
+        .noti-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--primary-blue); text-align: left; box-shadow: 0 4px 10px rgba(0,0,0,0.01); }
         
         .chat-container { background: white; border: 1px solid var(--border-color); border-radius: 12px; margin-top: 15px; display: none; flex-direction: column; height: 320px; overflow: hidden; }
-        .chat-header { background: #222; color: white; padding: 10px; font-weight: bold; display: flex; justify-content: space-between; }
+        .chat-header { background: var(--text-main); color: white; padding: 12px; font-weight: bold; display: flex; justify-content: space-between; }
         .chat-messages { flex-grow: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
         .msg { padding: 8px 12px; border-radius: 12px; max-width: 75%; font-size: 13px; }
-        .msg.sent { background: var(--accent); color: #111; align-self: flex-end; }
-        .msg.received { background: #f0f0f0; color: #333; align-self: flex-start; }
+        .msg.sent { background: var(--primary-blue); color: white; align-self: flex-end; }
+        .msg.received { background: #f1f3f4; color: var(--text-dark); align-self: flex-start; }
         .chat-input-area { display: flex; border-top: 1px solid var(--border-color); align-items: center; background: #fff; }
-        .chat-input-area input { flex-grow: 1; border: none; padding: 12px; outline: none; font-size: 14px; }
-        .chat-input-area button { background: var(--accent); border: none; padding: 12px 18px; font-weight: bold; cursor: pointer; }
+        .chat-input-area input { flex-grow: 1; border: none; padding: 14px; outline: none; font-size: 14px; }
+        .chat-input-area button { background: var(--primary-blue); color: white; border: none; padding: 14px 20px; font-weight: bold; cursor: pointer; }
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: white; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 999; }
-        .nav-item { text-align: center; color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 11px; width: 25%; }
-        .nav-item span { display: block; font-size: 22px; margin-bottom: 2px; }
-        .nav-item.active { color: #111; }
+        /* 📱 CLEAN BOTTOM NAV */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: white; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 999; box-shadow: 0 -2px 10px rgba(0,0,0,0.03); }
+        .nav-item { text-align: center; color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 11px; width: 25%; transition: 0.15s ease; }
+        .nav-item span { display: block; font-size: 22px; margin-bottom: 2px; color: var(--text-muted); }
+        .nav-item.active { color: var(--primary-blue); }
+        .nav-item.active span { color: var(--primary-blue); }
     </style>
 </head>
 <body>
@@ -158,7 +175,7 @@
             </div>
 
             <div id="postFormArea" style="display: none; margin-top: 25px;">
-                <h4 style="margin: 0 0 10px 0; color: #111;">🎯 අලුත් <span id="selectedCategoryDisplay" style="color: #e6b800;">...</span> වැඩක් දාන්න</h4>
+                <h4 style="margin: 0 0 10px 0; color: #111;">🎯 අලුත් <span id="selectedCategoryDisplay" style="color: var(--primary-blue);">...</span> වැඩක් දාන්න</h4>
                 <div class="form-card">
                     <form id="jobPostForm">
                         <div class="form-group">
@@ -181,7 +198,7 @@
                         <div class="pricing-panel" id="priceDisplayPanel">
                             <div class="pricing-data"><span>දුර ප්‍රමාණය (Distance):</span> <span id="txtDistance">0.0 KM</span></div>
                             <div class="pricing-data"><span>ගතවන කාලය (Duration):</span> <span id="txtDuration">0 Mins</span></div>
-                            <div class="pricing-data" style="color:#c00; font-size:15px; margin-top:5px; border-top:1px solid #ddd; padding-top:5px;">
+                            <div class="pricing-data" style="color: var(--hover-blue); font-size:15px; margin-top:5px; border-top:1px solid #dadce0; padding-top:5px;">
                                 <span>ඇස්තමේන්තුගත මුදල (Auto Budget):</span> <span id="txtCalculatedPrice">රු. 0.00</span>
                             </div>
                             
@@ -228,7 +245,7 @@
         <div id="view-account" class="view-section">
             <h2 style="font-size: 20px; text-align: left;">මගේ ගිණුම (Account)</h2>
             <div class="form-card" style="text-align: center;">
-                <img id="userProfAvatar" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--accent); object-fit: cover;" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
+                <img id="userProfAvatar" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--primary-blue); object-fit: cover;" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar">
                 <h3 id="userProfName" style="margin:10px 0 2px 0;">...</h3>
                 <p id="userProfEmail" style="color:var(--text-muted); margin:0 0 15px 0;">...</p>
                 <button class="btn-yellow" style="background:#ff4444; color:white;" onclick="logoutUser()">Log Out (ගිණුමෙන් ඉවත් වන්න)</button>
@@ -344,7 +361,7 @@
             routingControl = L.Routing.control({
                 waypoints: [ L.latLng(pLat, pLng), L.latLng(dLat, dLat ? dLng : pLng) ],
                 router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
-                lineOptions: { styles: [{ color: '#2979ff', opacity: 0.8, weight: 6 }] },
+                lineOptions: { styles: [{ color: '#1a73e8', opacity: 0.8, weight: 6 }] },
                 createMarker: function() { return null; }
             }).addTo(map);
 
@@ -463,12 +480,12 @@
                         } else if (job.status === 'completed') {
                             hasPast = true;
                             let ratingBlock = !job.rated ? `
-                                <div style="margin-top:10px; border-top:1px dashed #ddd; padding-top:8px;">
+                                <div style="margin-top:10px; border-top:1px dashed #dadce0; padding-top:8px;">
                                     <p style="font-size:12px; font-weight:bold; margin:0 0 4px 0;">බාස්ගේ සේවාව ඇගයීමට තරු ලකුණු කරන්න ⭐</p>
                                     <div class="star-rating">
                                         <span onclick="submitLiveRating('${doc.id}', 1)">★</span><span onclick="submitLiveRating('${doc.id}', 2)">★</span><span onclick="submitLiveRating('${doc.id}', 3)">★</span><span onclick="submitLiveRating('${doc.id}', 4)">★</span><span onclick="submitLiveRating('${doc.id}', 5)">★</span>
                                     </div>
-                                </div>` : `<div style="color:var(--accent); font-weight:bold; font-size:13px; margin-top:8px;">ලබාදුන් ශ්‍රේණිගත කිරීම: ${'★'.repeat(job.rating)}</div>`;
+                                </div>` : `<div style="color:var(--primary-blue); font-weight:bold; font-size:13px; margin-top:8px;">ලබාදුන් ශ්‍රේණිගත කිරීම: ${'★'.repeat(job.rating)}</div>`;
 
                             pastContainer.innerHTML += `
                                 <div class="job-card" style="opacity:0.85;">
@@ -479,9 +496,9 @@
                         }
 
                         if(job.status === 'accepted') {
-                            notiHtml += `<div class="noti-card"><h4>🛠️ ඔබේ ඇනවුම බාරගන්නා ලදී!</h4><p>ඔබේ "${job.title}" වැඩය බාරගෙන ඇත.</p></div>`;
+                            notiHtml += `<div class="noti-card"><h4>🛠️ ඔබේ ඇනවුම බාරගන්නා ลදී!</h4><p>ඔබේ "${job.title}" වැඩය බාරගෙන ඇත.</p></div>`;
                         } else if (job.status === 'completed') {
-                            notiHtml += `<div class="noti-card" style="border-left-color: #00c851;"><h4>✅ වැඩය සාර්ථකව අවසන්!</h4><p>"${job.title}" වැඩය සාර්ථකව නිම කර ඇත.</p></div>`;
+                            notiHtml += `<div class="noti-card" style="border-left-color: var(--success);"><h4>✅ වැඩය සාර්ථකව අවසන්!</h4><p>"${job.title}" වැඩය සාර්ථකව නිම කර ඇත.</p></div>`;
                         }
                     });
 
