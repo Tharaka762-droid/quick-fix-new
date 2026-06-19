@@ -61,7 +61,7 @@
 
         .schedule-toggle-bar { display: flex; align-items: center; justify-content: space-between; background: #f1f3f4; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; font-weight: bold; }
         .schedule-inputs { display: flex; gap: 10px; margin-top: 10px; }
-        .schedule-inputs input { padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 12px; flex: 1; }
+        .schedule-inputs input { padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 12px; flex: 1; color: #111; font-weight: bold; }
 
         #map { width: 100%; height: 260px; border-radius: 12px; margin-top: 5px; border: 1px solid var(--border-color); z-index: 1; }
         .map-instruction { font-size: 12px; color: var(--primary-blue); font-weight: bold; margin: 5px 0; text-align: left; }
@@ -243,7 +243,7 @@
                         <div class="pricing-panel" id="priceDisplayPanel">
                             <div class="breakdown-row"><span>Base Fare (ආරම්භක පිරිවැය):</span> <span>රු. 200.00</span></div>
                             <div class="breakdown-row"><span>Distance Fare (📏 <span id="lblKmText">0.0 KM</span>):</span> <span id="lblDistanceFare">රු. 0.00</span></div>
-                            <div class="breakdown-row" id="promoRow" style="display:none; color:var(--success);"><span>Promo Discount (වට්ටම 🎁):</span> <span>- රු. 250.00</span></div>
+                            <div class="breakdown-row" id="promoRow" style="display:none; color:var(--success);"><span>Promo Discount (වට්ටම 🎁):</span> <span>- ਰੁ. 250.00</span></div>
                             <div class="breakdown-row total"><span>Total Payable (ඇස්තමේන්තුගත මුදල):</span> <span id="txtCalculatedPrice">රු. 0.00</span></div>
                             
                             <div class="promo-group">
@@ -320,7 +320,7 @@
         const auth = firebase.auth(), db = firebase.firestore();
 
         let map, routingControl, pickupMarker, dropMarker, liveLocationMarker;
-        let activeChatJobId = null, chatListener = null, currentCategory = "General", perKmRate = 80, originalPrice = 0, isPromoApplied = false;
+        let activeChatJobId = null, chatListener = null, currentCategory = "General Fix", perKmRate = 80, originalPrice = 0, isPromoApplied = false;
         let mediaRecorder, audioChunks = [], isRecording = false;
 
         const hrs = new Date().getHours();
@@ -370,7 +370,7 @@
         function searchGlobalAddressRoute() {
             let query = document.getElementById('globalAddressSearchInput').value.trim();
             if(!query) return;
-            if(document.getElementById('postFormArea').style.display === "none") openQuickFixForm('General', 'QuickFix සේවාව', 80);
+            if(document.getElementById('postFormArea').style.display === "none") openQuickFixForm('General Fix', 'QuickFix සේවාව', 80);
 
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=lk`)
             .then(res => res.json())
@@ -462,7 +462,7 @@
         function sendSmartQuickReplyMessage(replyText) {
             if(!activeChatJobId) return;
             db.collection("jobs").doc(activeChatJobId).collection("messages").add({
-                text: replyText, senderId: auth.currentUser.uid, timestamp: new Date()
+                text: replyText, senderId: auth.currentUser.uid, timestamp: new Date().getTime()
             });
         }
 
@@ -477,7 +477,7 @@
                         const reader = new FileReader(); reader.readAsDataURL(audioBlob);
                         reader.onloadend = () => {
                             db.collection("jobs").doc(activeChatJobId).collection("messages").add({
-                                text: "", voiceData: reader.result, senderId: auth.currentUser.uid, timestamp: new Date()
+                                text: "", voiceData: reader.result, senderId: auth.currentUser.uid, timestamp: new Date().getTime()
                             });
                         };
                     };
@@ -514,7 +514,6 @@
             box.style.display = (box.style.display === "block") ? "none" : "block";
         }
 
-        // 🧠 FIXED LOGIC: RESCHEDULE/EDIT RE-NOTIFICATION & ASSIGNMENT RESET ENGINE (NO SERVER_TIMESTAMP CRASH)
         function submitLiveRescheduleTime(jobId) {
             const newTitle = document.getElementById(`editTitle-${jobId}`).value.trim();
             const newDesc = document.getElementById(`editDesc-${jobId}`).value.trim();
@@ -523,20 +522,19 @@
             
             if(!newTitle || !newDesc || !newDate || !newTime) { alert("❌ කරුණාකර සියලුම හිස්තැන් පුරවන්න!"); return; }
 
-            // 🚨 KICK SUPPLIER OUT INSTANTLY UPON EDIT & FORCE STATUS TO POOL AVAILABLE
             db.collection("jobs").doc(jobId).update({
                 title: newTitle,
                 description: newDesc,
                 isScheduled: true,
                 scheduledDate: newDate,
                 scheduledTime: newTime,
-                status: "available", // Reset state back to public list pools
-                riderId: null,      // Disconnect active buyer
-                riderName: null,    // Clear supplier name cache
-                reNotified: true,   // Flag for supplier feed alert notifications
-                lastModified: new Date()
+                status: "available", 
+                riderId: null,      
+                riderName: null,    
+                reNotified: true,   
+                lastModified: new Date().getTime()
             }).then(() => {
-                showFloatingBannerMessage("🕒 ඇනවුම වෙනස් කරා! බාස්ව ඉවත් කර නැවත Pool එකට දමන ලදී.");
+                showFloatingBannerMessage("🕒 ඇනවුම වෙනස් කරා! බාස්ව ඉවත් කර නැවත Pool එකට දමන ลදී.");
             });
         }
 
@@ -583,15 +581,15 @@
                                     <p style="margin:0 0 10px 0; font-size:12px; font-weight:bold; color:red;">⚠️ අවධානයට: බාස් කෙනෙක් බාරගත් වැඩක් සංස්කරණය කළහොත්, එම බාස්ව ඉවත් වී වැඩය නැවත පොදු Pool එකට වැටේ!</p>
                                     
                                     <label>වැඩේ මාතෘකාව (Title)</label>
-                                    <input type="text" id="editTitle-${doc.id}" value="${job.title || ''}" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-bottom:8px;">
+                                    <input type="text" id="editTitle-${doc.id}" value="${job.title || ''}" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-bottom:8px; color:#111;">
                                     
                                     <label>වැඩේ විස්තරය (Description)</label>
-                                    <textarea id="editDesc-${doc.id}" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-bottom:8px;" rows="2">${job.description || ''}</textarea>
+                                    <textarea id="editDesc-${doc.id}" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-bottom:8px; color:#111;" rows="2">${job.description || ''}</textarea>
                                     
                                     <label>නව දිනය සහ වෙලාව (New Schedule)</label>
                                     <div style="display:flex; gap:6px;">
-                                        <input type="date" id="newDate-${doc.id}" value="${job.scheduledDate || ''}" style="padding:8px; border:1px solid var(--border-color); border-radius:4px; font-size:12px; flex:1;">
-                                        <input type="time" id="newTime-${doc.id}" value="${job.scheduledTime || ''}" style="padding:8px; border:1px solid var(--border-color); border-radius:4px; font-size:12px; flex:1;">
+                                        <input type="date" id="newDate-${doc.id}" value="${job.scheduledDate || ''}" style="padding:8px; border:1px solid var(--border-color); border-radius:4px; font-size:12px; flex:1; color:#111;">
+                                        <input type="time" id="newTime-${doc.id}" value="${job.scheduledTime || ''}" style="padding:8px; border:1px solid var(--border-color); border-radius:4px; font-size:12px; flex:1; color:#111;">
                                     </div>
                                     <button type="button" class="btn-yellow" style="padding:10px; margin-top:12px; font-size:12px; border-radius:6px;" onclick="submitLiveRescheduleTime('${doc.id}')">සංස්කරණය තහවුරු කරන්න (Confirm & Repost) 🎯</button>
                                 </div>`;
@@ -602,9 +600,7 @@
                             }
 
                             let scheduleText = job.isScheduled ? `<span style="background:#1a73e8; color:white; padding:2px 6px; font-size:10px; font-weight:bold; border-radius:4px;">🕒 SCHEDULED: ${job.scheduledDate} @ ${job.scheduledTime}</span>` : '';
-
-                            // ✅ FIXED DEFINITION: Safe category fallback to prevent "undefined" leak output
-                            let safetyCategory = job.category || currentCategory || "General Fix";
+                            let safetyCategory = job.category || "General Fix";
 
                             activeContainer.innerHTML += `
                                 <div class="job-card">
@@ -678,7 +674,7 @@
             e.preventDefault(); const input = document.getElementById('chatMsgInput');
             if(!input.value.trim() || !activeChatJobId) return;
             db.collection("jobs").doc(activeChatJobId).collection("messages").add({
-                text: input.value.trim(), senderId: auth.currentUser.uid, timestamp: new Date()
+                text: input.value.trim(), senderId: auth.currentUser.uid, timestamp: new Date().getTime()
             }).then(() => { input.value = ""; });
         });
 
@@ -708,11 +704,11 @@
                     title: document.getElementById('jobTitle').value, 
                     description: document.getElementById('jobDesc').value, 
                     budget: document.getElementById('jobBudget').value, 
-                    category: currentCategory, // Saved correctly instantly
+                    category: currentCategory, 
                     lat: pLat, lng: pLng, dropLat: dLat, dropLng: dLng, distance: distText, customerId: auth.currentUser.uid, customerName: auth.currentUser.displayName, customerPhone: pNum,
                     status: "available", otpCode: randomOTP, rated: false, tasksList: finalChecklistArray,
                     isScheduled: isScheduled, scheduledDate: isScheduled ? document.getElementById('scheduleDate').value : null, scheduledTime: isScheduled ? document.getElementById('scheduleTime').value : null,
-                    timestamp: new Date()
+                    timestamp: new Date().getTime()
                 }).then(() => { finishPost(); }).catch(() => { resetBtn(); });
             });
         });
