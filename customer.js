@@ -216,28 +216,31 @@ function submitLiveRescheduleTime(jobId) {
     }).then(() => { showFloatingBannerMessage("🕒 ඇනවුම වෙනස් කරා! බාස්ව ඉවත් කර නැවත Pool එකට දමන ලදී."); });
 }
 
-// 📊 BARGAINING ENGINE: Accept Specific Bid Offer
-function acceptSupplierBargainOffer(jobId, rId, rName, finalPrice) {
-    db.collection("jobs").doc(jobId).update({
-        status: "accepted",
-        riderId: rId,
-        riderName: rName,
-        budget: finalPrice // Lock down the bargained price!
-    }).then(() => { showFloatingBannerMessage(`✅ LKR ${finalPrice} කට වැඩේ තහවුරු කරා!`); });
+// ✅ 100% WORKING DYNAMIC PAYMENT TOGGLE FOR RADIO BUTTONS
+function togglePaymentDetailsDisplay(method) {
+    const bankPanel = document.getElementById('bankDetailsInfoPanel');
+    if(bankPanel) {
+        bankPanel.style.display = (method === 'Bank') ? "block" : "none";
+    }
 }
 
-// Distress Emergency SOS Injector System Node
+function acceptSupplierBargainOffer(jobId, rId, rName, finalPrice) {
+    db.collection("jobs").doc(jobId).update({
+        status: "accepted", riderId: rId, riderName: rName, budget: finalPrice
+    }).then(() => { showFloatingBannerMessage(`✅ ਰੁ. ${finalPrice} කට වැඩේ තහවුරු කරා!`); });
+}
+
 function triggerInstantDistressSOSFix() {
-    if(confirm("🚨 ක්ෂණික හදිසි උපකාරයක් (Emergency Fix) අවශ්‍යද? විනාඩි 5ක් ඇතුළත ළඟම බාස්ලා පැමිණෙනු ඇත.")) {
+    if(confirm("🚨 ක්ෂණික හදිසි උපකාරයක් (Emergency Fix) අවශ්‍යද? விනාඩි 5ක් ඇතුළත ළඟම බාස්ලා පැමිණෙනු ඇත.")) {
         navigator.geolocation.getCurrentPosition(pos => {
             db.collection("jobs").add({
                 title: "🚨 EMERGENCY DISTRESS SOS FIX",
                 description: "හදිසි අනතුරක් හෝ බිඳවැටීමක්! ක්ෂණික උපකාර අවශ්‍යයි.",
                 budget: "2500", category: "Emergency SOS",
-                lat: pos.coords.latitude, lng: pos.coords.longitude,
+                lat: pos.coords.latitude, lng: pos.coords.longitude, dropLat: pos.coords.latitude, dropLng: pos.coords.longitude, distance: "0.0 KM",
                 customerId: auth.currentUser.uid, customerName: auth.currentUser.displayName,
-                status: "available", otpCode: Math.floor(1000 + Math.random() * 9000), timestamp: new Date().getTime()
-            }).then(() => { alert("🚨 SOS පණිවිඩය සජීවීව නිකුත් කරා මචං! බාස්ලා දැන් පාරේ."); switchView('view-activities', 'nav-activities'); });
+                status: "available", otpCode: Math.floor(1000 + Math.random() * 9000), paymentMethod: "Cash", timestamp: new Date().getTime()
+            }).then(() => { alert("🚨 SOS පණිවිඩය සජීවීව නිකුත් කරා මචං!"); switchView('view-activities', 'nav-activities'); });
         });
     }
 }
@@ -281,7 +284,6 @@ auth.onAuthStateChanged(user => {
                     let cancelBtn = `<button class="btn-cancel" onclick="cancelLiveJobOrder('${doc.id}')">ඇනවුම අවලංගු කරන්න ❌</button>`;
                     let rescheduleBtn = (job.status === 'available' || job.status === 'accepted') ? `<button class="btn-resched" onclick="toggleInlineRescheduleBox('${doc.id}')">වැඩේ සංස්කරණය / Reschedule කරන්න 🕒✏️</button>` : '';
                     
-                    // 📊 BARGAINING SUB-INTERFACE INJECTION LISTENER
                     let bargainOffersHtml = "";
                     if(job.status === 'available' && job.bidsPool) {
                         bargainOffersHtml = `<div style="margin-top:10px; padding:10px; background:#fff8e1; border-radius:8px; border:1px solid #ffe082;"><p style="margin:0 0 6px 0; font-size:12px; font-weight:bold; color:#b78103;">💰 බාස්ලා ඉල්ලන මිල ගණන් (Counter Bids):</p>`;
@@ -295,9 +297,11 @@ auth.onAuthStateChanged(user => {
                         bargainOffersHtml += `</div>`;
                     }
 
-                    // 💳 SPLIT BILL INTERACTIVE SUB-MATH DATA
                     let splitBillAmount = Math.round(job.budget / 2);
                     let splitBillHtml = `<div style="font-size:11px; color:#5f6368; margin-top:4px;">💳 යාළුවා එක්ක බෙදාගත්තොත් එක්කෙනෙක්ට: <b>රු. ${splitBillAmount} ගානේ</b></div>`;
+                    
+                    // Display selected payment method on Card Node UI
+                    let currentPayMethodText = job.paymentMethod === 'Bank' ? '🏛️ Online Bank Transfer' : job.paymentMethod === 'Card' ? '💳 Stripe Card' : '💵 Cash on Delivery';
 
                     let rescheduleBoxUi = `
                         <div class="resched-box-ui" id="reschedBox-${doc.id}">
@@ -326,11 +330,10 @@ auth.onAuthStateChanged(user => {
                             <h3>${job.title || 'QuickFix Job'} ${scheduleText}</h3> <p style="font-size:13px; color:#555; margin:5px 0;">${job.description || ''}</p>
                             ${renderedChecklistHtml}
                             <div style="font-size:12px; color:#777; margin-bottom:5px;">Category: <b>${safetyCategory}</b> | 📏 ${job.distance || '0 KM'}</div>
+                            <div style="font-size:12px; color:var(--primary-blue); font-weight:bold; margin-bottom:8px;">💳 Method: ${currentPayMethodText}</div>
                             ${stepperHtml} 
                             <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: රු. ${job.budget}</div>
-                            ${splitBillHtml}
-                            ${bargainOffersHtml}
-                            ${otpCodeArea} 
+                            ${splitBillHtml} ${bargainOffersHtml} ${otpCodeArea} 
                             <div style="margin-top: 8px; display:flex; flex-wrap:wrap; gap:8px;">${chatBtn} ${rescheduleBtn} ${cancelBtn}</div>
                             ${rescheduleBoxUi}
                         </div>`;
@@ -393,6 +396,13 @@ function openChat(jobId) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    // Inject dynamic input listener on radio buttons for payment methods manually
+    document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            togglePaymentDetailsDisplay(e.target.value);
+        });
+    });
+
     const chatForm = document.getElementById('chatForm');
     if(chatForm) {
         chatForm.addEventListener('submit', function(e) {
@@ -425,6 +435,10 @@ window.addEventListener('DOMContentLoaded', () => {
             });
 
             const isScheduled = document.getElementById('chkIsScheduled').checked;
+            
+            // Gather Selected Payment Parameters
+            const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked').value;
+            const bankRef = document.getElementById('bankRefNumberInput') ? document.getElementById('bankRefNumberInput').value.trim() : "";
 
             db.collection("users").doc(auth.currentUser.uid).get().then(userDoc => {
                 let pNum = (userDoc.exists && userDoc.data().phoneNumber) ? userDoc.data().phoneNumber : "නැත";
@@ -436,6 +450,9 @@ window.addEventListener('DOMContentLoaded', () => {
                     lat: pLat, lng: pLng, dropLat: dLat, dropLng: dLng, distance: distText, customerId: auth.currentUser.uid, customerName: auth.currentUser.displayName, customerPhone: pNum,
                     status: "available", otpCode: randomOTP, rated: false, tasksList: finalChecklistArray,
                     isScheduled: isScheduled, scheduledDate: isScheduled ? document.getElementById('scheduleDate').value : null, scheduledTime: isScheduled ? document.getElementById('scheduleTime').value : null,
+                    paymentMethod: selectedPayment,
+                    bankReferenceNumber: selectedPayment === 'Bank' ? bankRef : null,
+                    paymentStatus: selectedPayment === 'Card' ? "Paid via Stripe" : "Pending",
                     timestamp: new Date().getTime()
                 }).then(() => { finishPost(); }).catch(() => { resetBtn(); });
             });
@@ -447,6 +464,7 @@ function resetBtn() { const btn = document.getElementById('btnSubmitPost'); if(b
 function finishPost() {
     alert("✅ ඔබේ QuickFix ඇනවුම සාර්ථකව පෝස්ට් කරා මචං!");
     document.getElementById('jobPostForm').reset(); document.getElementById('postFormArea').style.display = "none";
+    if(document.getElementById('bankDetailsInfoPanel')) document.getElementById('bankDetailsInfoPanel').style.display = "none";
     resetBtn(); switchActivitiesFilter('active'); switchView('view-activities', 'nav-activities');
 }
 function logoutUser() { auth.signOut().then(() => { window.location.href = "auth.html"; }); }
