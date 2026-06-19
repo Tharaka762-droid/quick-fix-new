@@ -77,7 +77,6 @@
         .btn-yellow { background: var(--primary-blue); color: white; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 15px; }
         .btn-cancel { background: #ff4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
         
-        /* 🕒 IN-LINE COMPREHENSIVE EDIT & RESCHEDULE STYLES */
         .btn-resched { background: #fff; color: var(--primary-blue); border: 1px solid var(--primary-blue); padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
         .resched-box-ui { background: #f1f3f4; padding: 14px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border-color); display: none; text-align: left; }
         .resched-box-ui label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 4px; margin-top: 8px; color: var(--text-main); }
@@ -188,7 +187,7 @@
                     <span class="category-icon">🪚</span>
                     <div class="category-name-wrapper"><span class="category-name">Carpentry</span><span class="category-desc">දොරවල්, අල්මාරි, ගෘහභාණ්ඩ</span></div>
                 </div>
-                <div class="category-card" onclick="openQuickFixForm('Masonry & Painting', 'පින්තාරු සහ充ද්රේරු වැඩ', 80)">
+                <div class="category-card" onclick="openQuickFixForm('Masonry & Painting', 'පින්තාරු සහ පෙදරේරු වැඩ', 80)">
                     <span class="category-icon">🎨</span>
                     <div class="category-name-wrapper"><span class="category-name">Painting</span><span class="category-desc">තීන්ත, මේසන්, ටයිල්</span></div>
                 </div>
@@ -273,7 +272,7 @@
             <div id="pastJobsContainer" style="display: none;"></div>
 
             <div id="customerChatBox" class="chat-container">
-                <div class="chat-header">💬 บාස් සමඟ සජීවී චැට් එක <span style="cursor:pointer;" onclick="document.getElementById('customerChatBox').style.display='none'">✖</span></div>
+                <div class="chat-header">💬 බාස් සමඟ සජීවී චැට් එක <span style="cursor:pointer;" onclick="document.getElementById('customerChatBox').style.display='none'">✖</span></div>
                 <div id="chatMessages" class="chat-messages"></div>
                 
                 <div class="chat-quick-replies">
@@ -463,7 +462,7 @@
         function sendSmartQuickReplyMessage(replyText) {
             if(!activeChatJobId) return;
             db.collection("jobs").doc(activeChatJobId).collection("messages").add({
-                text: replyText, senderId: auth.currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                text: replyText, senderId: auth.currentUser.uid, timestamp: new Date()
             });
         }
 
@@ -478,7 +477,7 @@
                         const reader = new FileReader(); reader.readAsDataURL(audioBlob);
                         reader.onloadend = () => {
                             db.collection("jobs").doc(activeChatJobId).collection("messages").add({
-                                text: "", voiceData: reader.result, senderId: auth.currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                                text: "", voiceData: reader.result, senderId: auth.currentUser.uid, timestamp: new Date()
                             });
                         };
                     };
@@ -515,7 +514,7 @@
             box.style.display = (box.style.display === "block") ? "none" : "block";
         }
 
-        // 🧠 CRITICAL LOGIC INJECTION: RESCHEDULE/EDIT RE-NOTIFICATION & ASSIGNMENT RESET ENGINE
+        // 🧠 FIXED LOGIC: RESCHEDULE/EDIT RE-NOTIFICATION & ASSIGNMENT RESET ENGINE (NO SERVER_TIMESTAMP CRASH)
         function submitLiveRescheduleTime(jobId) {
             const newTitle = document.getElementById(`editTitle-${jobId}`).value.trim();
             const newDesc = document.getElementById(`editDesc-${jobId}`).value.trim();
@@ -524,18 +523,20 @@
             
             if(!newTitle || !newDesc || !newDate || !newTime) { alert("❌ කරුණාකර සියලුම හිස්තැන් පුරවන්න!"); return; }
 
-            // 🚨 REAL UBER-STYLE ABORT: If customer changes job parameters, decouple the current supplier instantly
+            // 🚨 KICK SUPPLIER OUT INSTANTLY UPON EDIT & FORCE STATUS TO POOL AVAILABLE
             db.collection("jobs").doc(jobId).update({
                 title: newTitle,
                 description: newDesc,
                 isScheduled: true,
                 scheduledDate: newDate,
                 scheduledTime: newTime,
-                status: "available", // Reset status back to pool pool
-                riderId: null,      // Kick out current supplier
-                riderName: null     // Clear supplier info
+                status: "available", // Reset state back to public list pools
+                riderId: null,      // Disconnect active buyer
+                riderName: null,    // Clear supplier name cache
+                reNotified: true,   // Flag for supplier feed alert notifications
+                lastModified: new Date()
             }).then(() => {
-                showFloatingBannerMessage("🕒 ඇනවුම සාර්ථකව වෙනස් කරා! බාස්ව ඉවත් කර නැවත Pool එකට දමන ලදී.");
+                showFloatingBannerMessage("🕒 ඇනවුම වෙනස් කරා! බාස්ව ඉවත් කර නැවත Pool එකට දමන ලදී.");
             });
         }
 
@@ -575,26 +576,24 @@
                             let otpCodeArea = job.status !== 'available' ? `<div class="otp-display-box">🔐 ආරක්ෂිත OTP කේතය: <span class="otp-number">${job.otpCode}</span></div>` : '';
                             let cancelBtn = `<button class="btn-cancel" onclick="cancelLiveJobOrder('${doc.id}')">ඇනවුම අවලංගු කරන්න ❌</button>`;
                             
-                            // 🕒 RESCHEDULE BUTTON: Now visible on both 'available' and 'accepted' status nodes!
                             let rescheduleBtn = (job.status === 'available' || job.status === 'accepted') ? `<button class="btn-resched" onclick="toggleInlineRescheduleBox('${doc.id}')">වැඩේ සංස්කරණය / Reschedule කරන්න 🕒✏️</button>` : '';
                             
-                            // Full Comprehensive Edit/Reschedule Box Form Modal Injection
                             let rescheduleBoxUi = `
                                 <div class="resched-box-ui" id="reschedBox-${doc.id}">
                                     <p style="margin:0 0 10px 0; font-size:12px; font-weight:bold; color:red;">⚠️ අවධානයට: බාස් කෙනෙක් බාරගත් වැඩක් සංස්කරණය කළහොත්, එම බාස්ව ඉවත් වී වැඩය නැවත පොදු Pool එකට වැටේ!</p>
                                     
                                     <label>වැඩේ මාතෘකාව (Title)</label>
-                                    <input type="text" id="editTitle-${doc.id}" value="${job.title}" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-bottom:8px;">
+                                    <input type="text" id="editTitle-${doc.id}" value="${job.title || ''}" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-bottom:8px;">
                                     
                                     <label>වැඩේ විස්තරය (Description)</label>
-                                    <textarea id="editDesc-${doc.id}" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-bottom:8px;" rows="2">${job.description}</textarea>
+                                    <textarea id="editDesc-${doc.id}" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-bottom:8px;" rows="2">${job.description || ''}</textarea>
                                     
                                     <label>නව දිනය සහ වෙලාව (New Schedule)</label>
                                     <div style="display:flex; gap:6px;">
                                         <input type="date" id="newDate-${doc.id}" value="${job.scheduledDate || ''}" style="padding:8px; border:1px solid var(--border-color); border-radius:4px; font-size:12px; flex:1;">
                                         <input type="time" id="newTime-${doc.id}" value="${job.scheduledTime || ''}" style="padding:8px; border:1px solid var(--border-color); border-radius:4px; font-size:12px; flex:1;">
                                     </div>
-                                    <button class="btn-yellow" style="padding:10px; margin-top:12px; font-size:12px; border-radius:6px;" onclick="submitLiveRescheduleTime('${doc.id}')">සංස්කරණය තහවුරු කරන්න (Confirm & Repost) 🎯</button>
+                                    <button type="button" class="btn-yellow" style="padding:10px; margin-top:12px; font-size:12px; border-radius:6px;" onclick="submitLiveRescheduleTime('${doc.id}')">සංස්කරණය තහවුරු කරන්න (Confirm & Repost) 🎯</button>
                                 </div>`;
 
                             let renderedChecklistHtml = "";
@@ -604,11 +603,14 @@
 
                             let scheduleText = job.isScheduled ? `<span style="background:#1a73e8; color:white; padding:2px 6px; font-size:10px; font-weight:bold; border-radius:4px;">🕒 SCHEDULED: ${job.scheduledDate} @ ${job.scheduledTime}</span>` : '';
 
+                            // ✅ FIXED DEFINITION: Safe category fallback to prevent "undefined" leak output
+                            let safetyCategory = job.category || currentCategory || "General Fix";
+
                             activeContainer.innerHTML += `
                                 <div class="job-card">
-                                    <h3>${job.title} ${scheduleText}</h3> <p style="font-size:13px; color:#555; margin:5px 0;">${job.description}</p>
+                                    <h3>${job.title || 'QuickFix Job'} ${scheduleText}</h3> <p style="font-size:13px; color:#555; margin:5px 0;">${job.description || ''}</p>
                                     ${renderedChecklistHtml}
-                                    <div style="font-size:12px; color:#777; margin-bottom:5px;">Category: <b>${job.category}</b> | 📏 ${job.distance || '0 KM'}</div>
+                                    <div style="font-size:12px; color:#777; margin-bottom:5px;">Category: <b>${safetyCategory}</b> | 📏 ${job.distance || '0 KM'}</div>
                                     ${stepperHtml} <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: රු. ${job.budget}</div>
                                     ${otpCodeArea} 
                                     <div style="margin-top: 8px; display:flex; flex-wrap:wrap; gap:8px;">${chatBtn} ${rescheduleBtn} ${cancelBtn}</div>
@@ -626,7 +628,7 @@
 
                             pastContainer.innerHTML += `
                                 <div class="job-card" style="opacity:0.85;">
-                                    <h3>${job.title}</h3> <p style="font-size:13px; color:#555; margin:5px 0;">${job.description}</p>
+                                    <h3>${job.title || 'QuickFix Job'}</h3> <p style="font-size:13px; color:#555; margin:5px 0;">${job.description || ''}</p>
                                     ${stepperHtml} ${ratingBlock}
                                 </div>`;
                         }
@@ -676,7 +678,7 @@
             e.preventDefault(); const input = document.getElementById('chatMsgInput');
             if(!input.value.trim() || !activeChatJobId) return;
             db.collection("jobs").doc(activeChatJobId).collection("messages").add({
-                text: input.value.trim(), senderId: auth.currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                text: input.value.trim(), senderId: auth.currentUser.uid, timestamp: new Date()
             }).then(() => { input.value = ""; });
         });
 
@@ -703,11 +705,14 @@
             db.collection("users").doc(auth.currentUser.uid).get().then(userDoc => {
                 let pNum = (userDoc.exists && userDoc.data().phoneNumber) ? userDoc.data().phoneNumber : "නැත";
                 db.collection("jobs").add({
-                    title: document.getElementById('jobTitle').value, description: document.getElementById('jobDesc').value, budget: document.getElementById('jobBudget').value, category: currentCategory,
+                    title: document.getElementById('jobTitle').value, 
+                    description: document.getElementById('jobDesc').value, 
+                    budget: document.getElementById('jobBudget').value, 
+                    category: currentCategory, // Saved correctly instantly
                     lat: pLat, lng: pLng, dropLat: dLat, dropLng: dLng, distance: distText, customerId: auth.currentUser.uid, customerName: auth.currentUser.displayName, customerPhone: pNum,
                     status: "available", otpCode: randomOTP, rated: false, tasksList: finalChecklistArray,
                     isScheduled: isScheduled, scheduledDate: isScheduled ? document.getElementById('scheduleDate').value : null, scheduledTime: isScheduled ? document.getElementById('scheduleTime').value : null,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    timestamp: new Date()
                 }).then(() => { finishPost(); }).catch(() => { resetBtn(); });
             });
         });
