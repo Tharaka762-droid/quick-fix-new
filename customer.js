@@ -21,12 +21,12 @@
         }
         body { font-family: 'Segoe UI', -apple-system, sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* 🔔 FLOATING REAL-TIME NOTIFICATION BANNER */
+        /* 🔔 FLOATING REAL-TIME ALERT BANNER */
         .floating-alert { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: #202124; color: white; padding: 14px 24px; border-radius: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; z-index: 10000; font-weight: 600; font-size: 13px; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .floating-alert.show { top: 20px; }
-        .floating-alert .alert-dot { width: 8px; height: 8px; background: var(--accent, #ffcc00); border-radius: 50%; animation: pulse 1.5s infinite; }
+        .floating-alert .alert-dot { width: 8px; height: 8px; background: #ffcc00; border-radius: 50%; animation: pulse 1.5s infinite; }
 
-        /* 👑 PREMIUM HEADER & SAVED PLACES QUICK BAR */
+        /* 👑 PREMIUM HEADER & SAVED PLACES */
         .top-header { background: var(--primary-blue); padding: 20px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.15); }
         .header-user { display: flex; justify-content: space-between; align-items: center; }
         .user-info h3 { margin: 0; font-size: 19px; font-weight: 700; color: white; }
@@ -37,9 +37,9 @@
         .search-container input { border: none; outline: none; width: 100%; font-size: 14px; margin-left: 10px; }
         .search-btn { background: var(--primary-blue); color: white; border: none; padding: 7px 14px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; }
         
-        .saved-places-bar { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-start; }
-        .saved-place-chip { background: rgba(255, 255, 255, 0.2); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
-        .saved-place-chip:hover { background: rgba(255, 255, 255, 0.3); }
+        .saved-places-bar { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-start; overflow-x: auto; padding-bottom: 2px; }
+        .saved-places-bar::-webkit-scrollbar { display: none; }
+        .saved-place-chip { background: rgba(255, 255, 255, 0.2); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
 
         .app-body { flex-grow: 1; padding: 20px; overflow-y: auto; padding-bottom: 90px; }
         .view-section { display: none; }
@@ -54,16 +54,26 @@
 
         .form-card { background: white; padding: 25px 20px; border-radius: 16px; border: 1px solid var(--border-color); }
         .form-group { margin-bottom: 18px; text-align: left; }
-        .form-group label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; color: var(--text-main); }
         .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; outline: none; background: #fff; font-family: inherit; }
         
+        /* 📋 CHECKLIST STYLES */
+        .checklist-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .checklist-item input[type="text"] { flex-grow: 1; padding: 8px; font-size: 13px; }
+        .btn-add-task { background: none; border: 1px dashed var(--primary-blue); color: var(--primary-blue); padding: 8px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; width: 100%; margin-top: 5px; }
+
+        /* 🕒 SCHEDULER TIMING ROW */
+        .schedule-toggle-bar { display: flex; align-items: center; justify-content: space-between; background: #f1f3f4; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; font-weight: bold; }
+        .schedule-inputs { display: flex; gap: 10px; margin-top: 10px; }
+        .schedule-inputs input { padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 12px; flex: 1; }
+
         #map { width: 100%; height: 260px; border-radius: 12px; margin-top: 5px; border: 1px solid var(--border-color); z-index: 1; }
         .map-instruction { font-size: 12px; color: var(--primary-blue); font-weight: bold; margin: 5px 0; text-align: left; }
         
-        /* 📊 INTERACTIVE COST BREAKDOWN PANEL */
+        /* 📊 COST BREAKDOWN PANEL */
         .pricing-panel { background: #f8f9fa; border: 1px solid var(--border-color); padding: 16px; border-radius: 12px; margin-bottom: 15px; display: none; text-align: left; }
         .breakdown-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
-        .breakdown-row.total { font-size: 15px; font-weight: bold; color: #1967d2; border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 8px; margin-bottom: 0; }
+        .breakdown-row.total { font-size: 15px; font-weight: bold; color: #1967d2; border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 8px; }
         
         .promo-group { display: flex; gap: 8px; margin-top: 12px; }
         .promo-input { flex-grow: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; outline: none; font-size: 12px; }
@@ -96,18 +106,22 @@
         .star-rating span.active { color: #fbbc05; }
         .noti-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--primary-blue); text-align: left; }
         
-        /* 💬 ADVANCED CHAT PANEL WITH STORAGE-FREE VOICE PLAYER */
-        .chat-container { background: white; border: 1px solid var(--border-color); border-radius: 12px; margin-top: 15px; display: none; flex-direction: column; height: 340px; overflow: hidden; }
+        /* 💬 CHAT CONTAINER & QUICK REPLIES BAR */
+        .chat-container { background: white; border: 1px solid var(--border-color); border-radius: 12px; margin-top: 15px; display: none; flex-direction: column; height: 360px; overflow: hidden; }
         .chat-header { background: var(--text-main); color: white; padding: 12px; font-weight: bold; display: flex; justify-content: space-between; }
         .chat-messages { flex-grow: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
         .msg { padding: 8px 12px; border-radius: 12px; max-width: 75%; font-size: 13px; }
         .msg.sent { background: var(--primary-blue); color: white; align-self: flex-end; }
         .msg.received { background: #f1f3f4; color: var(--text-dark); align-self: flex-start; }
+        
+        .chat-quick-replies { display: flex; gap: 6px; padding: 8px; background: #f8f9fa; border-top: 1px solid var(--border-color); overflow-x: auto; }
+        .quick-reply-chip { background: white; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 16px; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; color: var(--text-main); }
+        
         .chat-input-area { display: flex; border-top: 1px solid var(--border-color); align-items: center; background: #fff; }
         .chat-input-area input { flex-grow: 1; border: none; padding: 14px; outline: none; font-size: 14px; }
         .chat-input-area button { background: var(--primary-blue); color: white; border: none; padding: 14px 20px; font-weight: bold; cursor: pointer; }
-        .voice-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 0 10px; color: #5f6368; transition: 0.1s; }
-        .voice-btn.recording { color: #ff4444; transform: scale(1.2); }
+        .voice-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 0 10px; color: #5f6368; }
+        .voice-btn.recording { color: #ff4444; animation: pulse 1s infinite; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: white; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 999; }
         .nav-item { text-align: center; color: var(--text-muted); cursor: pointer; font-weight: bold; font-size: 11px; width: 25%; }
@@ -115,6 +129,9 @@
         .nav-item.active { color: var(--primary-blue); }
         .nav-item.active span { color: var(--primary-blue); }
         
+        /* 🔵 UBER-STYLE LIVE LOCATION DOT */
+        .live-dot { background: #1a73e8; class: pulse; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 6px rgba(26, 115, 232, 0.3); }
+
         @keyframes pulse { 0% { transform: scale(0.9); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.5; } 100% { transform: scale(0.9); opacity: 1; } }
     </style>
 </head>
@@ -195,9 +212,27 @@
                             <label>වැඩේ කෙටි හැඳින්වීම (Title)</label>
                             <input type="text" id="jobTitle" required>
                         </div>
+                        
+                        <div class="schedule-toggle-bar">
+                            <span>🕒 පසුවට ඇනවුම් කරන්න (Schedule booking?)</span>
+                            <input type="checkbox" id="chkIsScheduled" onchange="toggleSchedulerInputsDisplay(this.checked)">
+                        </div>
+                        <div id="schedulerInputsRow" class="schedule-inputs hidden">
+                            <input type="date" id="scheduleDate">
+                            <input type="time" id="scheduleTime">
+                        </div>
+
                         <div class="form-group">
                             <label>වැඩේ සහ ලෙඩේ විස්තරය (Describe the issue)</label>
                             <textarea id="jobDesc" rows="3" placeholder="කරගන්න ඕන වැඩේ ගැන විස්තරයක් ලියන්න..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group" style="border-top:1px dashed #ccc; padding-top:12px;">
+                            <label>🛠️ කරන්න ඕන වැඩ ලැයිස්තුව (Multi-item Checklist)</label>
+                            <div id="checklistTasksContainer">
+                                <div class="checklist-item"><input type="text" class="task-input-item" placeholder="උදා: සාලේ ලයිට් එක මාරු කිරීම"></div>
+                            </div>
+                            <button type="button" class="btn-add-task" onclick="addNewChecklistItemRow()">[+] තව වැඩක් එකතු කරන්න</button>
                         </div>
                         
                         <div class="form-group">
@@ -209,9 +244,9 @@
                         </div>
 
                         <div class="pricing-panel" id="priceDisplayPanel">
-                            <div class="breakdown-row"><span>Base Fare (ආරම්භක පිරිවැය):</span> <span id="lblBaseFare">රු. 200.00</span></div>
+                            <div class="breakdown-row"><span>Base Fare (ආරම්භක පිරිවැය):</span> <span>රු. 200.00</span></div>
                             <div class="breakdown-row"><span>Distance Fare (📏 <span id="lblKmText">0.0 KM</span>):</span> <span id="lblDistanceFare">රු. 0.00</span></div>
-                            <div class="breakdown-row" id="promoRow" style="display:none; color:var(--success);"><span>Promo Discount (වට්ටම 🎁):</span> <span id="lblPromoDiscount">- රු. 250.00</span></div>
+                            <div class="breakdown-row" id="promoRow" style="display:none; color:var(--success);"><span>Promo Discount (වට්ටම 🎁):</span> <span>- රු. 250.00</span></div>
                             <div class="breakdown-row total"><span>Total Payable (ඇස්තමේන්තුගත මුදල):</span> <span id="txtCalculatedPrice">රු. 0.00</span></div>
                             
                             <div class="promo-group">
@@ -242,9 +277,15 @@
             <div id="customerChatBox" class="chat-container">
                 <div class="chat-header">💬 බාස් සමඟ සජීවී චැට් එක <span style="cursor:pointer;" onclick="document.getElementById('customerChatBox').style.display='none'">✖</span></div>
                 <div id="chatMessages" class="chat-messages"></div>
+                
+                <div class="chat-quick-replies">
+                    <div class="quick-reply-chip" onclick="sendSmartQuickReplyMessage('මම ලොකේෂන් එකේ ඉන්නවා 👍')">මම ලොකේෂන් එකේ ඉන්නවා 👍</div>
+                    <div class="quick-reply-chip" onclick="sendSmartQuickReplyMessage('වැඩේට ඔක්කොම කීයක් වෙයිද? 💰')">වැඩේට කීයක් වෙයිද? 💰</div>
+                    <div class="quick-reply-chip" onclick="sendSmartQuickReplyMessage('හරි මචං, මම බලාගෙන ඉන්නවා ⏳')">මම බලාගෙන ඉන්නවා ⏳</div>
+                </div>
+
                 <form id="chatForm" class="chat-input-area">
                     <button type="button" id="btnVoiceRecord" class="voice-btn" onclick="toggleVoiceAudioRecording()">🎤</button>
-                    
                     <input type="text" id="chatMsgInput" placeholder="මැසේජ් එකක් ලියන්න..." required autocomplete="off">
                     <button type="submit">යවන්න</button>
                 </form>
@@ -281,43 +322,57 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth(), db = firebase.firestore();
 
-        let map, routingControl, pickupMarker, dropMarker;
+        let map, routingControl, pickupMarker, dropMarker, liveLocationMarker;
         let activeChatJobId = null, chatListener = null, currentCategory = "General", perKmRate = 80, originalPrice = 0, isPromoApplied = false;
         let mediaRecorder, audioChunks = [], isRecording = false;
 
         const hrs = new Date().getHours();
         document.getElementById('lblGreeting').innerText = hrs < 12 ? "Good Morning!☀️" : hrs < 17 ? "Good Afternoon!🌤️" : "Good Evening!🌙";
 
-        // 🌟 PREMIUM MINIMALIST CARTO SILHOUETTE MAP INJECTION
+        // 🌟 ADVANCED MAP WITH UBER-STYLE LIVE LOCATION DOT TRACKING
         function initMap() {
             if(map) return;
             map = L.map('map').setView([6.9271, 79.8612], 13);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-            }).addTo(map);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap contributors &copy; CARTO' }).addTo(map);
 
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
+                // Track current pointer live in real-time gracefully
+                navigator.geolocation.watchPosition(pos => {
                     let lat = pos.coords.latitude, lng = pos.coords.longitude;
-                    map.setView([lat, lng], 15);
-                    setPickupLocation(lat, lng);
+                    
+                    if(!liveLocationMarker) {
+                        const liveIcon = L.divIcon({ className: 'live-dot-wrapper', html: '<div class="live-dot"></div>', iconSize: [12, 12] });
+                        liveLocationMarker = L.marker([lat, lng], { icon: liveIcon }).addTo(map);
+                        map.setView([lat, lng], 15);
+                        setPickupLocation(lat, lng);
+                    } else {
+                        liveLocationMarker.setLatLng([lat, lng]);
+                    }
                 }, null, { enableHighAccuracy: true });
             }
 
             map.on('click', function(e) {
-                if (!document.getElementById('pickupLat').value) {
-                    setPickupLocation(e.latlng.lat, e.latlng.lng);
-                } else if (!document.getElementById('dropLat').value) {
-                    setDropLocation(e.latlng.lat, e.latlng.lng);
-                    calculateRoute();
-                } else {
-                    resetRoutingSetup();
-                    setPickupLocation(e.latlng.lat, e.latlng.lng);
-                }
+                if (!document.getElementById('pickupLat').value) { setPickupLocation(e.latlng.lat, e.latlng.lng); }
+                else if (!document.getElementById('dropLat').value) { setDropLocation(e.latlng.lat, e.latlng.lng); calculateRoute(); }
+                else { resetRoutingSetup(); setPickupLocation(e.latlng.lat, e.latlng.lng); }
             });
         }
 
-        // 📍 SAVED PLACES AUTOMATION LAYER INTERPOLATOR
+        // 🕒 SCHEDULER DYNAMIC INPUT TOGGLE MANAGEMENT
+        function toggleSchedulerInputsDisplay(checked) {
+            const row = document.getElementById('schedulerInputsRow');
+            if(checked) { row.classList.remove('hidden'); } else { row.classList.add('hidden'); }
+        }
+
+        // 📋 CHECKLIST ROW INJECTOR
+        function addNewChecklistItemRow() {
+            const container = document.getElementById('checklistTasksContainer');
+            const item = document.createElement('div');
+            item.className = "checklist-item";
+            item.innerHTML = `<input type="text" class="task-input-item" placeholder="උදා: තව වැඩක්...">`;
+            container.appendChild(item);
+        }
+
         function triggerSavedPlaceSearch(placeName) {
             document.getElementById('globalAddressSearchInput').value = placeName;
             searchGlobalAddressRoute();
@@ -409,7 +464,6 @@
             } else { alert("❌ වලංගු නොවන ප්‍රොමෝ කේතයකි!"); }
         }
 
-        // 🔔 REAL-TIME FLOATING BANNER ANIMATION SYSTEM
         function showFloatingBannerMessage(text) {
             const banner = document.getElementById('floatingAlertBanner');
             document.getElementById('floatingAlertText').innerText = text;
@@ -417,33 +471,32 @@
             setTimeout(() => { banner.classList.remove('show'); }, 3500);
         }
 
-        // 🎤 100% STORAGE-FREE LIVE VOICE RECORDER CONTROLLER
+        // 💬 QUICK REPLY INJECTOR TRIGGER SOURCE
+        function sendSmartQuickReplyMessage(replyText) {
+            if(!activeChatJobId) return;
+            db.collection("jobs").doc(activeChatJobId).collection("messages").add({
+                text: replyText, senderId: auth.currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+
         function toggleVoiceAudioRecording() {
             const btn = document.getElementById('btnVoiceRecord');
             if (!isRecording) {
                 navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                    mediaRecorder = new MediaRecorder(stream);
-                    audioChunks = [];
+                    mediaRecorder = new MediaRecorder(stream); audioChunks = [];
                     mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
                     mediaRecorder.onstop = () => {
                         const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                        const reader = new FileReader();
-                        reader.readAsDataURL(audioBlob); // Transform Base64 directly
+                        const reader = new FileReader(); reader.readAsDataURL(audioBlob);
                         reader.onloadend = () => {
                             db.collection("jobs").doc(activeChatJobId).collection("messages").add({
                                 text: "", voiceData: reader.result, senderId: auth.currentUser.uid, timestamp: firebase.firestore.FieldValue.serverTimestamp()
                             });
                         };
                     };
-                    mediaRecorder.start();
-                    isRecording = true;
-                    btn.classList.add('recording');
+                    mediaRecorder.start(); isRecording = true; btn.classList.add('recording');
                 }).catch(() => { alert("❌ මයික්‍රෆෝන් අවසරය ලබාදෙන්න මචං!"); });
-            } else {
-                mediaRecorder.stop();
-                isRecording = false;
-                btn.classList.remove('recording');
-            }
+            } else { mediaRecorder.stop(); isRecording = false; btn.classList.remove('recording'); }
         }
 
         function switchView(viewId, navId) {
@@ -476,7 +529,6 @@
                 document.getElementById('userProfName').innerText = user.displayName || "QuickFix User";
                 document.getElementById('userProfEmail').innerText = user.email;
 
-                // REALTIME ACTIVE/HISTORY SYNC FEED
                 db.collection("jobs").where("customerId", "==", user.uid).onSnapshot(snapshot => {
                     const activeContainer = document.getElementById('activeJobsContainer');
                     const pastContainer = document.getElementById('pastJobsContainer');
@@ -489,6 +541,7 @@
                         
                         let step1 = "completed", step2 = "next", step3 = "next", step4 = "next";
                         if(job.status === 'accepted') { step1 = "completed"; step2 = "active"; }
+                        if(job.status === 'on_the_way' || job.status === 'arrived') { step1 = "completed"; step2 = "completed"; step3 = "active"; }
                         if(job.status === 'completed') { step1 = "completed"; step2 = "completed"; step3 = "completed"; step4 = "completed"; }
                         
                         let stepperHtml = `
@@ -499,20 +552,29 @@
                                 <div class="stepper-item ${step4}"><div class="step-counter">4</div>නිමයි</div>
                             </div>`;
 
-                        if (job.status === 'available' || job.status === 'accepted') {
+                        if (job.status !== 'completed') {
                             hasActive = true;
-                            let chatBtn = job.status === 'accepted' ? `<button style="background:#00c851; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px;" onclick="openChat('${doc.id}')">බාස් සමඟ චැට් 💬</button>` : '';
-                            let otpCodeArea = job.status === 'accepted' ? `<div class="otp-display-box">🔐 ආරක්ෂිත OTP කේතය: <span class="otp-number">${job.otpCode}</span></div>` : '';
+                            let chatBtn = job.status !== 'available' ? `<button style="background:#00c851; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px;" onclick="openChat('${doc.id}')">බාස් සමඟ චැට් 💬</button>` : '';
+                            let otpCodeArea = job.status !== 'available' ? `<div class="otp-display-box">🔐 ආරක්ෂිත OTP කේතය: <span class="otp-number">${job.otpCode}</span></div>` : '';
                             let cancelBtn = `<button class="btn-cancel" onclick="cancelLiveJobOrder('${doc.id}')">ඇනවුම අවලංගු කරන්න ❌</button>`;
                             
+                            // Checklist output payload block if exists
+                            let renderedChecklistHtml = "";
+                            if(job.tasksList && job.tasksList.length > 0) {
+                                renderedChecklistHtml = `<div style="font-size:12px; background:#f1f3f4; padding:8px; border-radius:6px; margin:5px 0;">📋 වැඩ ලැයිස්තුව:<br>` + job.tasksList.map(t => `• ${t}`).join('<br>') + `</div>`;
+                            }
+
+                            let scheduleText = job.isScheduled ? `<span style="background:#ff4444; color:white; padding:2px 6px; font-size:10px; font-weight:bold; border-radius:4px;">🕒 SCHEDULED: ${job.scheduledDate} @ ${job.scheduledTime}</span>` : '';
+
                             activeContainer.innerHTML += `
                                 <div class="job-card">
-                                    <h3>${job.title}</h3> <p style="font-size:13px; color:#555; margin:5px 0;">${job.description}</p>
+                                    <h3>${job.title} ${scheduleText}</h3> <p style="font-size:13px; color:#555; margin:5px 0;">${job.description}</p>
+                                    ${renderedChecklistHtml}
                                     <div style="font-size:12px; color:#777; margin-bottom:5px;">Category: <b>${job.category}</b> | 📏 ${job.distance || '0 KM'}</div>
                                     ${stepperHtml} <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: රු. ${job.budget}</div>
                                     ${otpCodeArea} <div style="margin-top: 8px; display:flex; gap:10px;">${chatBtn} ${cancelBtn}</div>
                                 </div>`;
-                        } else if (job.status === 'completed') {
+                        } else {
                             hasPast = true;
                             let ratingBlock = !job.rated ? `
                                 <div style="margin-top:10px; border-top:1px dashed #dadce0; padding-top:8px;">
@@ -529,12 +591,7 @@
                                 </div>`;
                         }
 
-                        // 🔔 TRIGGER FLOATING INSIGHT OVERLAYS Real-time ON STATE MATCHES
-                        if(job.status === 'accepted') {
-                            notiHtml += `<div class="noti-card"><h4>🛠️ ඔබේ ඇනවුම බාරගන්නා ලදී!</h4><p>ඔබේ "${job.title}" වැඩය බාරගෙන ඇත.</p></div>`;
-                        } else if (job.status === 'completed') {
-                            notiHtml += `<div class="noti-card" style="border-left-color: var(--success);"><h4>✅ වැඩය සාර්ථකව අවසන්!</h4><p>"${job.title}" වැඩය සාර්ථකව නිම කර ඇත.</p></div>`;
-                        }
+                        if(job.status === 'accepted') notiHtml += `<div class="noti-card"><h4>🛠️ ඇනවුම බාරගත්තා!</h4><p>"${job.title}" වැඩය බාරගෙන ඇත.</p></div>`;
                     });
 
                     if(!hasActive) activeContainer.innerHTML = `<p style='color:var(--text-muted); font-size:14px;'>දැනට පවතින සක්‍රීය වැඩ කිසිවක් නැත...</p>`;
@@ -562,15 +619,12 @@
                 msgContainer.innerHTML = "";
                 snapshot.forEach(doc => {
                     const msg = doc.data(); let msgClass = msg.senderId === auth.currentUser.uid ? 'sent' : 'received';
-                    
-                    // Render string text OR Base64 Embedded audio player layout inside DOM safely
                     let content = msg.text;
                     if(msg.voiceData) { content = `<audio src="${msg.voiceData}" controls style="max-width:200px; height:32px;"></audio>`; }
                     msgContainer.innerHTML += `<div class="msg ${msgClass}">${content}</div>`;
                 });
                 msgContainer.scrollTop = msgContainer.scrollHeight;
                 
-                // Trigger floating drop alert banner if new message pops up while chatting
                 if(!initialLoad && snapshot.docChanges().some(c => c.type === "added")) {
                     let lastMsg = snapshot.docs[snapshot.docs.length - 1].data();
                     if(lastMsg.senderId !== auth.currentUser.uid) showFloatingBannerMessage("💬 බාස් වෙතින් අලුත් මැසේජ් එකක් ලැබුණා!");
@@ -592,19 +646,29 @@
             let pLng = parseFloat(document.getElementById('pickupLng').value);
             let dLat = parseFloat(document.getElementById('dropLat').value) || pLat;
             let dLng = parseFloat(document.getElementById('dropLng').value) || pLng;
-            let distText = document.getElementById('txtDistance') ? document.getElementById('txtDistance').innerText : document.getElementById('lblKmText').innerText;
+            let distText = document.getElementById('lblKmText').innerText;
 
             if(!pLat) { alert("❌ කරුණාකර සිතියම මත ස්ථානය ලකුණු කරන්න!"); return; }
 
             btn.innerText = "පෝස්ට් වෙමින්... ⏳"; btn.disabled = true;
             const randomOTP = Math.floor(1000 + Math.random() * 9000);
 
+            // Harvest values from Checklist inputs array
+            let finalChecklistArray = [];
+            document.querySelectorAll('.task-input-item').forEach(inp => {
+                if(inp.value.trim() !== "") finalChecklistArray.push(inp.value.trim());
+            });
+
+            const isScheduled = document.getElementById('chkIsScheduled').checked;
+
             db.collection("users").doc(auth.currentUser.uid).get().then(userDoc => {
                 let pNum = (userDoc.exists && userDoc.data().phoneNumber) ? userDoc.data().phoneNumber : "නැත";
                 db.collection("jobs").add({
                     title: document.getElementById('jobTitle').value, description: document.getElementById('jobDesc').value, budget: document.getElementById('jobBudget').value, category: currentCategory,
                     lat: pLat, lng: pLng, dropLat: dLat, dropLng: dLng, distance: distText, customerId: auth.currentUser.uid, customerName: auth.currentUser.displayName, customerPhone: pNum,
-                    status: "available", otpCode: randomOTP, rated: false, timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    status: "available", otpCode: randomOTP, rated: false, tasksList: finalChecklistArray,
+                    isScheduled: isScheduled, scheduledDate: isScheduled ? document.getElementById('scheduleDate').value : null, scheduledTime: isScheduled ? document.getElementById('scheduleTime').value : null,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 }).then(() => { finishPost(); }).catch(() => { resetBtn(); });
             });
         });
