@@ -73,7 +73,7 @@ function setPickupLocation(lat, lng) {
     document.getElementById('pickupLat').value = lat; document.getElementById('pickupLng').value = lng;
     if(pickupMarker) map.removeLayer(pickupMarker);
     pickupMarker = L.marker([lat, lng], {icon: L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', iconSize: [25, 41], iconAnchor: [12, 41]})}).addTo(map);
-    document.getElementById('mapHint').innerText = "පියවර 2: යායුතු ස්ථානය (Destination) සිතියම මත ක්ලික් කරන්න හෝ උඩින් සර්ච් කරන්න.";
+    if(document.getElementById('mapHint')) document.getElementById('mapHint').innerText = "පියවර 2: යායුතු ස්ථානය (Destination) සිතියම මත ක්ලික් කරන්න හෝ උඩින් සර්ච් කරන්න.";
 }
 
 function setDropLocation(lat, lng) {
@@ -177,8 +177,8 @@ function toggleVoiceAudioRecording() {
 function switchView(viewId, navId) {
     document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    document.getElementById(viewId).classList.add('active');
-    document.getElementById(navId).classList.add('active');
+    if(document.getElementById(viewId)) document.getElementById(viewId).classList.add('active');
+    if(document.getElementById(navId)) document.getElementById(navId).classList.add('active');
 }
 
 function switchActivitiesFilter(filterType) {
@@ -211,19 +211,35 @@ function submitLiveRescheduleTime(jobId) {
     if(!newTitle || !newDesc || !newDate || !newTime) { alert("❌ කරුණාකර සියලුම හිස්තැන් පුරවන්න!"); return; }
 
     db.collection("jobs").doc(jobId).update({
-        title: newTitle,
-        description: newDesc,
-        isScheduled: true,
-        scheduledDate: newDate,
-        scheduledTime: newTime,
-        status: "available", 
-        riderId: null,      
-        riderName: null,    
-        reNotified: true,   
-        lastModified: new Date().getTime()
-    }).then(() => {
-        showFloatingBannerMessage("🕒 ඇනවුම වෙනස් කරා! බාස්ව ඉවත් කර නැවත Pool එකට දමන ලදී.");
-    });
+        title: newTitle, description: newDesc, isScheduled: true, scheduledDate: newDate, scheduledTime: newTime,
+        status: "available", riderId: null, riderName: null, reNotified: true, lastModified: new Date().getTime()
+    }).then(() => { showFloatingBannerMessage("🕒 ඇනවුම වෙනස් කරා! බාස්ව ඉවත් කර නැවත Pool එකට දමන ලදී."); });
+}
+
+// 📊 BARGAINING ENGINE: Accept Specific Bid Offer
+function acceptSupplierBargainOffer(jobId, rId, rName, finalPrice) {
+    db.collection("jobs").doc(jobId).update({
+        status: "accepted",
+        riderId: rId,
+        riderName: rName,
+        budget: finalPrice // Lock down the bargained price!
+    }).then(() => { showFloatingBannerMessage(`✅ LKR ${finalPrice} කට වැඩේ තහවුරු කරා!`); });
+}
+
+// Distress Emergency SOS Injector System Node
+function triggerInstantDistressSOSFix() {
+    if(confirm("🚨 ක්ෂණික හදිසි උපකාරයක් (Emergency Fix) අවශ්‍යද? විනාඩි 5ක් ඇතුළත ළඟම බාස්ලා පැමිණෙනු ඇත.")) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            db.collection("jobs").add({
+                title: "🚨 EMERGENCY DISTRESS SOS FIX",
+                description: "හදිසි අනතුරක් හෝ බිඳවැටීමක්! ක්ෂණික උපකාර අවශ්‍යයි.",
+                budget: "2500", category: "Emergency SOS",
+                lat: pos.coords.latitude, lng: pos.coords.longitude,
+                customerId: auth.currentUser.uid, customerName: auth.currentUser.displayName,
+                status: "available", otpCode: Math.floor(1000 + Math.random() * 9000), timestamp: new Date().getTime()
+            }).then(() => { alert("🚨 SOS පණිවිඩය සජීවීව නිකුත් කරා මචං! බාස්ලා දැන් පාරේ."); switchView('view-activities', 'nav-activities'); });
+        });
+    }
 }
 
 auth.onAuthStateChanged(user => {
@@ -263,25 +279,38 @@ auth.onAuthStateChanged(user => {
                     let chatBtn = job.status !== 'available' ? `<button style="background:#00c851; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:8px;" onclick="openChat('${doc.id}')">බාස් සමඟ චැට් 💬</button>` : '';
                     let otpCodeArea = job.status !== 'available' ? `<div class="otp-display-box">🔐 ආරක්ෂිත OTP කේතය: <span class="otp-number">${job.otpCode}</span></div>` : '';
                     let cancelBtn = `<button class="btn-cancel" onclick="cancelLiveJobOrder('${doc.id}')">ඇනවුම අවලංගු කරන්න ❌</button>`;
-                    
                     let rescheduleBtn = (job.status === 'available' || job.status === 'accepted') ? `<button class="btn-resched" onclick="toggleInlineRescheduleBox('${doc.id}')">වැඩේ සංස්කරණය / Reschedule කරන්න 🕒✏️</button>` : '';
                     
+                    // 📊 BARGAINING SUB-INTERFACE INJECTION LISTENER
+                    let bargainOffersHtml = "";
+                    if(job.status === 'available' && job.bidsPool) {
+                        bargainOffersHtml = `<div style="margin-top:10px; padding:10px; background:#fff8e1; border-radius:8px; border:1px solid #ffe082;"><p style="margin:0 0 6px 0; font-size:12px; font-weight:bold; color:#b78103;">💰 බාස්ලා ඉල්ලන මිල ගණන් (Counter Bids):</p>`;
+                        Object.keys(job.bidsPool).forEach(rId => {
+                            let bid = job.bidsPool[rId];
+                            bargainOffersHtml += `<div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:5px; padding-bottom:5px; border-bottom:1px dashed #ddd;">
+                                <span>👨‍🔧 ${bid.riderName}: <b>රු. ${bid.offerPrice}</b></span>
+                                <button type="button" style="background:#1a73e8; color:white; border:none; padding:4px 8px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:11px;" onclick="acceptSupplierBargainOffer('${doc.id}','${rId}','${bid.riderName}','${bid.offerPrice}')">බාරගන්න</button>
+                            </div>`;
+                        });
+                        bargainOffersHtml += `</div>`;
+                    }
+
+                    // 💳 SPLIT BILL INTERACTIVE SUB-MATH DATA
+                    let splitBillAmount = Math.round(job.budget / 2);
+                    let splitBillHtml = `<div style="font-size:11px; color:#5f6368; margin-top:4px;">💳 යාළුවා එක්ක බෙදාගත්තොත් එක්කෙනෙක්ට: <b>රු. ${splitBillAmount} ගානේ</b></div>`;
+
                     let rescheduleBoxUi = `
                         <div class="resched-box-ui" id="reschedBox-${doc.id}">
-                            <p style="margin:0 0 10px 0; font-size:12px; font-weight:bold; color:red;">⚠️ අවධානයට: බාස් කෙනෙක් බාරගත් වැඩක් සංස්කරණය කළහොත්, එම බාස්ව ඉවත් වී වැඩය නැවත පොදු Pool එකට වැටේ!</p>
-                            
                             <label>වැඩේ මාතෘකාව (Title)</label>
                             <input type="text" id="editTitle-${doc.id}" value="${job.title || ''}" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-bottom:8px; color:#111;">
-                            
                             <label>වැඩේ විස්තරය (Description)</label>
                             <textarea id="editDesc-${doc.id}" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-bottom:8px; color:#111;" rows="2">${job.description || ''}</textarea>
-                            
                             <label>නව දිනය සහ වෙලාව (New Schedule)</label>
                             <div style="display:flex; gap:6px;">
                                 <input type="date" id="newDate-${doc.id}" value="${job.scheduledDate || ''}" style="padding:8px; border:1px solid var(--border-color); border-radius:4px; font-size:12px; flex:1; color:#111;">
                                 <input type="time" id="newTime-${doc.id}" value="${job.scheduledTime || ''}" style="padding:8px; border:1px solid var(--border-color); border-radius:4px; font-size:12px; flex:1; color:#111;">
                             </div>
-                            <button type="button" class="btn-yellow" style="padding:10px; margin-top:12px; font-size:12px; border-radius:6px;" onclick="submitLiveRescheduleTime('${doc.id}')">සංස්කරණය තහවුරු කරන්න (Confirm & Repost) 🎯</button>
+                            <button type="button" class="btn-yellow" style="padding:10px; margin-top:12px; font-size:12px; border-radius:6px;" onclick="submitLiveRescheduleTime('${doc.id}')">සංස්කරණය තහවුරු කරන්න 🎯</button>
                         </div>`;
 
                     let renderedChecklistHtml = "";
@@ -297,7 +326,10 @@ auth.onAuthStateChanged(user => {
                             <h3>${job.title || 'QuickFix Job'} ${scheduleText}</h3> <p style="font-size:13px; color:#555; margin:5px 0;">${job.description || ''}</p>
                             ${renderedChecklistHtml}
                             <div style="font-size:12px; color:#777; margin-bottom:5px;">Category: <b>${safetyCategory}</b> | 📏 ${job.distance || '0 KM'}</div>
-                            ${stepperHtml} <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: රු. ${job.budget}</div>
+                            ${stepperHtml} 
+                            <div style="font-weight:bold; color:#111; margin-top:5px; font-size:14px;">ගාස්තුව: රු. ${job.budget}</div>
+                            ${splitBillHtml}
+                            ${bargainOffersHtml}
                             ${otpCodeArea} 
                             <div style="margin-top: 8px; display:flex; flex-wrap:wrap; gap:8px;">${chatBtn} ${rescheduleBtn} ${cancelBtn}</div>
                             ${rescheduleBoxUi}
